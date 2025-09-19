@@ -116,3 +116,52 @@ pub struct Inventory {
     /// Position where the ant should return to (colony center)
     pub home_position: Position,
 }
+
+/// Natural disaster types that can affect the environment
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum DisasterType {
+    Rain,
+    Drought,
+    ColdSnap,
+    InvasiveSpecies,
+}
+
+/// Resource for managing active natural disasters
+#[derive(Resource, Default)]
+pub struct DisasterState {
+    /// Currently active disasters with their remaining duration
+    pub active_disasters: std::collections::HashMap<DisasterType, f32>,
+    /// Cooldown timers to prevent disaster spam
+    pub cooldown_timers: std::collections::HashMap<DisasterType, f32>,
+}
+
+impl DisasterState {
+    /// Check if a disaster type is currently active
+    pub fn is_active(&self, disaster_type: DisasterType) -> bool {
+        self.active_disasters.contains_key(&disaster_type)
+    }
+
+    /// Check if a disaster type is on cooldown
+    pub fn is_on_cooldown(&self, disaster_type: DisasterType) -> bool {
+        self.cooldown_timers.get(&disaster_type).map_or(false, |&timer| timer > 0.0)
+    }
+
+    /// Start a new disaster with the given duration
+    pub fn start_disaster(&mut self, disaster_type: DisasterType, duration: f32) {
+        self.active_disasters.insert(disaster_type, duration);
+    }
+
+    /// Get the remaining time for an active disaster
+    pub fn get_remaining_time(&self, disaster_type: DisasterType) -> Option<f32> {
+        self.active_disasters.get(&disaster_type).copied()
+    }
+}
+
+/// Component for invasive species entities (temporary during invasive species disaster)
+#[derive(Component)]
+pub struct InvasiveSpecies {
+    /// How long this invasive species will remain active
+    pub lifetime: f32,
+    /// Rate at which this species consumes food sources
+    pub food_consumption_rate: f32,
+}

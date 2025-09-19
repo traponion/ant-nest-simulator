@@ -47,6 +47,16 @@ pub fn setup_time_control_ui(mut commands: Commands) {
                     ..default()
                 },
             ));
+
+            // Disaster controls instruction
+            parent.spawn(TextBundle::from_section(
+                "Disasters: R=Rain, D=Drought, C=Cold Snap, I=Invasive Species",
+                TextStyle {
+                    font_size: 16.0,
+                    color: Color::srgb(0.7, 0.9, 0.7),
+                    ..default()
+                },
+            ));
         })
         .insert(TimeControlUI);
 }

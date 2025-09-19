@@ -6,7 +6,9 @@
 //! - Environment: Soil environmental simulation
 //! - Rendering: Visual spawning and setup systems
 //! - Time Control: Time acceleration and pause functionality
+//! - Disaster: Natural disaster system for environmental control
 
+pub mod disaster;
 pub mod environment;
 pub mod foraging;
 pub mod lifecycle;
@@ -16,6 +18,7 @@ pub mod reproduction;
 pub mod time_control;
 
 // Re-export all system functions for easy importing
+pub use disaster::*;
 pub use environment::*;
 pub use foraging::*;
 pub use lifecycle::*;
