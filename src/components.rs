@@ -340,6 +340,12 @@ pub struct DisasterStatusIndicator {
     pub disaster_type: DisasterType,
 }
 
+/// Component for disaster status indicator background
+#[derive(Component)]
+pub struct DisasterStatusBackground {
+    pub disaster_type: DisasterType,
+}
+
 /// Component for visual feedback when disaster is triggered
 #[derive(Component)]
 pub struct DisasterTriggerFeedback {
@@ -397,6 +403,16 @@ impl DisasterType {
             DisasterType::Drought => "D",
             DisasterType::ColdSnap => "C",
             DisasterType::InvasiveSpecies => "I",
+        }
+    }
+
+    /// Get the icon emoji for disaster type
+    pub fn get_icon(&self) -> &'static str {
+        match self {
+            DisasterType::Rain => "🌧️",
+            DisasterType::Drought => "☀️",
+            DisasterType::ColdSnap => "❄️",
+            DisasterType::InvasiveSpecies => "🐛",
         }
     }
 
