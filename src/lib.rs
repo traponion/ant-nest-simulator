@@ -92,7 +92,7 @@ impl Plugin for AntNestPlugin {
                     systems::disaster_input_system,
                     systems::disaster_timer_system,
                     systems::disaster_effect_system,
-                    systems::invasive_species_spawn_system,
+                    systems::invasive_species_spawning_system,
                     systems::invasive_species_food_consumption_system,
                 ),
             )
@@ -156,9 +156,9 @@ impl Plugin for AntNestPlugin {
                 (
                     // Invasive species systems
                     systems::invasive_species_spawning_system,
-                    systems::invasive_species::invasive_species_behavior_system,
+                    systems::invasive_species_behavior_system,
                     systems::ant_defensive_behavior_system,
-                    systems::invasive_species::invasive_species_cleanup_system,
+                    systems::invasive_species_cleanup_system,
                 ),
             );
     }

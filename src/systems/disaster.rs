@@ -1,9 +1,8 @@
 use crate::components::{
-    Ant, AntBehavior, DisasterState, DisasterType, InvasiveSpecies, Lifecycle, Position, SoilCell, TimeControl,
+    Ant, AntBehavior, DisasterState, DisasterType, Lifecycle, Position, SoilCell, TimeControl,
 };
 use crate::systems::time_control::effective_delta_time;
 use bevy::prelude::*;
-use rand::prelude::*;
 
 /// System for handling disaster keyboard input
 pub fn disaster_input_system(
@@ -164,9 +163,8 @@ pub fn disaster_effect_system(
         }
     }
 
-    // Invasive Species effects are handled by dedicated spawning and behavior systems
-    // The spawning is triggered by invasive_species_spawn_system
-    // Movement and consumption is handled by invasive_species_behavior_system
+    // Invasive Species effects are handled by the dedicated invasive_species module
+    // with specialized spawning, behavior, and cleanup systems
 }
 
 /// Helper function to check if any disaster is affecting ant movement
@@ -184,100 +182,3 @@ pub fn get_movement_speed_modifier(disaster_state: &DisasterState) -> f32 {
     modifier
 }
 
-/// System for spawning invasive species entities when disaster starts
-pub fn invasive_species_spawn_system(
-    mut commands: Commands,
-    disaster_state: Res<DisasterState>,
-    existing_invasive: Query<Entity, With<InvasiveSpecies>>,
-) {
-    // Check if invasive species disaster just started and no invasive species exist
-    if disaster_state.is_active(DisasterType::InvasiveSpecies) && existing_invasive.is_empty() {
-        let mut rng = thread_rng();
-
-        // Spawn 8-12 invasive species entities scattered across the environment
-        let spawn_count = rng.gen_range(8..=12);
-
-        for _i in 0..spawn_count {
-            // Random spawn locations across simulation area
-            let x_offset = rng.gen_range(-70.0..70.0);
-            let y_offset = rng.gen_range(-50.0..50.0);
-
-            commands.spawn((
-                Position {
-                    x: x_offset,
-                    y: y_offset,
-                },
-                InvasiveSpecies {
-                    lifetime: 60.0, // Match disaster duration
-                    food_consumption_rate: rng.gen_range(0.8..1.2),
-                },
-                SpriteBundle {
-                    sprite: Sprite {
-                        color: Color::srgb(1.0, 0.0, 0.0), // Bright red color for invasive species
-                        custom_size: Some(Vec2::new(2.0, 2.0)), // Same size as ants but red
-                        ..default()
-                    },
-                    transform: Transform::from_translation(Vec3::new(x_offset, y_offset, 1.5)), // Z=1.5 to render above ants
-                    ..default()
-                },
-            ));
-        }
-
-        info!("Spawned {} invasive species entities", spawn_count);
-    }
-}
-
-/// System for invasive species movement and behavior
-pub fn invasive_species_behavior_system(
-    time: Res<Time>,
-    time_control: Res<TimeControl>,
-    mut invasive_query: Query<
-        (&mut Position, &mut Transform, &mut InvasiveSpecies),
-        Without<Ant>,
-    >,
-) {
-    let mut rng = thread_rng();
-    let delta_time = effective_delta_time(&time, &time_control);
-
-    for (mut position, mut transform, mut invasive) in invasive_query.iter_mut() {
-        // Update lifetime
-        invasive.lifetime -= delta_time;
-
-        // Random movement behavior - more erratic than ants
-        let move_speed = 15.0; // Slightly faster than ants
-        let direction_x: f32 = rng.gen_range(-1.0..1.0);
-        let direction_y: f32 = rng.gen_range(-1.0..1.0);
-
-        // Normalize direction
-        let length = (direction_x * direction_x + direction_y * direction_y).sqrt();
-        if length > 0.0 {
-            let normalized_x = direction_x / length;
-            let normalized_y = direction_y / length;
-
-            position.x += normalized_x * move_speed * delta_time;
-            position.y += normalized_y * move_speed * delta_time;
-
-            // Keep within simulation bounds
-            position.x = position.x.clamp(-80.0, 80.0);
-            position.y = position.y.clamp(-60.0, 60.0);
-
-            // Update visual transform
-            transform.translation.x = position.x;
-            transform.translation.y = position.y;
-        }
-    }
-}
-
-/// System for cleaning up invasive species when disaster ends or entities expire
-pub fn invasive_species_cleanup_system(
-    mut commands: Commands,
-    disaster_state: Res<DisasterState>,
-    invasive_query: Query<(Entity, &InvasiveSpecies)>,
-) {
-    // Remove invasive species if disaster has ended or if their lifetime has expired
-    for (entity, invasive) in invasive_query.iter() {
-        if !disaster_state.is_active(DisasterType::InvasiveSpecies) || invasive.lifetime <= 0.0 {
-            commands.entity(entity).despawn();
-        }
-    }
-}
