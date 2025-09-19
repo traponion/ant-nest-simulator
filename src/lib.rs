@@ -43,6 +43,7 @@ impl Plugin for AntNestPlugin {
             .init_resource::<components::DisasterState>()
             .init_resource::<components::ColorOverlayConfig>()
             .init_resource::<components::VisualEffectsSettings>()
+            .init_resource::<components::ColonyStatistics>()
             .init_resource::<systems::ParticleConfig>()
             .add_systems(
                 Startup,
@@ -55,6 +56,7 @@ impl Plugin for AntNestPlugin {
                     systems::setup_time_control_ui,
                     systems::setup_active_disasters_panel,
                     systems::setup_disaster_control_panel,
+                    systems::setup_statistics_panel,
                 ),
             )
             .add_systems(
@@ -68,6 +70,7 @@ impl Plugin for AntNestPlugin {
                     systems::food_regeneration_system,
                     systems::queen_reproduction_system,
                     systems::egg_hatching_system,
+                    systems::colony_statistics_calculation_system,
                 ),
             )
             .add_systems(
@@ -97,6 +100,8 @@ impl Plugin for AntNestPlugin {
                     systems::update_disaster_progress_bars,
                     systems::update_disaster_duration_text,
                     systems::visual_effects_toggle_system,
+                    systems::statistics_toggle_input_system,
+                    systems::update_statistics_display,
                 ),
             )
             .add_systems(
