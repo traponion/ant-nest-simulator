@@ -533,3 +533,97 @@ impl SpatialGrid {
         self.grid.clear();
     }
 }
+
+/// Resource for tracking and displaying performance metrics
+#[derive(Resource)]
+pub struct PerformanceMetrics {
+    /// Current frames per second
+    pub fps: f32,
+    /// Average frame time in milliseconds
+    pub frame_time_ms: f32,
+    /// Total number of ant entities
+    pub ant_count: usize,
+    /// Total number of food source entities
+    pub food_count: usize,
+    /// Total number of soil entities
+    pub soil_count: usize,
+    /// Number of occupied spatial grid cells
+    pub spatial_grid_cells: usize,
+    /// Average entities per spatial grid cell
+    pub avg_entities_per_cell: f32,
+    /// Frame time history for smoothing
+    frame_times: Vec<f32>,
+    /// Update timer for performance calculations
+    pub update_timer: Timer,
+}
+
+impl Default for PerformanceMetrics {
+    fn default() -> Self {
+        Self {
+            fps: 0.0,
+            frame_time_ms: 0.0,
+            ant_count: 0,
+            food_count: 0,
+            soil_count: 0,
+            spatial_grid_cells: 0,
+            avg_entities_per_cell: 0.0,
+            frame_times: Vec::with_capacity(60), // Store last 60 frame times
+            update_timer: Timer::from_seconds(0.1, TimerMode::Repeating), // Update 10 times per second
+        }
+    }
+}
+
+impl PerformanceMetrics {
+    /// Add a new frame time measurement
+    pub fn add_frame_time(&mut self, frame_time: f32) {
+        self.frame_times.push(frame_time);
+
+        // Keep only the last 60 measurements
+        if self.frame_times.len() > 60 {
+            self.frame_times.remove(0);
+        }
+
+        // Calculate average frame time and FPS
+        if !self.frame_times.is_empty() {
+            self.frame_time_ms = self.frame_times.iter().sum::<f32>() / self.frame_times.len() as f32 * 1000.0;
+            self.fps = 1.0 / (self.frame_time_ms / 1000.0);
+        }
+    }
+
+    /// Update entity counts
+    pub fn update_entity_counts(&mut self, ants: usize, food: usize, soil: usize) {
+        self.ant_count = ants;
+        self.food_count = food;
+        self.soil_count = soil;
+    }
+
+    /// Update spatial grid statistics
+    pub fn update_spatial_stats(&mut self, occupied_cells: usize, total_entities: usize) {
+        self.spatial_grid_cells = occupied_cells;
+        self.avg_entities_per_cell = if occupied_cells > 0 {
+            total_entities as f32 / occupied_cells as f32
+        } else {
+            0.0
+        };
+    }
+}
+
+/// Component for the performance monitoring panel
+#[derive(Component)]
+pub struct PerformancePanel;
+
+/// Component for FPS display text
+#[derive(Component)]
+pub struct FpsText;
+
+/// Component for frame time display text
+#[derive(Component)]
+pub struct FrameTimeText;
+
+/// Component for entity count display text
+#[derive(Component)]
+pub struct EntityCountText;
+
+/// Component for spatial grid stats display text
+#[derive(Component)]
+pub struct SpatialStatsText;

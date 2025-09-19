@@ -43,6 +43,7 @@ impl Plugin for AntNestPlugin {
             .init_resource::<components::DisasterState>()
             .init_resource::<components::ColorOverlayConfig>()
             .init_resource::<components::VisualEffectsSettings>()
+            .init_resource::<components::PerformanceMetrics>()
             .init_resource::<systems::ParticleConfig>()
             .insert_resource(components::SpatialGrid::new(
                 16.0, // Cell size of 16 units
@@ -60,6 +61,7 @@ impl Plugin for AntNestPlugin {
                     systems::setup_time_control_ui,
                     systems::setup_active_disasters_panel,
                     systems::setup_disaster_control_panel,
+                    systems::setup_performance_monitoring_ui,
                     systems::initialize_spatial_grid_system,
                 ),
             )
@@ -105,6 +107,10 @@ impl Plugin for AntNestPlugin {
                     systems::update_disaster_progress_bars,
                     systems::update_disaster_duration_text,
                     systems::visual_effects_toggle_system,
+                    // Performance monitoring systems
+                    systems::collect_performance_metrics,
+                    systems::update_performance_monitoring_ui,
+                    systems::toggle_performance_monitoring_system,
                 ),
             )
             .add_systems(
