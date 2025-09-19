@@ -1,6 +1,6 @@
 use crate::components::{
-    AgeGroup, Ant, AnalyticsDashboard, ColonyAnalytics, Egg, FoodSource,
-    Lifecycle, MetricDisplay, MetricType, Queen, TimeControl,
+    AgeGroup, AnalyticsDashboard, Ant, ColonyAnalytics, Egg, FoodSource, Lifecycle, MetricDisplay,
+    MetricType, Queen, TimeControl,
 };
 use crate::systems::time_control::effective_delta_time;
 use bevy::prelude::*;
@@ -331,7 +331,10 @@ pub fn update_analytics_display_system(
                 format!("Avg Energy: {:.1}%", analytics.average_energy)
             }
             MetricType::ForagingSuccess => {
-                format!("Foraging Success: {:.1}%", analytics.foraging_success_rate())
+                format!(
+                    "Foraging Success: {:.1}%",
+                    analytics.foraging_success_rate()
+                )
             }
             MetricType::BirthRate => {
                 format!("Birth Rate: {:.1}/min", analytics.birth_rate())

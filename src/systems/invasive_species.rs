@@ -67,7 +67,10 @@ fn spawn_invasive_species_entity(commands: &mut Commands) {
         },
     ));
 
-    info!("Spawned invasive species at ({:.1}, {:.1}) with {:.1}s lifetime", x, y, lifetime);
+    info!(
+        "Spawned invasive species at ({:.1}, {:.1}) with {:.1}s lifetime",
+        x, y, lifetime
+    );
 }
 
 /// System to manage invasive species behavior and lifecycle
@@ -111,8 +114,9 @@ pub fn invasive_species_behavior_system(
 
         // Consume nearby food sources
         for (food_position, mut food_source) in food_query.iter_mut() {
-            let distance = ((position.x - food_position.x).powi(2) +
-                           (position.y - food_position.y).powi(2)).sqrt();
+            let distance = ((position.x - food_position.x).powi(2)
+                + (position.y - food_position.y).powi(2))
+            .sqrt();
 
             // If close enough to food source (within 30 pixels)
             if distance < 30.0 && food_source.is_available {
@@ -123,8 +127,10 @@ pub fn invasive_species_behavior_system(
                 if food_source.nutrition_value <= 0.0 {
                     food_source.is_available = false;
                     food_source.regeneration_timer = food_source.regeneration_time * 2.0; // Longer regen time
-                    info!("Invasive species depleted food source at ({:.1}, {:.1})",
-                          food_position.x, food_position.y);
+                    info!(
+                        "Invasive species depleted food source at ({:.1}, {:.1})",
+                        food_position.x, food_position.y
+                    );
                 }
             }
         }
@@ -155,8 +161,9 @@ pub fn ant_defensive_behavior_system(
 
         // Find the nearest invasive species
         for invasive_position in invasive_query.iter() {
-            let distance = ((ant_position.x - invasive_position.x).powi(2) +
-                           (ant_position.y - invasive_position.y).powi(2)).sqrt();
+            let distance = ((ant_position.x - invasive_position.x).powi(2)
+                + (ant_position.y - invasive_position.y).powi(2))
+            .sqrt();
             nearest_invasive_distance = nearest_invasive_distance.min(distance);
         }
 
@@ -197,8 +204,10 @@ pub fn invasive_species_cleanup_system(
         }
 
         if !invasive_query.is_empty() {
-            info!("Cleaned up {} invasive species entities after disaster ended",
-                  invasive_query.iter().count());
+            info!(
+                "Cleaned up {} invasive species entities after disaster ended",
+                invasive_query.iter().count()
+            );
         }
     }
 }
