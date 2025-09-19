@@ -60,7 +60,7 @@ impl Plugin for AntNestPlugin {
                     systems::spawn_initial_ants,
                     systems::spawn_food_sources,
                     systems::spawn_queen_ant,
-                    systems::setup_time_control_ui,
+                    systems::setup_time_control_ui_with_slider,
                     systems::setup_active_disasters_panel,
                     systems::setup_disaster_control_panel,
                     systems::setup_performance_monitoring_ui,
@@ -105,6 +105,9 @@ impl Plugin for AntNestPlugin {
                     systems::handle_time_control_buttons,
                     systems::update_play_pause_button_system,
                     systems::button_click_system,
+                    systems::handle_speed_slider_system,
+                    systems::update_slider_handle_position_system,
+                    systems::handle_speed_preset_buttons_system,
                     systems::visual_effects_toggle_system,
                 ),
             )
