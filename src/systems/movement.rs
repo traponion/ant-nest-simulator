@@ -1,5 +1,5 @@
-use crate::components::{Ant, AntBehavior, AntState, Food, FoodSource, Inventory, Lifecycle, Position, TimeControl};
-use crate::systems::time_control::effective_delta_time;
+use crate::components::{Ant, AntBehavior, AntState, Food, FoodSource, Inventory, Lifecycle, Position, TimeControl, DisasterState};
+use crate::systems::{time_control::effective_delta_time, disaster::get_movement_speed_modifier};
 use bevy::prelude::*;
 use rand::prelude::*;
 
@@ -7,6 +7,7 @@ use rand::prelude::*;
 pub fn ant_movement_system(
     time: Res<Time>,
     time_control: Res<TimeControl>,
+    disaster_state: Res<DisasterState>,
     mut ant_query: Query<(&mut Position, &mut AntBehavior, &mut Transform, &Lifecycle, &mut Inventory), With<Ant>>,
     food_query: Query<(&Position, &FoodSource), With<Food>>,
 ) {
@@ -58,7 +59,8 @@ pub fn ant_movement_system(
 
                     if distance > 1.0 {
                         let delta_time = effective_delta_time(&time, &time_control);
-                        let move_distance = behavior.speed * delta_time;
+                        let speed_modifier = get_movement_speed_modifier(&disaster_state);
+                        let move_distance = behavior.speed * delta_time * speed_modifier;
                         position.x += (dx / distance) * move_distance;
                         position.y += (dy / distance) * move_distance;
 
@@ -80,7 +82,8 @@ pub fn ant_movement_system(
 
                     if distance > 2.0 {
                         let delta_time = effective_delta_time(&time, &time_control);
-                        let move_distance = behavior.speed * delta_time;
+                        let speed_modifier = get_movement_speed_modifier(&disaster_state);
+                        let move_distance = behavior.speed * delta_time * speed_modifier;
                         position.x += (dx / distance) * move_distance;
                         position.y += (dy / distance) * move_distance;
 
