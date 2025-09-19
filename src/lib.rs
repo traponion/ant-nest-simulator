@@ -55,6 +55,8 @@ impl Plugin for AntNestPlugin {
                 systems::ant_movement_system,
                 systems::ant_lifecycle_system,
                 systems::environmental_update_system,
+                systems::food_consumption_system,
+                systems::food_regeneration_system,
                 systems::queen_reproduction_system,
                 systems::egg_hatching_system,
                 systems::time_control_input_system,

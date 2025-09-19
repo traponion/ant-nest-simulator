@@ -13,6 +13,7 @@ pub mod environment;
 pub mod rendering;
 pub mod time_control;
 pub mod reproduction;
+pub mod foraging;
 
 // Re-export all system functions for easy importing
 pub use movement::*;
@@ -21,3 +22,4 @@ pub use environment::*;
 pub use rendering::*;
 pub use time_control::*;
 pub use reproduction::*;
+pub use foraging::*;

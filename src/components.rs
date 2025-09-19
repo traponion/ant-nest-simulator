@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 /// Position component for entities in 2D space
-#[derive(Component)]
+#[derive(Component, Clone)]
 pub struct Position {
     pub x: f32,
     pub y: f32,
@@ -41,7 +41,7 @@ pub struct Ant;
 pub struct Soil;
 
 /// Ant behavioral states
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum AntState {
     Foraging,
     Returning,
