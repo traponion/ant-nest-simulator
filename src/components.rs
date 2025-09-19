@@ -375,6 +375,13 @@ pub struct DisasterProgressBar {
 pub struct DisasterDurationText {
     pub disaster_type: DisasterType,
 }
+
+/// Component for disaster cooldown progress bar
+#[derive(Component)]
+pub struct DisasterCooldownProgressBar {
+    pub disaster_type: DisasterType,
+    pub max_cooldown: f32,
+}
 impl DisasterType {
     /// Get the display name for UI
     pub fn display_name(&self) -> &'static str {
