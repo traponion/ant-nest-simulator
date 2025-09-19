@@ -58,6 +58,7 @@ impl Plugin for AntNestPlugin {
             .add_systems(
                 Update,
                 (
+                    // Core simulation systems
                     systems::ant_movement_system,
                     systems::ant_lifecycle_system,
                     systems::environmental_update_system,
@@ -65,8 +66,12 @@ impl Plugin for AntNestPlugin {
                     systems::food_regeneration_system,
                     systems::queen_reproduction_system,
                     systems::egg_hatching_system,
-                    systems::time_control_input_system,
-                    systems::update_speed_display_system,
+                ),
+            )
+            .add_systems(
+                Update,
+                (
+                    // Disaster and visual effects systems
                     systems::disaster_input_system,
                     systems::disaster_timer_system,
                     systems::disaster_effect_system,
@@ -75,9 +80,27 @@ impl Plugin for AntNestPlugin {
                     systems::particle_spawner_system,
                     systems::particle_update_system,
                     systems::update_particle_config_system,
+                ),
+            )
+            .add_systems(
+                Update,
+                (
+                    // UI systems
+                    systems::time_control_input_system,
+                    systems::update_speed_display_system,
                     systems::update_active_disasters_display,
                     systems::update_disaster_progress_bars,
                     systems::update_disaster_duration_text,
+                ),
+            )
+            .add_systems(
+                Update,
+                (
+                    // Invasive species systems
+                    systems::invasive_species_spawning_system,
+                    systems::invasive_species_behavior_system,
+                    systems::ant_defensive_behavior_system,
+                    systems::invasive_species_cleanup_system,
                 ),
             );
     }
