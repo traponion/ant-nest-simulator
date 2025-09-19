@@ -31,21 +31,23 @@ pub fn color_overlay_system(
 
     // Spawn new overlay entity if any disasters are active
     if let Some(color) = blended_color {
-        let overlay_entity = commands.spawn((
-            ColorOverlay {
-                color,
-                disaster_type: DisasterType::Rain, // Primary disaster type (for reference)
-            },
-            SpriteBundle {
-                sprite: Sprite {
+        let overlay_entity = commands
+            .spawn((
+                ColorOverlay {
                     color,
-                    custom_size: Some(Vec2::new(window_width, window_height)),
+                    disaster_type: DisasterType::Rain, // Primary disaster type (for reference)
+                },
+                SpriteBundle {
+                    sprite: Sprite {
+                        color,
+                        custom_size: Some(Vec2::new(window_width, window_height)),
+                        ..default()
+                    },
+                    transform: Transform::from_translation(Vec3::new(0.0, 0.0, 1000.0)), // High Z to render on top
                     ..default()
                 },
-                transform: Transform::from_translation(Vec3::new(0.0, 0.0, 1000.0)), // High Z to render on top
-                ..default()
-            },
-        )).id();
+            ))
+            .id();
 
         overlay_config.overlay_entity = Some(overlay_entity);
     }
@@ -56,7 +58,8 @@ fn calculate_blended_overlay_color(
     disaster_state: &DisasterState,
     overlay_config: &ColorOverlayConfig,
 ) -> Option<Color> {
-    let active_disasters: Vec<DisasterType> = disaster_state.active_disasters.keys().copied().collect();
+    let active_disasters: Vec<DisasterType> =
+        disaster_state.active_disasters.keys().copied().collect();
 
     if active_disasters.is_empty() {
         return None;
@@ -64,7 +67,10 @@ fn calculate_blended_overlay_color(
 
     // If only one disaster is active, return its color directly
     if active_disasters.len() == 1 {
-        return overlay_config.disaster_colors.get(&active_disasters[0]).copied();
+        return overlay_config
+            .disaster_colors
+            .get(&active_disasters[0])
+            .copied();
     }
 
     // For multiple disasters, blend the colors using additive blending with alpha management
@@ -76,7 +82,7 @@ fn calculate_blended_overlay_color(
     for disaster_type in &active_disasters {
         if let Some(color) = overlay_config.disaster_colors.get(disaster_type) {
             let [r, g, b, a] = color.to_srgba().to_f32_array();
-            total_red += r * a;      // Weight by alpha for proper blending
+            total_red += r * a; // Weight by alpha for proper blending
             total_green += g * a;
             total_blue += b * a;
             total_alpha += a;
@@ -90,7 +96,12 @@ fn calculate_blended_overlay_color(
         let normalized_green = total_green / total_alpha;
         let normalized_blue = total_blue / total_alpha;
 
-        Some(Color::srgba(normalized_red, normalized_green, normalized_blue, blended_alpha))
+        Some(Color::srgba(
+            normalized_red,
+            normalized_green,
+            normalized_blue,
+            blended_alpha,
+        ))
     } else {
         None
     }

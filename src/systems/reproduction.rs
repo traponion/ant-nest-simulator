@@ -48,7 +48,10 @@ pub fn queen_reproduction_system(
     time: Res<Time>,
     time_control: Res<TimeControl>,
     mut commands: Commands,
-    mut queen_query: Query<(&Position, &mut ReproductionState, &Lifecycle), (With<Queen>, With<Ant>)>,
+    mut queen_query: Query<
+        (&Position, &mut ReproductionState, &Lifecycle),
+        (With<Queen>, With<Ant>),
+    >,
     ant_count: Query<&Ant>,
     soil_query: Query<&SoilCell>,
 ) {

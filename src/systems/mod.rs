@@ -7,8 +7,10 @@
 //! - Rendering: Visual spawning and setup systems
 //! - Time Control: Time acceleration and pause functionality
 //! - Color Overlay: Visual effects for disaster feedback
+//! - Active Disasters UI: Real-time display of active disaster status
 
 pub mod active_disasters_ui;
+pub mod colony_statistics;
 pub mod color_overlay;
 pub mod disaster;
 pub mod disaster_ui;
@@ -19,14 +21,17 @@ pub mod lifecycle;
 pub mod movement;
 pub mod particle;
 pub mod performance_monitoring;
+pub mod persistence;
 pub mod rendering;
 pub mod reproduction;
 pub mod spatial_grid;
+pub mod statistics_ui;
 pub mod time_control;
 pub mod visual_effects_toggle;
 
 // Re-export all system functions for easy importing
 pub use active_disasters_ui::*;
+pub use colony_statistics::*;
 pub use color_overlay::*;
 pub use disaster::*;
 pub use disaster_ui::*;
@@ -37,8 +42,10 @@ pub use lifecycle::*;
 pub use movement::*;
 pub use particle::*;
 pub use performance_monitoring::*;
+pub use persistence::*;
 pub use rendering::*;
 pub use reproduction::*;
 pub use spatial_grid::*;
+pub use statistics_ui::*;
 pub use time_control::*;
 pub use visual_effects_toggle::*;

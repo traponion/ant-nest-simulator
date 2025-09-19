@@ -1,14 +1,15 @@
 use bevy::prelude::*;
+use serde::{Deserialize, Serialize};
 
 /// Position component for entities in 2D space
-#[derive(Component, Clone, Default)]
+#[derive(Component, Clone, Default, Serialize, Deserialize)]
 pub struct Position {
     pub x: f32,
     pub y: f32,
 }
 
 /// Ant behavior and AI state management
-#[derive(Component)]
+#[derive(Component, Clone, Serialize, Deserialize)]
 pub struct AntBehavior {
     pub state: AntState,
     pub target_position: Option<Position>,
@@ -16,7 +17,7 @@ pub struct AntBehavior {
 }
 
 /// Lifecycle management for aging and energy
-#[derive(Component)]
+#[derive(Component, Clone, Serialize, Deserialize)]
 pub struct Lifecycle {
     pub age: f32,
     pub max_age: f32,
@@ -25,7 +26,7 @@ pub struct Lifecycle {
 }
 
 /// Soil cell environmental properties
-#[derive(Component)]
+#[derive(Component, Clone, Serialize, Deserialize)]
 pub struct SoilCell {
     pub moisture: f32,
     pub temperature: f32,
@@ -33,15 +34,15 @@ pub struct SoilCell {
 }
 
 /// Marker component for ant entities
-#[derive(Component)]
+#[derive(Component, Serialize, Deserialize)]
 pub struct Ant;
 
 /// Marker component for soil entities
-#[derive(Component)]
+#[derive(Component, Serialize, Deserialize)]
 pub struct Soil;
 
 /// Ant behavioral states
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum AntState {
     Foraging,
     Returning,
@@ -70,18 +71,18 @@ impl Default for TimeControl {
 }
 
 /// Marker component for queen ant entities
-#[derive(Component)]
+#[derive(Component, Serialize, Deserialize)]
 pub struct Queen;
 
 /// Component for egg entities with incubation time
-#[derive(Component)]
+#[derive(Component, Serialize, Deserialize)]
 pub struct Egg {
     /// Time remaining until hatching (in seconds)
     pub incubation_time: f32,
 }
 
 /// Component for managing ant reproduction behavior
-#[derive(Component)]
+#[derive(Component, Clone, Serialize, Deserialize)]
 pub struct ReproductionState {
     /// Time since last egg laying (in seconds)
     pub time_since_last_egg: f32,
@@ -92,11 +93,11 @@ pub struct ReproductionState {
 }
 
 /// Marker component for food entities
-#[derive(Component)]
+#[derive(Component, Serialize, Deserialize)]
 pub struct Food;
 
 /// Component for food source properties
-#[derive(Component)]
+#[derive(Component, Clone, Serialize, Deserialize)]
 pub struct FoodSource {
     /// Nutritional value provided when consumed (energy points)
     pub nutrition_value: f32,
@@ -109,7 +110,7 @@ pub struct FoodSource {
 }
 
 /// Component for tracking what an ant is currently carrying
-#[derive(Component)]
+#[derive(Component, Clone, Serialize, Deserialize)]
 pub struct Inventory {
     /// Energy value of the food being carried (0.0 if nothing)
     pub carried_food_value: f32,
@@ -191,10 +192,22 @@ impl Default for ColorOverlayConfig {
         let mut disaster_colors = std::collections::HashMap::new();
 
         // Define overlay colors for each disaster type as specified in the requirements
-        disaster_colors.insert(DisasterType::Rain, bevy::prelude::Color::srgba(0.0, 0.8, 1.0, 0.15)); // Blue/cyan overlay
-        disaster_colors.insert(DisasterType::Drought, bevy::prelude::Color::srgba(1.0, 0.6, 0.0, 0.2)); // Yellow/orange overlay
-        disaster_colors.insert(DisasterType::ColdSnap, bevy::prelude::Color::srgba(0.4, 0.7, 1.0, 0.25)); // Blue/white overlay
-        disaster_colors.insert(DisasterType::InvasiveSpecies, bevy::prelude::Color::srgba(1.0, 0.0, 0.0, 0.125)); // Red overlay
+        disaster_colors.insert(
+            DisasterType::Rain,
+            bevy::prelude::Color::srgba(0.0, 0.8, 1.0, 0.15),
+        ); // Blue/cyan overlay
+        disaster_colors.insert(
+            DisasterType::Drought,
+            bevy::prelude::Color::srgba(1.0, 0.6, 0.0, 0.2),
+        ); // Yellow/orange overlay
+        disaster_colors.insert(
+            DisasterType::ColdSnap,
+            bevy::prelude::Color::srgba(0.4, 0.7, 1.0, 0.25),
+        ); // Blue/white overlay
+        disaster_colors.insert(
+            DisasterType::InvasiveSpecies,
+            bevy::prelude::Color::srgba(1.0, 0.0, 0.0, 0.125),
+        ); // Red overlay
 
         Self {
             disaster_colors,
@@ -370,9 +383,9 @@ impl DisasterType {
     /// Get the display color for active disaster UI
     pub fn get_active_color(&self) -> Color {
         match self {
-            DisasterType::Rain => Color::srgb(0.3, 0.8, 1.0),          // Blue
-            DisasterType::Drought => Color::srgb(1.0, 0.7, 0.2),       // Orange
-            DisasterType::ColdSnap => Color::srgb(0.7, 0.9, 1.0),      // Light blue
+            DisasterType::Rain => Color::srgb(0.3, 0.8, 1.0), // Blue
+            DisasterType::Drought => Color::srgb(1.0, 0.7, 0.2), // Orange
+            DisasterType::ColdSnap => Color::srgb(0.7, 0.9, 1.0), // Light blue
             DisasterType::InvasiveSpecies => Color::srgb(1.0, 0.4, 0.4), // Red
         }
     }
@@ -608,6 +621,140 @@ impl PerformanceMetrics {
     }
 }
 
+/// Resource for tracking comprehensive colony statistics and metrics
+#[derive(Resource, Default)]
+pub struct ColonyStatistics {
+    // Population Statistics
+    pub total_ant_count: usize,
+    pub queen_count: usize,
+    pub egg_count: usize,
+    pub average_incubation_time: f32,
+    pub young_ants: usize,      // Age < 30% of max_age
+    pub adult_ants: usize,      // Age 30-70% of max_age
+    pub elderly_ants: usize,    // Age > 70% of max_age
+    pub recent_births: usize,
+    pub recent_deaths: usize,
+
+    // Resource Management
+    pub available_food_sources: usize,
+    pub total_food_nutrition: f32,
+    pub average_ant_energy: f32,
+    pub min_ant_energy: f32,
+    pub max_ant_energy: f32,
+    pub ants_carrying_food: usize,
+    pub total_carried_food_value: f32,
+
+    // Environmental Status
+    pub average_soil_moisture: f32,
+    pub min_soil_moisture: f32,
+    pub max_soil_moisture: f32,
+    pub average_soil_temperature: f32,
+    pub min_soil_temperature: f32,
+    pub max_soil_temperature: f32,
+    pub average_soil_nutrition: f32,
+    pub min_soil_nutrition: f32,
+    pub max_soil_nutrition: f32,
+    pub active_disasters_count: usize,
+
+    // Behavioral Insights
+    pub ants_foraging: usize,
+    pub ants_returning: usize,
+    pub ants_resting: usize,
+    pub ants_digging: usize,
+    pub ants_carrying: usize,
+
+    // Queen Reproduction Statistics
+    pub queen_reproduction_capacity: f32,
+    pub time_since_last_egg: f32,
+
+    // Performance tracking
+    pub last_update_time: f32,
+}
+
+impl ColonyStatistics {
+    /// Create a new empty statistics resource
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Reset all statistics to default values
+    pub fn reset(&mut self) {
+        *self = Self::default();
+    }
+
+    /// Get total population (all ants + queen)
+    pub fn total_population(&self) -> usize {
+        self.total_ant_count + self.queen_count
+    }
+
+    /// Get foraging efficiency as a percentage
+    pub fn foraging_efficiency(&self) -> f32 {
+        if self.total_ant_count == 0 {
+            return 0.0;
+        }
+
+        let foraging_ants = self.ants_foraging + self.ants_carrying;
+        (foraging_ants as f32 / self.total_ant_count as f32) * 100.0
+    }
+
+    /// Get average energy percentage across all ants
+    pub fn average_energy_percentage(&self) -> f32 {
+        if self.total_ant_count == 0 || self.max_ant_energy == 0.0 {
+            return 0.0;
+        }
+        (self.average_ant_energy / self.max_ant_energy) * 100.0
+    }
+
+    /// Get formatted age distribution text
+    pub fn age_distribution_text(&self) -> String {
+        if self.total_ant_count == 0 {
+            return "No ants".to_string();
+        }
+
+        let young_pct = (self.young_ants as f32 / self.total_ant_count as f32) * 100.0;
+        let adult_pct = (self.adult_ants as f32 / self.total_ant_count as f32) * 100.0;
+        let elderly_pct = (self.elderly_ants as f32 / self.total_ant_count as f32) * 100.0;
+
+        format!("Young: {:.0}%, Adult: {:.0}%, Elderly: {:.0}%", young_pct, adult_pct, elderly_pct)
+    }
+
+    /// Get formatted behavioral state distribution
+    pub fn behavior_distribution_text(&self) -> String {
+        if self.total_ant_count == 0 {
+            return "No ants".to_string();
+        }
+
+        let foraging_pct = (self.ants_foraging as f32 / self.total_ant_count as f32) * 100.0;
+        let returning_pct = (self.ants_returning as f32 / self.total_ant_count as f32) * 100.0;
+        let resting_pct = (self.ants_resting as f32 / self.total_ant_count as f32) * 100.0;
+        let digging_pct = (self.ants_digging as f32 / self.total_ant_count as f32) * 100.0;
+        let carrying_pct = (self.ants_carrying as f32 / self.total_ant_count as f32) * 100.0;
+
+        format!(
+            "Foraging: {:.0}%, Returning: {:.0}%, Resting: {:.0}%, Digging: {:.0}%, Carrying: {:.0}%",
+            foraging_pct, returning_pct, resting_pct, digging_pct, carrying_pct
+        )
+    }
+}
+
+/// Component marker for the statistics display panel
+#[derive(Component)]
+pub struct StatisticsPanel;
+
+/// Component for statistics toggle functionality
+#[derive(Component)]
+pub struct StatisticsToggle {
+    pub is_visible: bool,
+}
+
+impl Default for StatisticsToggle {
+    fn default() -> Self {
+        Self {
+            is_visible: false, // Start hidden by default
+        }
+    }
+}
+
 /// Component for the performance monitoring panel
 #[derive(Component)]
 pub struct PerformancePanel;
@@ -627,3 +774,21 @@ pub struct EntityCountText;
 /// Component for spatial grid stats display text
 #[derive(Component)]
 pub struct SpatialStatsText;
+
+/// UI components for time control panel
+#[derive(Component)]
+pub struct TimeControlPanel;
+
+/// Component for play/pause button
+#[derive(Component)]
+pub struct PlayPauseButton;
+
+/// Component for speed control buttons
+#[derive(Component)]
+pub struct SpeedButton {
+    pub target_speed: f32,
+}
+
+/// Component for speed display text
+#[derive(Component)]
+pub struct SpeedDisplay;
