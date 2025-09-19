@@ -58,6 +58,7 @@ impl Plugin for AntNestPlugin {
                     systems::setup_analytics_dashboard,
                 ),
             )
+            // Core simulation systems
             .add_systems(
                 Update,
                 (
@@ -71,13 +72,25 @@ impl Plugin for AntNestPlugin {
                     systems::egg_hatching_system,
                 ),
             )
+            // Disaster and invasive species systems
             .add_systems(
                 Update,
                 (
-                    // Disaster and visual effects systems
                     systems::disaster_input_system,
                     systems::disaster_timer_system,
                     systems::disaster_effect_system,
+                    systems::invasive_species_spawn_system,
+                    systems::invasive_species_behavior_system,
+                    systems::invasive_species_cleanup_system,
+                    systems::invasive_species_food_consumption_system,
+                ),
+            )
+            // UI and visual effects systems
+            .add_systems(
+                Update,
+                (
+                    systems::time_control_input_system,
+                    systems::update_speed_display_system,
                     systems::color_overlay_system,
                     systems::update_overlay_size_system,
                     systems::particle_spawner_system,
@@ -86,14 +99,6 @@ impl Plugin for AntNestPlugin {
                     systems::update_disaster_status_system,
                     systems::update_cooldown_timers_system,
                     systems::disaster_trigger_feedback_system,
-                ),
-            )
-            .add_systems(
-                Update,
-                (
-                    // UI systems
-                    systems::time_control_input_system,
-                    systems::update_speed_display_system,
                     systems::update_active_disasters_display,
                     systems::update_disaster_progress_bars,
                     systems::update_disaster_duration_text,
@@ -105,11 +110,9 @@ impl Plugin for AntNestPlugin {
             .add_systems(
                 Update,
                 (
-                    // Invasive species systems
+                    // Additional invasive species systems
                     systems::invasive_species_spawning_system,
-                    systems::invasive_species_behavior_system,
                     systems::ant_defensive_behavior_system,
-                    systems::invasive_species_cleanup_system,
                 ),
             );
     }
