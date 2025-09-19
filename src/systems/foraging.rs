@@ -4,20 +4,17 @@ use crate::systems::time_control::effective_delta_time;
 
 /// System for handling food consumption and energy recovery
 pub fn food_consumption_system(
-    time: Res<Time>,
-    time_control: Res<TimeControl>,
-    mut commands: Commands,
     mut ant_query: Query<(Entity, &Position, &mut AntBehavior, &mut Lifecycle, &mut Inventory), With<Ant>>,
     mut food_query: Query<(Entity, &Position, &mut FoodSource), With<Food>>,
 ) {
-    for (ant_entity, ant_pos, mut ant_behavior, mut ant_lifecycle, mut inventory) in ant_query.iter_mut() {
+    for (_ant_entity, ant_pos, mut ant_behavior, mut ant_lifecycle, mut inventory) in ant_query.iter_mut() {
         // Only process ants that are foraging
         if ant_behavior.state != AntState::Foraging {
             continue;
         }
 
         // Check for food sources within consumption range (2.0 units)
-        for (food_entity, food_pos, mut food_source) in food_query.iter_mut() {
+        for (_food_entity, food_pos, mut food_source) in food_query.iter_mut() {
             if !food_source.is_available {
                 continue;
             }
