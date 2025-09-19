@@ -114,9 +114,9 @@ impl Plugin for AntNestPlugin {
                 (
                     // Invasive species systems
                     systems::invasive_species_spawning_system,
-                    systems::invasive_species_behavior_system,
+                    systems::invasive_species::invasive_species_behavior_system,
                     systems::ant_defensive_behavior_system,
-                    systems::invasive_species_cleanup_system,
+                    systems::invasive_species::invasive_species_cleanup_system,
                 ),
             );
     }
