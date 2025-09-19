@@ -102,6 +102,11 @@ impl Plugin for AntNestPlugin {
                     systems::update_disaster_status_system,
                     systems::update_cooldown_timers_system,
                     systems::disaster_trigger_feedback_system,
+                    // UI systems
+                    systems::time_control_input_system,
+                    systems::update_speed_display_system,
+                    systems::update_play_pause_button_system,
+                    systems::button_click_system,
                     systems::update_active_disasters_display,
                     systems::update_disaster_progress_bars,
                     systems::update_disaster_duration_text,
