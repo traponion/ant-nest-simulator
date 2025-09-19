@@ -7,6 +7,7 @@
 //! - Rendering: Visual spawning and setup systems
 //! - Time Control: Time acceleration and pause functionality
 //! - Color Overlay: Visual effects for disaster feedback
+//! - Active Disasters UI: Real-time display of active disaster status
 
 pub mod active_disasters_ui;
 pub mod colony_statistics;

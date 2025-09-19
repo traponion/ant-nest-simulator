@@ -170,7 +170,7 @@ pub fn update_disaster_progress_bars(
     for (progress_bar, mut style) in progress_query.iter_mut() {
         if let Some(remaining_time) = disaster_state.get_remaining_time(progress_bar.disaster_type) {
             let progress_ratio = remaining_time / progress_bar.max_duration;
-            let progress_percentage = (progress_ratio * 100.0).max(0.0).min(100.0);
+            let progress_percentage = (progress_ratio * 100.0).clamp(0.0, 100.0);
             style.width = Val::Percent(progress_percentage);
         }
     }

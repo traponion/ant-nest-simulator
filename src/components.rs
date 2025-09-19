@@ -191,10 +191,22 @@ impl Default for ColorOverlayConfig {
         let mut disaster_colors = std::collections::HashMap::new();
 
         // Define overlay colors for each disaster type as specified in the requirements
-        disaster_colors.insert(DisasterType::Rain, bevy::prelude::Color::srgba(0.0, 0.8, 1.0, 0.15)); // Blue/cyan overlay
-        disaster_colors.insert(DisasterType::Drought, bevy::prelude::Color::srgba(1.0, 0.6, 0.0, 0.2)); // Yellow/orange overlay
-        disaster_colors.insert(DisasterType::ColdSnap, bevy::prelude::Color::srgba(0.4, 0.7, 1.0, 0.25)); // Blue/white overlay
-        disaster_colors.insert(DisasterType::InvasiveSpecies, bevy::prelude::Color::srgba(1.0, 0.0, 0.0, 0.125)); // Red overlay
+        disaster_colors.insert(
+            DisasterType::Rain,
+            bevy::prelude::Color::srgba(0.0, 0.8, 1.0, 0.15),
+        ); // Blue/cyan overlay
+        disaster_colors.insert(
+            DisasterType::Drought,
+            bevy::prelude::Color::srgba(1.0, 0.6, 0.0, 0.2),
+        ); // Yellow/orange overlay
+        disaster_colors.insert(
+            DisasterType::ColdSnap,
+            bevy::prelude::Color::srgba(0.4, 0.7, 1.0, 0.25),
+        ); // Blue/white overlay
+        disaster_colors.insert(
+            DisasterType::InvasiveSpecies,
+            bevy::prelude::Color::srgba(1.0, 0.0, 0.0, 0.125),
+        ); // Red overlay
 
         Self {
             disaster_colors,
@@ -370,9 +382,9 @@ impl DisasterType {
     /// Get the display color for active disaster UI
     pub fn get_active_color(&self) -> Color {
         match self {
-            DisasterType::Rain => Color::srgb(0.3, 0.8, 1.0),          // Blue
-            DisasterType::Drought => Color::srgb(1.0, 0.7, 0.2),       // Orange
-            DisasterType::ColdSnap => Color::srgb(0.7, 0.9, 1.0),      // Light blue
+            DisasterType::Rain => Color::srgb(0.3, 0.8, 1.0), // Blue
+            DisasterType::Drought => Color::srgb(1.0, 0.7, 0.2), // Orange
+            DisasterType::ColdSnap => Color::srgb(0.7, 0.9, 1.0), // Light blue
             DisasterType::InvasiveSpecies => Color::srgb(1.0, 0.4, 0.4), // Red
         }
     }

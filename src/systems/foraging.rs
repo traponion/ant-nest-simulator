@@ -1,5 +1,5 @@
 use crate::components::{
-    Ant, AntBehavior, AntState, Food, FoodSource, Inventory, Lifecycle, Position, TimeControl,
+    Ant, AntBehavior, AntState, Food, FoodSource, InvasiveSpecies, Inventory, Lifecycle, Position, TimeControl,
 };
 use crate::systems::time_control::effective_delta_time;
 use bevy::prelude::*;
@@ -82,6 +82,41 @@ pub fn food_regeneration_system(
                 food_source.is_available = true;
                 food_source.regeneration_timer = 0.0;
                 info!("Food source regenerated!");
+            }
+        }
+    }
+}
+
+/// System for invasive species food consumption (more aggressive than ants)
+pub fn invasive_species_food_consumption_system(
+    invasive_query: Query<(&Position, &InvasiveSpecies)>,
+    mut food_query: Query<(Entity, &Position, &mut FoodSource), With<Food>>,
+) {
+    for (invasive_pos, invasive) in invasive_query.iter() {
+        // Check for food sources within consumption range
+        for (_food_entity, food_pos, mut food_source) in food_query.iter_mut() {
+            if !food_source.is_available {
+                continue;
+            }
+
+            let dx = food_pos.x - invasive_pos.x;
+            let dy = food_pos.y - invasive_pos.y;
+            let distance = (dx * dx + dy * dy).sqrt();
+
+            // Invasive species have a slightly larger consumption range
+            if distance <= 3.0 {
+                // Consume food more aggressively based on consumption rate
+                food_source.is_available = false;
+                // Invasive species damage food sources - longer regeneration time
+                food_source.regeneration_timer = food_source.regeneration_time * invasive.food_consumption_rate * 1.5;
+
+                info!(
+                    "Invasive species consumed food! Regeneration extended to: {:.1}s",
+                    food_source.regeneration_timer
+                );
+
+                // Invasive species can consume multiple food sources per frame
+                // This makes them more damaging to the ecosystem
             }
         }
     }
