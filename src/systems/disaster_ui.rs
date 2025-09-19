@@ -1,6 +1,6 @@
 use crate::components::{
-    CooldownTimer, DisasterControlButton, DisasterControlPanel, DisasterState, DisasterStatusIndicator,
-    DisasterTriggerFeedback, DisasterType,
+    CooldownTimer, DisasterControlButton, DisasterControlPanel, DisasterState,
+    DisasterStatusIndicator, DisasterTriggerFeedback, DisasterType,
 };
 use bevy::prelude::*;
 
