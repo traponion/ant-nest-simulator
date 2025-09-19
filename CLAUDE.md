@@ -25,6 +25,7 @@ A realistic ant colony simulation inspired by SimEarth, featuring simple dot-bas
 - **Engine**: Bevy (ECS architecture)
 - **Repository**: https://github.com/traponion/ant-nest-simulator
 - **Rendering**: Simple 2D pixel-based display
+- **CI/CD**: GitHub Actions for automated testing and cross-platform builds
 
 ### Development Philosophy
 - **Complexity through emergence**: Simple rules creating complex behaviors
@@ -36,11 +37,13 @@ A realistic ant colony simulation inspired by SimEarth, featuring simple dot-bas
 - [x] Requirements defined
 - [x] Technology stack selected
 - [x] Repository created
-- [ ] Basic Bevy project setup
-- [ ] Core ECS architecture
-- [ ] Basic ant behavior system
-- [ ] Environmental simulation
-- [ ] Rendering system
+- [x] Basic Bevy project setup
+- [x] Core ECS architecture (PR #3)
+- [ ] Basic ant behavior system (partially implemented)
+- [ ] Environmental simulation (partially implemented)
+- [ ] 2D rendering system (Issue #6)
+- [ ] Code modularization (Issue #5)
+- [ ] CI/CD setup (Issue #4)
 - [ ] UI for time control and disasters
 
 ## Next Steps
