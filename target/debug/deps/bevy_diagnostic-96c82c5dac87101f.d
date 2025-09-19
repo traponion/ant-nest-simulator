@@ -1,9 +1,0 @@
-/home/negiko/work/ant/ant-nest-simulator/target/debug/deps/bevy_diagnostic-96c82c5dac87101f.d: /home/negiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_diagnostic-0.14.2/src/lib.rs /home/negiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_diagnostic-0.14.2/src/diagnostic.rs /home/negiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_diagnostic-0.14.2/src/entity_count_diagnostics_plugin.rs /home/negiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_diagnostic-0.14.2/src/frame_time_diagnostics_plugin.rs /home/negiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_diagnostic-0.14.2/src/log_diagnostics_plugin.rs
-
-/home/negiko/work/ant/ant-nest-simulator/target/debug/deps/libbevy_diagnostic-96c82c5dac87101f.rmeta: /home/negiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_diagnostic-0.14.2/src/lib.rs /home/negiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_diagnostic-0.14.2/src/diagnostic.rs /home/negiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_diagnostic-0.14.2/src/entity_count_diagnostics_plugin.rs /home/negiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_diagnostic-0.14.2/src/frame_time_diagnostics_plugin.rs /home/negiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_diagnostic-0.14.2/src/log_diagnostics_plugin.rs
-
-/home/negiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_diagnostic-0.14.2/src/lib.rs:
-/home/negiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_diagnostic-0.14.2/src/diagnostic.rs:
-/home/negiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_diagnostic-0.14.2/src/entity_count_diagnostics_plugin.rs:
-/home/negiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_diagnostic-0.14.2/src/frame_time_diagnostics_plugin.rs:
-/home/negiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_diagnostic-0.14.2/src/log_diagnostics_plugin.rs:
