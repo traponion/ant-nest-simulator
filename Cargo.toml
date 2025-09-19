@@ -1,0 +1,17 @@
+[package]
+name = "ant-nest-simulator"
+version = "0.1.0"
+edition = "2021"
+description = "A realistic ant colony simulation inspired by SimEarth"
+license = "MIT"
+repository = "https://github.com/traponion/ant-nest-simulator"
+
+[dependencies]
+bevy = "0.14"
+rand = "0.8"
+
+[profile.dev]
+opt-level = 1
+
+[profile.dev.package."*"]
+opt-level = 3
