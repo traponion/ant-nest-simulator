@@ -129,6 +129,7 @@ impl Plugin for AntNestPlugin {
                     systems::update_active_disasters_display,
                     systems::update_disaster_progress_bars,
                     systems::update_disaster_duration_text,
+                    systems::visual_effects_toggle_system,
                 ),
             )
             // Performance monitoring, statistics, and persistence systems
