@@ -1,6 +1,6 @@
-use bevy::prelude::*;
-use crate::components::{Lifecycle, AntBehavior, TimeControl};
+use crate::components::{AntBehavior, Lifecycle, TimeControl};
 use crate::systems::time_control::effective_delta_time;
+use bevy::prelude::*;
 
 /// System for ant aging and energy management
 pub fn ant_lifecycle_system(
@@ -21,7 +21,10 @@ pub fn ant_lifecycle_system(
         // Check if ant should die
         if lifecycle.age >= lifecycle.max_age || lifecycle.energy <= 0.0 {
             commands.entity(entity).despawn();
-            info!("Ant died at age {:.1}s with {:.1} energy", lifecycle.age, lifecycle.energy);
+            info!(
+                "Ant died at age {:.1}s with {:.1} energy",
+                lifecycle.age, lifecycle.energy
+            );
         }
     }
 }

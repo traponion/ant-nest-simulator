@@ -1,6 +1,6 @@
+use crate::components::{Ant, AntBehavior, AntState, Food, FoodSource, Inventory, Lifecycle, Position, Soil, SoilCell};
 use bevy::prelude::*;
 use rand::prelude::*;
-use crate::components::{Position, SoilCell, Soil, AntBehavior, AntState, Lifecycle, Ant};
 
 /// Basic camera setup for 2D pixel art view
 pub fn setup_world(mut commands: Commands) {
@@ -75,6 +75,10 @@ pub fn spawn_initial_ants(mut commands: Commands) {
                 energy: 100.0,
                 max_energy: 100.0,
             },
+            Inventory {
+                carried_food_value: 0.0,
+                home_position: Position { x: 0.0, y: 0.0 }, // Colony center
+            },
             Ant,
             SpriteBundle {
                 sprite: Sprite {
@@ -89,4 +93,46 @@ pub fn spawn_initial_ants(mut commands: Commands) {
     }
 
     info!("Spawned {} initial ants", 10);
+}
+
+/// Spawn food sources scattered across the environment
+pub fn spawn_food_sources(mut commands: Commands) {
+    let mut rng = thread_rng();
+    let food_count = 25; // Number of food sources to spawn
+
+    for _i in 0..food_count {
+        // Scatter food sources across a larger area than ants
+        let x_offset: f32 = rng.gen_range(-80.0..80.0);
+        let y_offset: f32 = rng.gen_range(-60.0..60.0);
+
+        // Avoid spawning food too close to colony center
+        if x_offset.abs() < 15.0 && y_offset.abs() < 15.0 {
+            continue;
+        }
+
+        commands.spawn((
+            Position {
+                x: x_offset,
+                y: y_offset,
+            },
+            FoodSource {
+                nutrition_value: rng.gen_range(20.0..40.0), // Energy recovery as per requirements
+                is_available: true,
+                regeneration_timer: 0.0,
+                regeneration_time: rng.gen_range(10.0..30.0), // Seconds to regenerate
+            },
+            Food,
+            SpriteBundle {
+                sprite: Sprite {
+                    color: Color::srgb(0.0, 0.8, 0.0), // Bright green color for food
+                    custom_size: Some(Vec2::new(1.0, 1.0)), // Small 1x1 pixel dots as per requirements
+                    ..default()
+                },
+                transform: Transform::from_translation(Vec3::new(x_offset, y_offset, 0.5)), // Z=0.5 to render above soil but below ants
+                ..default()
+            },
+        ));
+    }
+
+    info!("Spawned {} food sources", food_count);
 }
