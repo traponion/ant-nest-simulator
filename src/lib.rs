@@ -61,7 +61,7 @@ impl Plugin for AntNestPlugin {
                     systems::spawn_initial_ants,
                     systems::spawn_food_sources,
                     systems::spawn_queen_ant,
-                    systems::setup_time_control_ui,
+                    systems::setup_time_control_ui_with_slider,
                     systems::setup_active_disasters_panel,
                     systems::setup_disaster_control_panel,
                     systems::setup_performance_monitoring_ui,
@@ -95,7 +95,7 @@ impl Plugin for AntNestPlugin {
                     systems::disaster_input_system,
                     systems::disaster_timer_system,
                     systems::disaster_effect_system,
-                    systems::invasive_species_spawn_system,
+                    systems::invasive_species_spawning_system,
                     systems::invasive_species_food_consumption_system,
                 ),
             )
@@ -108,6 +108,9 @@ impl Plugin for AntNestPlugin {
                     systems::handle_time_control_buttons,
                     systems::update_play_pause_button_system,
                     systems::button_click_system,
+                    systems::handle_speed_slider_system,
+                    systems::update_slider_handle_position_system,
+                    systems::handle_speed_preset_buttons_system,
                     systems::visual_effects_toggle_system,
                     systems::settings_ui::settings_toggle_input_system,
                     systems::settings_ui::handle_settings_interactions_system,
@@ -158,9 +161,9 @@ impl Plugin for AntNestPlugin {
                 (
                     // Invasive species systems
                     systems::invasive_species_spawning_system,
-                    systems::invasive_species::invasive_species_behavior_system,
+                    systems::invasive_species_behavior_system,
                     systems::ant_defensive_behavior_system,
-                    systems::invasive_species::invasive_species_cleanup_system,
+                    systems::invasive_species_cleanup_system,
                 ),
             );
     }
