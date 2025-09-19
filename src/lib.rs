@@ -40,13 +40,19 @@ pub struct AntNestPlugin;
 impl Plugin for AntNestPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<components::TimeControl>()
+            .init_resource::<components::DisasterState>()
+            .init_resource::<components::ColorOverlayConfig>()
+            .init_resource::<systems::ParticleConfig>()
             .add_systems(
                 Startup,
                 (
                     systems::setup_world,
                     systems::spawn_soil_grid,
                     systems::spawn_initial_ants,
+                    systems::spawn_food_sources,
+                    systems::spawn_queen_ant,
                     systems::setup_time_control_ui,
+                    systems::setup_active_disasters_ui,
                 ),
             )
             .add_systems(
@@ -55,8 +61,21 @@ impl Plugin for AntNestPlugin {
                     systems::ant_movement_system,
                     systems::ant_lifecycle_system,
                     systems::environmental_update_system,
+                    systems::food_consumption_system,
+                    systems::food_regeneration_system,
+                    systems::queen_reproduction_system,
+                    systems::egg_hatching_system,
                     systems::time_control_input_system,
                     systems::update_speed_display_system,
+                    systems::disaster_input_system,
+                    systems::disaster_timer_system,
+                    systems::disaster_effect_system,
+                    systems::color_overlay_system,
+                    systems::update_overlay_size_system,
+                    systems::particle_spawner_system,
+                    systems::particle_update_system,
+                    systems::update_particle_config_system,
+                    systems::update_active_disasters_display_system,
                 ),
             );
     }
