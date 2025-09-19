@@ -143,7 +143,9 @@ impl DisasterState {
 
     /// Check if a disaster type is on cooldown
     pub fn is_on_cooldown(&self, disaster_type: DisasterType) -> bool {
-        self.cooldown_timers.get(&disaster_type).map_or(false, |&timer| timer > 0.0)
+        self.cooldown_timers
+            .get(&disaster_type)
+            .is_some_and(|&timer| timer > 0.0)
     }
 
     /// Start a new disaster with the given duration
@@ -209,7 +211,7 @@ impl ParticleData {
             max_lifetime: lifetime,
             velocity: initial_velocity,
             base_color: Color::srgba(0.2, 0.6, 1.0, 0.8), // Light blue with transparency
-            size: Vec2::new(2.0, 4.0), // Small elongated droplet
+            size: Vec2::new(2.0, 4.0),                    // Small elongated droplet
         }
     }
 
@@ -221,7 +223,7 @@ impl ParticleData {
             max_lifetime: lifetime,
             velocity: initial_velocity,
             base_color: Color::srgba(0.8, 0.6, 0.3, 0.6), // Sandy brown with transparency
-            size: Vec2::new(3.0, 3.0), // Small square dust
+            size: Vec2::new(3.0, 3.0),                    // Small square dust
         }
     }
 
@@ -233,7 +235,7 @@ impl ParticleData {
             max_lifetime: lifetime,
             velocity: initial_velocity,
             base_color: Color::srgba(0.9, 0.9, 1.0, 0.7), // Light blue-white with transparency
-            size: Vec2::new(3.0, 3.0), // Small snowflake
+            size: Vec2::new(3.0, 3.0),                    // Small snowflake
         }
     }
 
@@ -245,7 +247,7 @@ impl ParticleData {
             max_lifetime: lifetime,
             velocity: initial_velocity,
             base_color: Color::srgba(1.0, 0.3, 0.2, 0.5), // Red with transparency
-            size: Vec2::new(2.0, 2.0), // Small disturbance particle
+            size: Vec2::new(2.0, 2.0),                    // Small disturbance particle
         }
     }
 

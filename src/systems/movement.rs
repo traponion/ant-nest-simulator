@@ -1,5 +1,8 @@
-use crate::components::{Ant, AntBehavior, AntState, Food, FoodSource, Inventory, Lifecycle, Position, TimeControl, DisasterState};
-use crate::systems::{time_control::effective_delta_time, disaster::get_movement_speed_modifier};
+use crate::components::{
+    Ant, AntBehavior, AntState, DisasterState, Food, FoodSource, Inventory, Lifecycle, Position,
+    TimeControl,
+};
+use crate::systems::{disaster::get_movement_speed_modifier, time_control::effective_delta_time};
 use bevy::prelude::*;
 use rand::prelude::*;
 
@@ -8,12 +11,23 @@ pub fn ant_movement_system(
     time: Res<Time>,
     time_control: Res<TimeControl>,
     disaster_state: Res<DisasterState>,
-    mut ant_query: Query<(&mut Position, &mut AntBehavior, &mut Transform, &Lifecycle, &mut Inventory), With<Ant>>,
+    mut ant_query: Query<
+        (
+            &mut Position,
+            &mut AntBehavior,
+            &mut Transform,
+            &Lifecycle,
+            &mut Inventory,
+        ),
+        With<Ant>,
+    >,
     food_query: Query<(&Position, &FoodSource), With<Food>>,
 ) {
     let mut rng = thread_rng();
 
-    for (mut position, mut behavior, mut transform, lifecycle, mut inventory) in ant_query.iter_mut() {
+    for (mut position, mut behavior, mut transform, lifecycle, mut inventory) in
+        ant_query.iter_mut()
+    {
         match behavior.state {
             AntState::Foraging => {
                 // Check if ant should look for food when energy is low
@@ -30,7 +44,10 @@ pub fn ant_movement_system(
 
                             if distance < nearest_distance {
                                 nearest_distance = distance;
-                                nearest_food = Some(Position { x: food_pos.x, y: food_pos.y });
+                                nearest_food = Some(Position {
+                                    x: food_pos.x,
+                                    y: food_pos.y,
+                                });
                             }
                         }
                     }
@@ -72,7 +89,7 @@ pub fn ant_movement_system(
                         behavior.target_position = None;
                     }
                 }
-            },
+            }
             AntState::CarryingFood => {
                 // Move back to colony with food
                 if let Some(target) = &behavior.target_position {
@@ -98,7 +115,7 @@ pub fn ant_movement_system(
                         info!("Ant delivered food to colony!");
                     }
                 }
-            },
+            }
             _ => {
                 // Other states will be implemented later
             }

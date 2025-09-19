@@ -1,13 +1,26 @@
-use bevy::prelude::*;
-use crate::components::{Position, AntBehavior, AntState, Ant, Lifecycle, Food, FoodSource, Inventory, TimeControl};
+use crate::components::{
+    Ant, AntBehavior, AntState, Food, FoodSource, Inventory, Lifecycle, Position, TimeControl,
+};
 use crate::systems::time_control::effective_delta_time;
+use bevy::prelude::*;
 
 /// System for handling food consumption and energy recovery
 pub fn food_consumption_system(
-    mut ant_query: Query<(Entity, &Position, &mut AntBehavior, &mut Lifecycle, &mut Inventory), With<Ant>>,
+    mut ant_query: Query<
+        (
+            Entity,
+            &Position,
+            &mut AntBehavior,
+            &mut Lifecycle,
+            &mut Inventory,
+        ),
+        With<Ant>,
+    >,
     mut food_query: Query<(Entity, &Position, &mut FoodSource), With<Food>>,
 ) {
-    for (_ant_entity, ant_pos, mut ant_behavior, mut ant_lifecycle, mut inventory) in ant_query.iter_mut() {
+    for (_ant_entity, ant_pos, mut ant_behavior, mut ant_lifecycle, mut inventory) in
+        ant_query.iter_mut()
+    {
         // Only process ants that are foraging
         if ant_behavior.state != AntState::Foraging {
             continue;

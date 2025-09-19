@@ -1,8 +1,8 @@
-use bevy::prelude::*;
 use crate::components::{
-    Particle, ParticleData, ParticleType, DisasterState, DisasterType, TimeControl
+    DisasterState, DisasterType, Particle, ParticleData, ParticleType, TimeControl,
 };
 use crate::systems::time_control::effective_delta_time;
+use bevy::prelude::*;
 use rand::Rng;
 
 /// Resource for managing particle system configuration
@@ -25,8 +25,8 @@ impl Default for ParticleConfig {
             max_particles: 150, // Conservative limit for performance
             active_particles: 0,
             base_spawn_rate: 30.0, // 30 particles per second base rate
-            window_width: 800.0, // Will be updated by window system
-            window_height: 600.0, // Will be updated by window system
+            window_width: 800.0,   // Will be updated by window system
+            window_height: 600.0,  // Will be updated by window system
         }
     }
 }
@@ -57,42 +57,22 @@ pub fn particle_spawner_system(
 
     // Spawn rain particles
     if disaster_state.is_active(DisasterType::Rain) {
-        spawn_rain_particles(
-            &mut commands,
-            &mut particle_config,
-            &mut rng,
-            delta_time,
-        );
+        spawn_rain_particles(&mut commands, &mut particle_config, &mut rng, delta_time);
     }
 
     // Spawn drought particles
     if disaster_state.is_active(DisasterType::Drought) {
-        spawn_drought_particles(
-            &mut commands,
-            &mut particle_config,
-            &mut rng,
-            delta_time,
-        );
+        spawn_drought_particles(&mut commands, &mut particle_config, &mut rng, delta_time);
     }
 
     // Spawn cold snap particles
     if disaster_state.is_active(DisasterType::ColdSnap) {
-        spawn_cold_snap_particles(
-            &mut commands,
-            &mut particle_config,
-            &mut rng,
-            delta_time,
-        );
+        spawn_cold_snap_particles(&mut commands, &mut particle_config, &mut rng, delta_time);
     }
 
     // Spawn invasive species particles
     if disaster_state.is_active(DisasterType::InvasiveSpecies) {
-        spawn_invasive_particles(
-            &mut commands,
-            &mut particle_config,
-            &mut rng,
-            delta_time,
-        );
+        spawn_invasive_particles(&mut commands, &mut particle_config, &mut rng, delta_time);
     }
 }
 
@@ -100,7 +80,10 @@ pub fn particle_spawner_system(
 pub fn particle_update_system(
     mut commands: Commands,
     mut particle_config: ResMut<ParticleConfig>,
-    mut particle_query: Query<(Entity, &mut Transform, &mut ParticleData, &mut Sprite), With<Particle>>,
+    mut particle_query: Query<
+        (Entity, &mut Transform, &mut ParticleData, &mut Sprite),
+        With<Particle>,
+    >,
     time: Res<Time>,
     time_control: Res<TimeControl>,
 ) {
@@ -176,7 +159,7 @@ fn spawn_rain_particles(
         let x = rng.gen_range(0.0..particle_config.window_width);
         let y = particle_config.window_height + 10.0; // Start above screen
         let velocity = Vec2::new(
-            rng.gen_range(-20.0..20.0), // Slight horizontal drift
+            rng.gen_range(-20.0..20.0),    // Slight horizontal drift
             rng.gen_range(-200.0..-150.0), // Downward velocity
         );
         let lifetime = rng.gen_range(3.0..6.0);
@@ -238,7 +221,7 @@ fn spawn_cold_snap_particles(
         let x = rng.gen_range(0.0..particle_config.window_width);
         let y = particle_config.window_height + 10.0; // Start above screen
         let velocity = Vec2::new(
-            rng.gen_range(-40.0..40.0), // More horizontal drift than rain
+            rng.gen_range(-40.0..40.0),   // More horizontal drift than rain
             rng.gen_range(-100.0..-60.0), // Slower falling than rain
         );
         let lifetime = rng.gen_range(5.0..10.0);
