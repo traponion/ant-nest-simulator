@@ -1,14 +1,15 @@
 use bevy::prelude::*;
+use serde::{Deserialize, Serialize};
 
 /// Position component for entities in 2D space
-#[derive(Component, Clone)]
+#[derive(Component, Clone, Serialize, Deserialize)]
 pub struct Position {
     pub x: f32,
     pub y: f32,
 }
 
 /// Ant behavior and AI state management
-#[derive(Component)]
+#[derive(Component, Clone, Serialize, Deserialize)]
 pub struct AntBehavior {
     pub state: AntState,
     pub target_position: Option<Position>,
@@ -16,7 +17,7 @@ pub struct AntBehavior {
 }
 
 /// Lifecycle management for aging and energy
-#[derive(Component)]
+#[derive(Component, Clone, Serialize, Deserialize)]
 pub struct Lifecycle {
     pub age: f32,
     pub max_age: f32,
@@ -25,7 +26,7 @@ pub struct Lifecycle {
 }
 
 /// Soil cell environmental properties
-#[derive(Component)]
+#[derive(Component, Clone, Serialize, Deserialize)]
 pub struct SoilCell {
     pub moisture: f32,
     pub temperature: f32,
@@ -33,15 +34,15 @@ pub struct SoilCell {
 }
 
 /// Marker component for ant entities
-#[derive(Component)]
+#[derive(Component, Serialize, Deserialize)]
 pub struct Ant;
 
 /// Marker component for soil entities
-#[derive(Component)]
+#[derive(Component, Serialize, Deserialize)]
 pub struct Soil;
 
 /// Ant behavioral states
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum AntState {
     Foraging,
     Returning,
@@ -70,18 +71,18 @@ impl Default for TimeControl {
 }
 
 /// Marker component for queen ant entities
-#[derive(Component)]
+#[derive(Component, Serialize, Deserialize)]
 pub struct Queen;
 
 /// Component for egg entities with incubation time
-#[derive(Component)]
+#[derive(Component, Serialize, Deserialize)]
 pub struct Egg {
     /// Time remaining until hatching (in seconds)
     pub incubation_time: f32,
 }
 
 /// Component for managing ant reproduction behavior
-#[derive(Component)]
+#[derive(Component, Clone, Serialize, Deserialize)]
 pub struct ReproductionState {
     /// Time since last egg laying (in seconds)
     pub time_since_last_egg: f32,
@@ -92,11 +93,11 @@ pub struct ReproductionState {
 }
 
 /// Marker component for food entities
-#[derive(Component)]
+#[derive(Component, Serialize, Deserialize)]
 pub struct Food;
 
 /// Component for food source properties
-#[derive(Component)]
+#[derive(Component, Clone, Serialize, Deserialize)]
 pub struct FoodSource {
     /// Nutritional value provided when consumed (energy points)
     pub nutrition_value: f32,
@@ -109,7 +110,7 @@ pub struct FoodSource {
 }
 
 /// Component for tracking what an ant is currently carrying
-#[derive(Component)]
+#[derive(Component, Clone, Serialize, Deserialize)]
 pub struct Inventory {
     /// Energy value of the food being carried (0.0 if nothing)
     pub carried_food_value: f32,

@@ -45,6 +45,7 @@ impl Plugin for AntNestPlugin {
             .init_resource::<components::VisualEffectsSettings>()
             .init_resource::<components::ColonyStatistics>()
             .init_resource::<systems::ParticleConfig>()
+            .insert_resource(systems::PersistenceState::new())
             .add_systems(
                 Startup,
                 (
@@ -105,8 +106,13 @@ impl Plugin for AntNestPlugin {
                     systems::update_disaster_progress_bars,
                     systems::update_disaster_duration_text,
                     systems::visual_effects_toggle_system,
+                    // Statistics systems
                     systems::statistics_toggle_input_system,
                     systems::update_statistics_display,
+                    // Save/Load systems
+                    systems::save_game_system,
+                    systems::load_game_system,
+                    systems::persistence_status_system,
                 ),
             )
             .add_systems(
