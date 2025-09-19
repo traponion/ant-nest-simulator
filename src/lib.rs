@@ -45,6 +45,8 @@ impl Plugin for AntNestPlugin {
             .init_resource::<components::VisualEffectsSettings>()
             .init_resource::<components::PerformanceMetrics>()
             .init_resource::<components::ColonyStatistics>()
+            .init_resource::<components::UserSettings>()
+            .init_resource::<components::UITheme>()
             .init_resource::<systems::ParticleConfig>()
             .insert_resource(components::SpatialGrid::new(
                 16.0, // Cell size of 16 units
@@ -60,12 +62,14 @@ impl Plugin for AntNestPlugin {
                     systems::spawn_initial_ants,
                     systems::spawn_food_sources,
                     systems::spawn_queen_ant,
-                    systems::setup_time_control_ui,
+                    systems::setup_themed_time_control_ui,
                     systems::setup_active_disasters_panel,
                     systems::setup_disaster_control_panel,
                     systems::setup_performance_monitoring_ui,
                     systems::initialize_spatial_grid_system,
                     systems::setup_statistics_panel,
+                    systems::settings_ui::setup_settings_panel,
+                    systems::settings_ui::setup_settings_toggle_button,
                 ),
             )
             // Core simulation systems
@@ -92,7 +96,7 @@ impl Plugin for AntNestPlugin {
                     systems::disaster_input_system,
                     systems::disaster_timer_system,
                     systems::disaster_effect_system,
-                    systems::invasive_species_spawn_system,
+                    systems::invasive_species_spawning_system,
                     systems::invasive_species_food_consumption_system,
                 ),
             )
@@ -102,10 +106,15 @@ impl Plugin for AntNestPlugin {
                 (
                     systems::time_control_input_system,
                     systems::update_speed_display_system,
-                    systems::handle_time_control_buttons,
+                    systems::handle_themed_time_control_buttons,
                     systems::update_play_pause_button_system,
                     systems::button_click_system,
+                    systems::handle_speed_slider_system,
+                    systems::update_slider_handle_position_system,
+                    systems::handle_speed_preset_buttons_system,
                     systems::visual_effects_toggle_system,
+                    systems::settings_ui::settings_toggle_input_system,
+                    systems::settings_ui::handle_settings_interactions_system,
                 ),
             )
             // Visual effects systems
@@ -129,6 +138,8 @@ impl Plugin for AntNestPlugin {
                     systems::update_active_disasters_display,
                     systems::update_disaster_progress_bars,
                     systems::update_disaster_duration_text,
+                    systems::handle_disaster_control_interactions,
+                    systems::update_cooldown_progress_bars_system,
                     systems::visual_effects_toggle_system,
                 ),
             )
@@ -151,9 +162,9 @@ impl Plugin for AntNestPlugin {
                 (
                     // Invasive species systems
                     systems::invasive_species_spawning_system,
-                    systems::invasive_species::invasive_species_behavior_system,
+                    systems::invasive_species_behavior_system,
                     systems::ant_defensive_behavior_system,
-                    systems::invasive_species::invasive_species_cleanup_system,
+                    systems::invasive_species_cleanup_system,
                 ),
             );
     }

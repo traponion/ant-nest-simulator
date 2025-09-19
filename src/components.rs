@@ -340,6 +340,12 @@ pub struct DisasterStatusIndicator {
     pub disaster_type: DisasterType,
 }
 
+/// Component for disaster status indicator background
+#[derive(Component)]
+pub struct DisasterStatusBackground {
+    pub disaster_type: DisasterType,
+}
+
 /// Component for visual feedback when disaster is triggered
 #[derive(Component)]
 pub struct DisasterTriggerFeedback {
@@ -369,6 +375,13 @@ pub struct DisasterProgressBar {
 pub struct DisasterDurationText {
     pub disaster_type: DisasterType,
 }
+
+/// Component for disaster cooldown progress bar
+#[derive(Component)]
+pub struct DisasterCooldownProgressBar {
+    pub disaster_type: DisasterType,
+    pub max_cooldown: f32,
+}
 impl DisasterType {
     /// Get the display name for UI
     pub fn display_name(&self) -> &'static str {
@@ -397,6 +410,16 @@ impl DisasterType {
             DisasterType::Drought => "D",
             DisasterType::ColdSnap => "C",
             DisasterType::InvasiveSpecies => "I",
+        }
+    }
+
+    /// Get the icon emoji for disaster type
+    pub fn get_icon(&self) -> &'static str {
+        match self {
+            DisasterType::Rain => "🌧️",
+            DisasterType::Drought => "☀️",
+            DisasterType::ColdSnap => "❄️",
+            DisasterType::InvasiveSpecies => "🐛",
         }
     }
 
@@ -792,3 +815,381 @@ pub struct SpeedButton {
 /// Component for speed display text
 #[derive(Component)]
 pub struct SpeedDisplay;
+
+/// Component for speed slider container
+#[derive(Component)]
+pub struct SpeedSlider {
+    /// Current value of the slider (1.0 to 100.0)
+    pub current_value: f32,
+    /// Whether the user is currently dragging the slider
+    pub is_dragging: bool,
+}
+
+/// Component for the visual track of the speed slider
+#[derive(Component)]
+pub struct SpeedSliderTrack;
+
+/// Component for the draggable handle of the speed slider
+#[derive(Component)]
+pub struct SpeedSliderHandle;
+
+/// Component for displaying the current slider value
+#[derive(Component)]
+pub struct SpeedSliderValueDisplay;
+
+/// Settings and configuration components
+
+/// Resource for user settings and preferences
+#[derive(Resource, Clone)]
+pub struct UserSettings {
+    // Visual settings
+    pub visual_effects_enabled: bool,
+    pub ui_scale: f32,
+    pub color_theme: ColorTheme,
+    pub performance_mode: bool,
+
+    // Accessibility settings
+    pub high_contrast: bool,
+    pub reduced_motion: bool,
+    pub large_ui_elements: bool,
+    pub keyboard_navigation: bool,
+
+    // Application settings
+    pub auto_save_interval: f32,
+    pub default_speed: f32,
+    pub window_size: (u32, u32),
+    pub panel_layout: PanelLayout,
+}
+
+/// Color theme options for the application
+#[derive(Clone, Default, PartialEq)]
+pub enum ColorTheme {
+    #[default]
+    Default,
+    HighContrast,
+    ColorblindFriendly,
+}
+
+/// Panel layout configuration options
+#[derive(Clone, Default, PartialEq)]
+pub enum PanelLayout {
+    #[default]
+    Standard,
+    Compact,
+    FullScreen,
+}
+
+impl Default for UserSettings {
+    fn default() -> Self {
+        Self {
+            // Visual settings defaults
+            visual_effects_enabled: true,
+            ui_scale: 1.0,
+            color_theme: ColorTheme::Default,
+            performance_mode: false,
+
+            // Accessibility settings defaults
+            high_contrast: false,
+            reduced_motion: false,
+            large_ui_elements: false,
+            keyboard_navigation: false,
+
+            // Application settings defaults
+            auto_save_interval: 300.0, // 5 minutes
+            default_speed: 1.0,
+            window_size: (1200, 800),
+            panel_layout: PanelLayout::Standard,
+        }
+    }
+}
+
+/// Component marker for the settings panel
+#[derive(Component)]
+pub struct SettingsPanel;
+
+/// Component for settings toggle button
+#[derive(Component)]
+pub struct SettingsToggle {
+    pub is_visible: bool,
+}
+
+impl Default for SettingsToggle {
+    fn default() -> Self {
+        Self {
+            is_visible: false, // Start hidden by default
+        }
+    }
+}
+
+/// Component for settings category tabs
+#[derive(Component)]
+pub struct SettingsCategory {
+    pub category: SettingsCategoryType,
+    pub is_active: bool,
+}
+
+/// Types of settings categories
+#[derive(Clone, PartialEq)]
+pub enum SettingsCategoryType {
+    Visual,
+    Accessibility,
+    Application,
+}
+
+/// Component for individual setting items
+#[derive(Component)]
+pub struct SettingItem {
+    pub setting_type: SettingType,
+}
+
+/// Types of individual settings
+#[derive(Clone, PartialEq)]
+pub enum SettingType {
+    VisualEffectsToggle,
+    UIScale,
+    ColorTheme,
+    PerformanceMode,
+    HighContrast,
+    ReducedMotion,
+    LargeUIElements,
+    KeyboardNavigation,
+    AutoSaveInterval,
+    DefaultSpeed,
+    PanelLayout,
+}
+
+/// Component for settings control buttons
+#[derive(Component)]
+pub struct SettingsButton {
+    pub action: SettingsAction,
+}
+
+/// Actions that settings buttons can perform
+#[derive(Clone, PartialEq)]
+pub enum SettingsAction {
+    ApplySettings,
+    ResetToDefaults,
+    SaveSettings,
+    LoadSettings,
+    ClosePanel,
+}
+
+/// Resource for unified UI theme and design system
+#[derive(Resource, Clone)]
+pub struct UITheme {
+    // Color Palette
+    pub colors: UIColors,
+    // Typography Scale
+    pub typography: UITypography,
+    // Spacing System
+    pub spacing: UISpacing,
+    // Border & Radius System
+    pub borders: UIBorders,
+    // Interactive States
+    pub states: UIStates,
+}
+
+/// Unified color palette for consistent theming
+#[derive(Clone)]
+pub struct UIColors {
+    // Surface Colors
+    pub surface_primary: Color,           // Main panel backgrounds
+    pub surface_secondary: Color,         // Secondary panel areas
+    pub surface_elevated: Color,          // Elevated elements (buttons, cards)
+
+    // Border Colors
+    pub border_primary: Color,            // Main borders
+    pub border_secondary: Color,          // Subtle borders
+    pub border_focus: Color,              // Focus indicators
+
+    // Text Colors
+    pub text_primary: Color,              // Main text
+    pub text_secondary: Color,            // Secondary text
+    pub text_accent: Color,               // Accent text (speed display)
+    pub text_muted: Color,                // Muted text (instructions)
+
+    // Interactive Colors
+    pub action_primary: Color,            // Primary action buttons (play/pause)
+    pub action_secondary: Color,          // Secondary actions (speed presets)
+    pub action_success: Color,            // Success states
+    pub action_warning: Color,            // Warning states
+    pub action_danger: Color,             // Danger states
+
+    // Semantic Colors
+    pub accent_blue: Color,               // Blue accents
+    pub accent_green: Color,              // Green accents
+    pub accent_orange: Color,             // Orange accents
+    pub accent_red: Color,                // Red accents
+}
+
+/// Typography scale for consistent text hierarchy
+#[derive(Clone)]
+pub struct UITypography {
+    pub heading_large: f32,               // 24px - Main panel titles
+    pub heading_medium: f32,              // 20px - Section headers
+    pub heading_small: f32,               // 18px - Subsection headers
+    pub body_large: f32,                  // 16px - Primary body text
+    pub body_medium: f32,                 // 14px - Secondary body text
+    pub body_small: f32,                  // 12px - Captions, labels
+    pub caption: f32,                     // 10px - Fine print, instructions
+}
+
+/// Spacing system for consistent layout rhythm
+#[derive(Clone)]
+pub struct UISpacing {
+    pub xs: f32,                          // 4px
+    pub sm: f32,                          // 8px
+    pub md: f32,                          // 12px
+    pub lg: f32,                          // 16px
+    pub xl: f32,                          // 24px
+    pub xxl: f32,                         // 32px
+}
+
+/// Border and radius system for consistent shapes
+#[derive(Clone)]
+pub struct UIBorders {
+    pub width_thin: f32,                  // 1px
+    pub width_medium: f32,                // 2px
+    pub width_thick: f32,                 // 3px
+    pub radius_small: f32,                // 4px
+    pub radius_medium: f32,               // 8px
+    pub radius_large: f32,                // 12px
+    pub radius_round: f32,                // 50% (for circular elements)
+}
+
+/// Interactive state colors for hover, active, disabled states
+#[derive(Clone)]
+pub struct UIStates {
+    pub hover_overlay: Color,             // Overlay for hover states
+    pub active_overlay: Color,            // Overlay for active states
+    pub disabled_overlay: Color,          // Overlay for disabled states
+    pub focus_outline: Color,             // Focus outline color
+}
+
+impl Default for UITheme {
+    fn default() -> Self {
+        Self {
+            colors: UIColors {
+                // Surface Colors - Dark theme with improved contrast
+                surface_primary: Color::srgba(0.12, 0.12, 0.12, 0.95),
+                surface_secondary: Color::srgba(0.18, 0.18, 0.18, 0.9),
+                surface_elevated: Color::srgba(0.22, 0.22, 0.22, 0.9),
+
+                // Border Colors
+                border_primary: Color::srgb(0.35, 0.35, 0.35),
+                border_secondary: Color::srgb(0.25, 0.25, 0.25),
+                border_focus: Color::srgb(0.4, 0.7, 1.0),
+
+                // Text Colors - Improved readability
+                text_primary: Color::srgb(0.95, 0.95, 0.95),
+                text_secondary: Color::srgb(0.8, 0.8, 0.8),
+                text_accent: Color::srgb(0.7, 1.0, 0.7),
+                text_muted: Color::srgb(0.6, 0.6, 0.6),
+
+                // Interactive Colors - More vibrant and accessible
+                action_primary: Color::srgb(0.2, 0.7, 0.2),     // Green for play/pause
+                action_secondary: Color::srgb(0.3, 0.4, 0.8),   // Blue for speed controls
+                action_success: Color::srgb(0.1, 0.8, 0.1),
+                action_warning: Color::srgb(1.0, 0.7, 0.1),
+                action_danger: Color::srgb(0.9, 0.2, 0.2),
+
+                // Semantic Colors
+                accent_blue: Color::srgb(0.3, 0.6, 1.0),
+                accent_green: Color::srgb(0.2, 0.8, 0.3),
+                accent_orange: Color::srgb(1.0, 0.6, 0.1),
+                accent_red: Color::srgb(1.0, 0.3, 0.3),
+            },
+
+            typography: UITypography {
+                heading_large: 24.0,
+                heading_medium: 20.0,
+                heading_small: 18.0,
+                body_large: 16.0,
+                body_medium: 14.0,
+                body_small: 12.0,
+                caption: 10.0,
+            },
+
+            spacing: UISpacing {
+                xs: 4.0,
+                sm: 8.0,
+                md: 12.0,
+                lg: 16.0,
+                xl: 24.0,
+                xxl: 32.0,
+            },
+
+            borders: UIBorders {
+                width_thin: 1.0,
+                width_medium: 2.0,
+                width_thick: 3.0,
+                radius_small: 4.0,
+                radius_medium: 8.0,
+                radius_large: 12.0,
+                radius_round: 50.0,
+            },
+
+            states: UIStates {
+                hover_overlay: Color::srgba(1.0, 1.0, 1.0, 0.1),
+                active_overlay: Color::srgba(1.0, 1.0, 1.0, 0.2),
+                disabled_overlay: Color::srgba(0.0, 0.0, 0.0, 0.5),
+                focus_outline: Color::srgb(0.4, 0.7, 1.0),
+            },
+        }
+    }
+}
+
+impl UITheme {
+    /// Get hover state color for a base color
+    pub fn get_hover_color(&self, base_color: Color) -> Color {
+        // Use predefined hover colors based on common base colors
+        match base_color {
+            // Primary action button hover
+            c if c.to_srgba() == self.colors.action_primary.to_srgba() => Color::srgb(0.3, 0.8, 0.3),
+            // Secondary action button hover
+            c if c.to_srgba() == self.colors.action_secondary.to_srgba() => Color::srgb(0.4, 0.5, 0.9),
+            // Default: slightly lighter overlay effect
+            _ => Color::srgba(0.8, 0.8, 0.8, 0.1),
+        }
+    }
+
+    /// Get active state color for a base color
+    pub fn get_active_color(&self, base_color: Color) -> Color {
+        // Use predefined active colors based on common base colors
+        match base_color {
+            // Primary action button active
+            c if c.to_srgba() == self.colors.action_primary.to_srgba() => Color::srgb(0.1, 0.5, 0.1),
+            // Secondary action button active
+            c if c.to_srgba() == self.colors.action_secondary.to_srgba() => Color::srgb(0.2, 0.3, 0.6),
+            // Default: slightly darker overlay effect
+            _ => Color::srgba(0.0, 0.0, 0.0, 0.2),
+        }
+    }
+
+    /// Create a button style with theme colors
+    pub fn create_button_style(&self, width: Val, height: Val) -> Style {
+        Style {
+            width,
+            height,
+            justify_content: JustifyContent::Center,
+            align_items: AlignItems::Center,
+            border: UiRect::all(Val::Px(self.borders.width_medium)),
+            padding: UiRect::all(Val::Px(self.spacing.sm)),
+            margin: UiRect::all(Val::Px(self.spacing.xs)),
+            ..default()
+        }
+    }
+
+    /// Create a panel style with theme styling
+    pub fn create_panel_style(&self, width: Val, height: Val) -> Style {
+        Style {
+            width,
+            height,
+            flex_direction: FlexDirection::Column,
+            padding: UiRect::all(Val::Px(self.spacing.lg)),
+            border: UiRect::all(Val::Px(self.borders.width_medium)),
+            row_gap: Val::Px(self.spacing.md),
+            ..default()
+        }
+    }
+}
