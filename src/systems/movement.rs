@@ -1,5 +1,5 @@
 use crate::components::{
-    Ant, AntBehavior, AntState, DisasterState, Food, FoodSource, Inventory, Lifecycle, Position,
+    Ant, AntBehavior, AntState, DisasterState, Food, FoodSource, InvasiveSpecies, Inventory, Lifecycle, Position,
     SpatialGrid, TimeControl,
 };
 use crate::systems::{disaster::get_movement_speed_modifier, time_control::effective_delta_time};
@@ -17,18 +17,63 @@ pub fn ant_movement_system(
             &mut Position,
             &mut AntBehavior,
             &mut Transform,
-            &Lifecycle,
+            &mut Lifecycle,
             &mut Inventory,
         ),
         With<Ant>,
     >,
     food_query: Query<(&Position, &FoodSource), With<Food>>,
+    invasive_query: Query<&Position, With<InvasiveSpecies>>,
 ) {
     let mut rng = thread_rng();
 
-    for (mut position, mut behavior, mut transform, lifecycle, mut inventory) in
+    for (mut position, mut behavior, mut transform, mut lifecycle, mut inventory) in
         ant_query.iter_mut()
     {
+        // Check for nearby invasive species and implement defensive behavior
+        let mut nearest_invasive_distance = f32::INFINITY;
+        let mut avoidance_vector = (0.0, 0.0);
+
+        for invasive_pos in invasive_query.iter() {
+            let dx = invasive_pos.x - position.x;
+            let dy = invasive_pos.y - position.y;
+            let distance = (dx * dx + dy * dy).sqrt();
+
+            if distance < nearest_invasive_distance {
+                nearest_invasive_distance = distance;
+            }
+
+            // Calculate avoidance vector if invasive species is within threat range (15.0 units)
+            if distance < 15.0 && distance > 0.0 {
+                let avoidance_strength = 1.0 - (distance / 15.0); // Stronger avoidance when closer
+                avoidance_vector.0 -= (dx / distance) * avoidance_strength;
+                avoidance_vector.1 -= (dy / distance) * avoidance_strength;
+            }
+        }
+
+        // Apply stress effects if invasive species are nearby
+        if nearest_invasive_distance < 20.0 {
+            let delta_time = effective_delta_time(&time, &time_control);
+            let stress_factor = 1.0 - (nearest_invasive_distance / 20.0);
+            lifecycle.energy -= stress_factor * 1.5 * delta_time; // Additional energy loss due to stress
+        }
+
+        // Apply avoidance behavior if necessary
+        let avoiding_invasive = avoidance_vector.0.abs() > 0.1 || avoidance_vector.1.abs() > 0.1;
+        if avoiding_invasive {
+            // Normalize avoidance vector
+            let avoidance_length = (avoidance_vector.0 * avoidance_vector.0 + avoidance_vector.1 * avoidance_vector.1).sqrt();
+            if avoidance_length > 0.0 {
+                let normalized_avoidance = (avoidance_vector.0 / avoidance_length, avoidance_vector.1 / avoidance_length);
+
+                // Override target position with avoidance direction
+                behavior.target_position = Some(Position {
+                    x: position.x + normalized_avoidance.0 * 25.0,
+                    y: position.y + normalized_avoidance.1 * 25.0,
+                });
+            }
+        }
+
         match behavior.state {
             AntState::Foraging => {
                 // Check if ant should look for food when energy is low
