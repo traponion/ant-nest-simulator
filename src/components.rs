@@ -165,3 +165,38 @@ pub struct InvasiveSpecies {
     /// Rate at which this species consumes food sources
     pub food_consumption_rate: f32,
 }
+
+/// Component for color overlay entities that provide visual feedback during disasters
+#[derive(Component)]
+pub struct ColorOverlay {
+    /// The color of the overlay with alpha transparency
+    pub color: bevy::prelude::Color,
+    /// The disaster type this overlay represents
+    pub disaster_type: DisasterType,
+}
+
+/// Resource for managing color overlay configuration and active overlays
+#[derive(Resource)]
+pub struct ColorOverlayConfig {
+    /// Mapping of disaster types to their overlay colors (with alpha)
+    pub disaster_colors: std::collections::HashMap<DisasterType, bevy::prelude::Color>,
+    /// Entity ID of the active overlay entity (if any)
+    pub overlay_entity: Option<bevy::prelude::Entity>,
+}
+
+impl Default for ColorOverlayConfig {
+    fn default() -> Self {
+        let mut disaster_colors = std::collections::HashMap::new();
+
+        // Define overlay colors for each disaster type as specified in the requirements
+        disaster_colors.insert(DisasterType::Rain, bevy::prelude::Color::srgba(0.0, 0.8, 1.0, 0.15)); // Blue/cyan overlay
+        disaster_colors.insert(DisasterType::Drought, bevy::prelude::Color::srgba(1.0, 0.6, 0.0, 0.2)); // Yellow/orange overlay
+        disaster_colors.insert(DisasterType::ColdSnap, bevy::prelude::Color::srgba(0.4, 0.7, 1.0, 0.25)); // Blue/white overlay
+        disaster_colors.insert(DisasterType::InvasiveSpecies, bevy::prelude::Color::srgba(1.0, 0.0, 0.0, 0.125)); // Red overlay
+
+        Self {
+            disaster_colors,
+            overlay_entity: None,
+        }
+    }
+}

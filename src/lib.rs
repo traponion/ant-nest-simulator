@@ -41,6 +41,7 @@ impl Plugin for AntNestPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<components::TimeControl>()
             .init_resource::<components::DisasterState>()
+            .init_resource::<components::ColorOverlayConfig>()
             .add_systems(
                 Startup,
                 (
@@ -67,6 +68,8 @@ impl Plugin for AntNestPlugin {
                     systems::disaster_input_system,
                     systems::disaster_timer_system,
                     systems::disaster_effect_system,
+                    systems::color_overlay_system,
+                    systems::update_overlay_size_system,
                 ),
             );
     }
