@@ -1,6 +1,6 @@
 use crate::components::{
     CooldownTimer, DisasterControlButton, DisasterControlPanel, DisasterState, DisasterStatusIndicator,
-    DisasterTriggerFeedback, DisasterType,
+    DisasterStatusBackground, DisasterTriggerFeedback, DisasterType,
 };
 use bevy::prelude::*;
 
@@ -69,15 +69,38 @@ pub fn setup_disaster_control_panel(mut commands: Commands) {
                                 ..default()
                             })
                             .with_children(|header_parent| {
-                                // Disaster name
-                                header_parent.spawn(TextBundle::from_section(
-                                    disaster_type.display_name(),
-                                    TextStyle {
-                                        font_size: 16.0,
-                                        color: Color::WHITE,
+                                // Icon and disaster name container
+                                header_parent
+                                    .spawn(NodeBundle {
+                                        style: Style {
+                                            flex_direction: FlexDirection::Row,
+                                            align_items: AlignItems::Center,
+                                            column_gap: Val::Px(8.0),
+                                            ..default()
+                                        },
                                         ..default()
-                                    },
-                                ));
+                                    })
+                                    .with_children(|name_parent| {
+                                        // Disaster icon
+                                        name_parent.spawn(TextBundle::from_section(
+                                            disaster_type.get_icon(),
+                                            TextStyle {
+                                                font_size: 20.0,
+                                                color: Color::WHITE,
+                                                ..default()
+                                            },
+                                        ));
+
+                                        // Disaster name
+                                        name_parent.spawn(TextBundle::from_section(
+                                            disaster_type.display_name(),
+                                            TextStyle {
+                                                font_size: 16.0,
+                                                color: Color::WHITE,
+                                                ..default()
+                                            },
+                                        ));
+                                    });
 
                                 // Key shortcut
                                 header_parent.spawn(TextBundle::from_section(
@@ -90,34 +113,54 @@ pub fn setup_disaster_control_panel(mut commands: Commands) {
                                 ));
                             });
 
-                        // Status and timer row
+                        // Enhanced status and timer row
                         disaster_parent
                             .spawn(NodeBundle {
                                 style: Style {
                                     flex_direction: FlexDirection::Row,
                                     justify_content: JustifyContent::SpaceBetween,
                                     align_items: AlignItems::Center,
+                                    padding: UiRect::all(Val::Px(4.0)),
                                     ..default()
                                 },
+                                background_color: Color::srgba(0.1, 0.1, 0.1, 0.3).into(),
+                                border_radius: BorderRadius::all(Val::Px(3.0)),
                                 ..default()
                             })
                             .with_children(|status_parent| {
-                                // Status indicator
-                                status_parent.spawn((
-                                    TextBundle::from_section(
-                                        "Available",
-                                        TextStyle {
-                                            font_size: 14.0,
-                                            color: Color::srgb(0.3, 1.0, 0.3),
+                                // Visual status indicator with background
+                                status_parent
+                                    .spawn((
+                                        NodeBundle {
+                                            style: Style {
+                                                padding: UiRect::all(Val::Px(6.0)),
+                                                ..default()
+                                            },
+                                            background_color: Color::srgb(0.3, 1.0, 0.3).into(), // Default available color
+                                            border_radius: BorderRadius::all(Val::Px(12.0)),
                                             ..default()
                                         },
-                                    ),
-                                    DisasterStatusIndicator {
-                                        disaster_type: *disaster_type,
-                                    },
-                                ));
+                                        DisasterStatusBackground {
+                                            disaster_type: *disaster_type,
+                                        },
+                                    ))
+                                    .with_children(|indicator_parent| {
+                                        indicator_parent.spawn((
+                                            TextBundle::from_section(
+                                                "Available",
+                                                TextStyle {
+                                                    font_size: 12.0,
+                                                    color: Color::BLACK,
+                                                    ..default()
+                                                },
+                                            ),
+                                            DisasterStatusIndicator {
+                                                disaster_type: *disaster_type,
+                                            },
+                                        ));
+                                    });
 
-                                // Cooldown timer
+                                // Enhanced cooldown timer with visual feedback
                                 status_parent.spawn((
                                     TextBundle::from_section(
                                         "",
@@ -138,12 +181,12 @@ pub fn setup_disaster_control_panel(mut commands: Commands) {
                     });
             }
 
-            // Instructions
+            // Enhanced instructions
             parent.spawn(TextBundle::from_section(
-                "Press the keys to trigger disasters.\nGreen=Available, Orange=Cooldown, Red=Active",
+                "🎮 Press the keys to trigger disasters\n🟢 Available  🟠 Cooldown  🔴 Active\n\n🌧️ Rain (R)  ☀️ Drought (D)\n❄️ Cold Snap (C)  🐛 Invasive Species (I)",
                 TextStyle {
-                    font_size: 12.0,
-                    color: Color::srgb(0.7, 0.7, 0.7),
+                    font_size: 11.0,
+                    color: Color::srgb(0.8, 0.8, 0.8),
                     ..default()
                 },
             ));
@@ -155,20 +198,37 @@ pub fn setup_disaster_control_panel(mut commands: Commands) {
 pub fn update_disaster_status_system(
     disaster_state: Res<DisasterState>,
     mut status_query: Query<(&DisasterStatusIndicator, &mut Text)>,
+    mut background_query: Query<(&DisasterStatusBackground, &mut BackgroundColor)>,
 ) {
+    // Update status text
     for (status_indicator, mut text) in status_query.iter_mut() {
         let disaster_type = status_indicator.disaster_type;
 
-        if disaster_state.is_active(disaster_type) {
-            text.sections[0].value = "ACTIVE".to_string();
-            text.sections[0].style.color = Color::srgb(1.0, 0.3, 0.3);
+        let (status_text, text_color) = if disaster_state.is_active(disaster_type) {
+            ("ACTIVE", Color::WHITE)
         } else if disaster_state.is_on_cooldown(disaster_type) {
-            text.sections[0].value = "Cooldown".to_string();
-            text.sections[0].style.color = Color::srgb(1.0, 0.6, 0.0);
+            ("Cooldown", Color::WHITE)
         } else {
-            text.sections[0].value = "Available".to_string();
-            text.sections[0].style.color = Color::srgb(0.3, 1.0, 0.3);
-        }
+            ("Available", Color::BLACK)
+        };
+
+        text.sections[0].value = status_text.to_string();
+        text.sections[0].style.color = text_color;
+    }
+
+    // Update background colors
+    for (status_background, mut background_color) in background_query.iter_mut() {
+        let disaster_type = status_background.disaster_type;
+
+        let bg_color = if disaster_state.is_active(disaster_type) {
+            Color::srgb(1.0, 0.3, 0.3) // Red for active
+        } else if disaster_state.is_on_cooldown(disaster_type) {
+            Color::srgb(1.0, 0.6, 0.0) // Orange for cooldown
+        } else {
+            Color::srgb(0.3, 1.0, 0.3) // Green for available
+        };
+
+        background_color.0 = bg_color;
     }
 }
 
