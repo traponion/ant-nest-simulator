@@ -1,0 +1,12 @@
+/home/negiko/work/ant/ant-nest-simulator/target/debug/deps/bevy_app-2f63b3fae01d787d.d: /home/negiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_app-0.14.2/src/lib.rs /home/negiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_app-0.14.2/src/app.rs /home/negiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_app-0.14.2/src/main_schedule.rs /home/negiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_app-0.14.2/src/panic_handler.rs /home/negiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_app-0.14.2/src/plugin.rs /home/negiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_app-0.14.2/src/plugin_group.rs /home/negiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_app-0.14.2/src/schedule_runner.rs /home/negiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_app-0.14.2/src/sub_app.rs
+
+/home/negiko/work/ant/ant-nest-simulator/target/debug/deps/libbevy_app-2f63b3fae01d787d.rmeta: /home/negiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_app-0.14.2/src/lib.rs /home/negiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_app-0.14.2/src/app.rs /home/negiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_app-0.14.2/src/main_schedule.rs /home/negiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_app-0.14.2/src/panic_handler.rs /home/negiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_app-0.14.2/src/plugin.rs /home/negiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_app-0.14.2/src/plugin_group.rs /home/negiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_app-0.14.2/src/schedule_runner.rs /home/negiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_app-0.14.2/src/sub_app.rs
+
+/home/negiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_app-0.14.2/src/lib.rs:
+/home/negiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_app-0.14.2/src/app.rs:
+/home/negiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_app-0.14.2/src/main_schedule.rs:
+/home/negiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_app-0.14.2/src/panic_handler.rs:
+/home/negiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_app-0.14.2/src/plugin.rs:
+/home/negiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_app-0.14.2/src/plugin_group.rs:
+/home/negiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_app-0.14.2/src/schedule_runner.rs:
+/home/negiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_app-0.14.2/src/sub_app.rs:
