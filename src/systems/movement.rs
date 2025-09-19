@@ -1,7 +1,7 @@
+use crate::components::{Ant, AntBehavior, AntState, Food, FoodSource, Inventory, Lifecycle, Position, TimeControl};
+use crate::systems::time_control::effective_delta_time;
 use bevy::prelude::*;
 use rand::prelude::*;
-use crate::components::{Position, AntBehavior, AntState, Ant, Lifecycle, TimeControl, Food, FoodSource, Inventory};
-use crate::systems::time_control::effective_delta_time;
 
 /// System for ant movement and behavior
 pub fn ant_movement_system(

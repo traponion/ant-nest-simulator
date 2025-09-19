@@ -1,5 +1,5 @@
-use bevy::prelude::*;
 use crate::components::TimeControl;
+use bevy::prelude::*;
 
 /// UI components for time control
 #[derive(Component)]
@@ -62,7 +62,14 @@ pub fn time_control_input_system(
         if time_control.is_paused {
             info!("Simulation paused");
         } else {
+<<<<<<< HEAD
             info!("Simulation resumed at {}x speed", time_control.speed_multiplier);
+=======
+            info!(
+                "Simulation resumed at {}x speed",
+                time_control.speed_multiplier
+            );
+>>>>>>> origin/feature/initial-bevy-setup
         }
     }
 
@@ -149,4 +156,8 @@ pub fn effective_delta_time(time: &Res<Time>, time_control: &Res<TimeControl>) -
     } else {
         time.delta_seconds() * time_control.speed_multiplier
     }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> origin/feature/initial-bevy-setup

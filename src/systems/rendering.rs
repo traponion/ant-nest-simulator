@@ -1,6 +1,6 @@
+use crate::components::{Ant, AntBehavior, AntState, Food, FoodSource, Inventory, Lifecycle, Position, Soil, SoilCell};
 use bevy::prelude::*;
 use rand::prelude::*;
-use crate::components::{Position, SoilCell, Soil, AntBehavior, AntState, Lifecycle, Ant, Food, FoodSource, Inventory};
 
 /// Basic camera setup for 2D pixel art view
 pub fn setup_world(mut commands: Commands) {
