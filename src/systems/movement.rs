@@ -1,6 +1,6 @@
 use crate::components::{
     Ant, AntBehavior, AntState, DisasterState, Food, FoodSource, InvasiveSpecies, Inventory, Lifecycle, Position,
-    TimeControl,
+    SpatialGrid, TimeControl,
 };
 use crate::systems::{disaster::get_movement_speed_modifier, time_control::effective_delta_time};
 use bevy::prelude::*;
@@ -11,6 +11,7 @@ pub fn ant_movement_system(
     time: Res<Time>,
     time_control: Res<TimeControl>,
     disaster_state: Res<DisasterState>,
+    spatial_grid: Res<SpatialGrid>,
     mut ant_query: Query<
         (
             &mut Position,
@@ -77,22 +78,30 @@ pub fn ant_movement_system(
             AntState::Foraging => {
                 // Check if ant should look for food when energy is low
                 if lifecycle.energy < 30.0 && behavior.target_position.is_none() {
-                    // Look for nearest available food
+                    // Look for nearest available food using spatial indexing (O(k) instead of O(n))
                     let mut nearest_food: Option<Position> = None;
                     let mut nearest_distance = f32::INFINITY;
 
-                    for (food_pos, food_source) in food_query.iter() {
-                        if food_source.is_available {
-                            let dx = food_pos.x - position.x;
-                            let dy = food_pos.y - position.y;
-                            let distance = (dx * dx + dy * dy).sqrt();
+                    // Use spatial grid to get only nearby food sources within a reasonable search radius
+                    let search_radius = 100.0; // Adjust based on game balance
+                    let nearby_food_entities = spatial_grid.get_entities_in_radius(&position, search_radius);
 
-                            if distance < nearest_distance {
-                                nearest_distance = distance;
-                                nearest_food = Some(Position {
-                                    x: food_pos.x,
-                                    y: food_pos.y,
-                                });
+                    for food_entity in nearby_food_entities {
+                        // Get food data for this entity
+                        if let Ok((food_pos, food_source)) = food_query.get(food_entity) {
+                            if food_source.is_available {
+                                let dx = food_pos.x - position.x;
+                                let dy = food_pos.y - position.y;
+                                let distance = (dx * dx + dy * dy).sqrt();
+
+                                // Only consider food within the search radius (additional filtering)
+                                if distance <= search_radius && distance < nearest_distance {
+                                    nearest_distance = distance;
+                                    nearest_food = Some(Position {
+                                        x: food_pos.x,
+                                        y: food_pos.y,
+                                    });
+                                }
                             }
                         }
                     }

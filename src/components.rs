@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 
 /// Position component for entities in 2D space
-#[derive(Component, Clone, Serialize, Deserialize)]
+#[derive(Component, Clone, Default, Serialize, Deserialize)]
 pub struct Position {
     pub x: f32,
     pub y: f32,
@@ -447,6 +447,180 @@ impl VisualEffectsSettings {
     }
 }
 
+/// Grid cell coordinates for spatial partitioning
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct GridCell {
+    pub x: i32,
+    pub y: i32,
+}
+
+/// Resource for spatial partitioning of entities
+/// Provides O(1) lookup time for nearby entities instead of O(n) brute force search
+#[derive(Resource, Default)]
+pub struct SpatialGrid {
+    /// Grid cell size in world units
+    pub cell_size: f32,
+    /// Map from grid cells to lists of entities in that cell
+    pub grid: std::collections::HashMap<GridCell, Vec<Entity>>,
+    /// World bounds for the grid
+    pub world_min: Position,
+    pub world_max: Position,
+}
+
+impl SpatialGrid {
+    /// Create new spatial grid with specified cell size and world bounds
+    pub fn new(cell_size: f32, world_min: Position, world_max: Position) -> Self {
+        Self {
+            cell_size,
+            grid: std::collections::HashMap::new(),
+            world_min,
+            world_max,
+        }
+    }
+
+    /// Convert world position to grid cell coordinates
+    pub fn world_to_grid(&self, position: &Position) -> GridCell {
+        GridCell {
+            x: (position.x / self.cell_size).floor() as i32,
+            y: (position.y / self.cell_size).floor() as i32,
+        }
+    }
+
+    /// Get all entities in a specific grid cell
+    pub fn get_entities_in_cell(&self, cell: GridCell) -> Vec<Entity> {
+        self.grid.get(&cell).cloned().unwrap_or_default()
+    }
+
+    /// Get all entities within a radius around a position
+    /// Returns entities from all grid cells that could potentially contain entities within the radius
+    pub fn get_entities_in_radius(&self, position: &Position, radius: f32) -> Vec<Entity> {
+        let center_cell = self.world_to_grid(position);
+        let cell_radius = (radius / self.cell_size).ceil() as i32;
+
+        let mut entities = Vec::new();
+
+        for dx in -cell_radius..=cell_radius {
+            for dy in -cell_radius..=cell_radius {
+                let cell = GridCell {
+                    x: center_cell.x + dx,
+                    y: center_cell.y + dy,
+                };
+                entities.extend(self.get_entities_in_cell(cell));
+            }
+        }
+
+        entities
+    }
+
+    /// Add entity to the spatial grid at given position
+    pub fn insert_entity(&mut self, entity: Entity, position: &Position) {
+        let cell = self.world_to_grid(position);
+        self.grid.entry(cell).or_insert_with(Vec::new).push(entity);
+    }
+
+    /// Remove entity from the spatial grid
+    pub fn remove_entity(&mut self, entity: Entity, position: &Position) {
+        let cell = self.world_to_grid(position);
+        if let Some(entities) = self.grid.get_mut(&cell) {
+            entities.retain(|&e| e != entity);
+            if entities.is_empty() {
+                self.grid.remove(&cell);
+            }
+        }
+    }
+
+    /// Update entity position in the grid (remove from old cell, add to new cell)
+    pub fn update_entity_position(&mut self, entity: Entity, old_position: &Position, new_position: &Position) {
+        let old_cell = self.world_to_grid(old_position);
+        let new_cell = self.world_to_grid(new_position);
+
+        // Only update if the entity moved to a different cell
+        if old_cell != new_cell {
+            self.remove_entity(entity, old_position);
+            self.insert_entity(entity, new_position);
+        }
+    }
+
+    /// Clear all entities from the grid
+    pub fn clear(&mut self) {
+        self.grid.clear();
+    }
+}
+
+/// Resource for tracking and displaying performance metrics
+#[derive(Resource)]
+pub struct PerformanceMetrics {
+    /// Current frames per second
+    pub fps: f32,
+    /// Average frame time in milliseconds
+    pub frame_time_ms: f32,
+    /// Total number of ant entities
+    pub ant_count: usize,
+    /// Total number of food source entities
+    pub food_count: usize,
+    /// Total number of soil entities
+    pub soil_count: usize,
+    /// Number of occupied spatial grid cells
+    pub spatial_grid_cells: usize,
+    /// Average entities per spatial grid cell
+    pub avg_entities_per_cell: f32,
+    /// Frame time history for smoothing
+    frame_times: Vec<f32>,
+    /// Update timer for performance calculations
+    pub update_timer: Timer,
+}
+
+impl Default for PerformanceMetrics {
+    fn default() -> Self {
+        Self {
+            fps: 0.0,
+            frame_time_ms: 0.0,
+            ant_count: 0,
+            food_count: 0,
+            soil_count: 0,
+            spatial_grid_cells: 0,
+            avg_entities_per_cell: 0.0,
+            frame_times: Vec::with_capacity(60), // Store last 60 frame times
+            update_timer: Timer::from_seconds(0.1, TimerMode::Repeating), // Update 10 times per second
+        }
+    }
+}
+
+impl PerformanceMetrics {
+    /// Add a new frame time measurement
+    pub fn add_frame_time(&mut self, frame_time: f32) {
+        self.frame_times.push(frame_time);
+
+        // Keep only the last 60 measurements
+        if self.frame_times.len() > 60 {
+            self.frame_times.remove(0);
+        }
+
+        // Calculate average frame time and FPS
+        if !self.frame_times.is_empty() {
+            self.frame_time_ms = self.frame_times.iter().sum::<f32>() / self.frame_times.len() as f32 * 1000.0;
+            self.fps = 1.0 / (self.frame_time_ms / 1000.0);
+        }
+    }
+
+    /// Update entity counts
+    pub fn update_entity_counts(&mut self, ants: usize, food: usize, soil: usize) {
+        self.ant_count = ants;
+        self.food_count = food;
+        self.soil_count = soil;
+    }
+
+    /// Update spatial grid statistics
+    pub fn update_spatial_stats(&mut self, occupied_cells: usize, total_entities: usize) {
+        self.spatial_grid_cells = occupied_cells;
+        self.avg_entities_per_cell = if occupied_cells > 0 {
+            total_entities as f32 / occupied_cells as f32
+        } else {
+            0.0
+        };
+    }
+}
+
 /// Resource for tracking comprehensive colony statistics and metrics
 #[derive(Resource, Default)]
 pub struct ColonyStatistics {
@@ -580,6 +754,26 @@ impl Default for StatisticsToggle {
         }
     }
 }
+
+/// Component for the performance monitoring panel
+#[derive(Component)]
+pub struct PerformancePanel;
+
+/// Component for FPS display text
+#[derive(Component)]
+pub struct FpsText;
+
+/// Component for frame time display text
+#[derive(Component)]
+pub struct FrameTimeText;
+
+/// Component for entity count display text
+#[derive(Component)]
+pub struct EntityCountText;
+
+/// Component for spatial grid stats display text
+#[derive(Component)]
+pub struct SpatialStatsText;
 
 /// UI components for time control panel
 #[derive(Component)]

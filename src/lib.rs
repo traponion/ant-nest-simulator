@@ -43,8 +43,14 @@ impl Plugin for AntNestPlugin {
             .init_resource::<components::DisasterState>()
             .init_resource::<components::ColorOverlayConfig>()
             .init_resource::<components::VisualEffectsSettings>()
+            .init_resource::<components::PerformanceMetrics>()
             .init_resource::<components::ColonyStatistics>()
             .init_resource::<systems::ParticleConfig>()
+            .insert_resource(components::SpatialGrid::new(
+                16.0, // Cell size of 16 units
+                components::Position { x: -80.0, y: -60.0 }, // World min
+                components::Position { x: 80.0, y: 60.0 },   // World max
+            ))
             .insert_resource(systems::PersistenceState::new())
             .add_systems(
                 Startup,
@@ -57,6 +63,8 @@ impl Plugin for AntNestPlugin {
                     systems::setup_time_control_ui,
                     systems::setup_active_disasters_panel,
                     systems::setup_disaster_control_panel,
+                    systems::setup_performance_monitoring_ui,
+                    systems::initialize_spatial_grid_system,
                     systems::setup_statistics_panel,
                 ),
             )
@@ -72,6 +80,8 @@ impl Plugin for AntNestPlugin {
                     systems::food_regeneration_system,
                     systems::queen_reproduction_system,
                     systems::egg_hatching_system,
+                    // Spatial optimization systems
+                    systems::update_food_sources_in_grid_system,
                     systems::colony_statistics_calculation_system,
                 ),
             )
@@ -102,19 +112,24 @@ impl Plugin for AntNestPlugin {
                     systems::update_disaster_status_system,
                     systems::update_cooldown_timers_system,
                     systems::disaster_trigger_feedback_system,
-                    // UI systems
-                    systems::time_control_input_system,
-                    systems::update_speed_display_system,
+                    systems::handle_time_control_buttons,
                     systems::update_play_pause_button_system,
                     systems::button_click_system,
                     systems::update_active_disasters_display,
                     systems::update_disaster_progress_bars,
                     systems::update_disaster_duration_text,
                     systems::visual_effects_toggle_system,
-                    // Statistics systems
+                ),
+            )
+            // Performance monitoring, statistics, and persistence systems
+            .add_systems(
+                Update,
+                (
+                    systems::collect_performance_metrics,
+                    systems::update_performance_monitoring_ui,
+                    systems::toggle_performance_monitoring_system,
                     systems::statistics_toggle_input_system,
                     systems::update_statistics_display,
-                    // Save/Load systems
                     systems::save_game_system,
                     systems::load_game_system,
                     systems::persistence_status_system,

@@ -1,22 +1,27 @@
 use crate::components::{TimeControl, TimeControlPanel, PlayPauseButton, SpeedButton, SpeedDisplay};
 use bevy::prelude::*;
 
-/// Setup time control UI panel
+/// Button for speed presets (enhanced version with speed value)
+#[derive(Component)]
+pub struct SpeedPresetButton(pub f32);
+
+/// Setup time control UI panel with enhanced interactive design
 pub fn setup_time_control_ui(mut commands: Commands) {
-    // Main time control panel container - positioned at top-left
     commands
         .spawn(NodeBundle {
             style: Style {
                 position_type: PositionType::Absolute,
                 left: Val::Px(10.0),
                 top: Val::Px(10.0),
-                width: Val::Px(260.0),
+                width: Val::Px(280.0),
                 flex_direction: FlexDirection::Column,
                 padding: UiRect::all(Val::Px(15.0)),
                 row_gap: Val::Px(10.0),
+                border: UiRect::all(Val::Px(2.0)),
                 ..default()
             },
-            background_color: Color::srgba(0.0, 0.0, 0.0, 0.8).into(),
+            background_color: Color::srgba(0.1, 0.1, 0.1, 0.9).into(),
+            border_color: Color::srgb(0.3, 0.3, 0.3).into(),
             border_radius: BorderRadius::all(Val::Px(8.0)),
             ..default()
         })
@@ -44,7 +49,7 @@ pub fn setup_time_control_ui(mut commands: Commands) {
                 SpeedDisplay,
             ));
 
-            // Play/Pause button
+            // Play/Pause button (enhanced from both versions)
             parent
                 .spawn(ButtonBundle {
                     style: Style {
@@ -52,9 +57,11 @@ pub fn setup_time_control_ui(mut commands: Commands) {
                         height: Val::Px(40.0),
                         justify_content: JustifyContent::Center,
                         align_items: AlignItems::Center,
+                        border: UiRect::all(Val::Px(2.0)),
                         ..default()
                     },
                     background_color: Color::srgba(0.2, 0.6, 0.2, 0.8).into(),
+                    border_color: Color::srgb(0.3, 0.7, 0.3).into(),
                     border_radius: BorderRadius::all(Val::Px(4.0)),
                     ..default()
                 })
@@ -70,7 +77,7 @@ pub fn setup_time_control_ui(mut commands: Commands) {
                 })
                 .insert(PlayPauseButton);
 
-            // Speed control section
+            // Speed control section header
             parent.spawn(TextBundle::from_section(
                 "Speed Presets:",
                 TextStyle {
@@ -80,23 +87,73 @@ pub fn setup_time_control_ui(mut commands: Commands) {
                 },
             ));
 
-            // Speed buttons grid
-            let speed_presets = [
-                (1.0, "1x (Key: 1)"),
+            // Compact speed preset buttons (horizontal layout for main speeds)
+            parent
+                .spawn(NodeBundle {
+                    style: Style {
+                        flex_direction: FlexDirection::Row,
+                        column_gap: Val::Px(5.0),
+                        align_items: AlignItems::Center,
+                        flex_wrap: FlexWrap::Wrap,
+                        row_gap: Val::Px(5.0),
+                        ..default()
+                    },
+                    ..default()
+                })
+                .with_children(|buttons_parent| {
+                    // Main speed presets (compact horizontal layout)
+                    let main_speed_presets = [
+                        (1.0, "1x"),
+                        (5.0, "5x"),
+                        (20.0, "20x"),
+                        (100.0, "Max"),
+                    ];
+
+                    for (speed, label) in main_speed_presets {
+                        buttons_parent
+                            .spawn((
+                                ButtonBundle {
+                                    style: Style {
+                                        width: Val::Px(55.0),
+                                        height: Val::Px(32.0),
+                                        justify_content: JustifyContent::Center,
+                                        align_items: AlignItems::Center,
+                                        border: UiRect::all(Val::Px(1.0)),
+                                        ..default()
+                                    },
+                                    background_color: Color::srgb(0.3, 0.3, 0.6).into(),
+                                    border_color: Color::srgb(0.4, 0.4, 0.7).into(),
+                                    border_radius: BorderRadius::all(Val::Px(4.0)),
+                                    ..default()
+                                },
+                                SpeedPresetButton(speed),
+                            ))
+                            .with_children(|button| {
+                                button.spawn(TextBundle::from_section(
+                                    label,
+                                    TextStyle {
+                                        font_size: 12.0,
+                                        color: Color::WHITE,
+                                        ..default()
+                                    },
+                                ));
+                            });
+                    }
+                });
+
+            // Additional speed buttons (full width)
+            let additional_speed_presets = [
                 (2.0, "2x (Key: 2)"),
-                (5.0, "5x (Key: 3)"),
                 (10.0, "10x (Key: 4)"),
-                (20.0, "20x (Key: 5)"),
                 (50.0, "50x (Key: 7)"),
-                (100.0, "Max (Key: 9)"),
             ];
 
-            for (speed, label) in speed_presets.iter() {
+            for (speed, label) in additional_speed_presets {
                 parent
                     .spawn(ButtonBundle {
                         style: Style {
                             width: Val::Percent(100.0),
-                            height: Val::Px(32.0),
+                            height: Val::Px(28.0),
                             justify_content: JustifyContent::Center,
                             align_items: AlignItems::Center,
                             margin: UiRect::bottom(Val::Px(2.0)),
@@ -108,22 +165,22 @@ pub fn setup_time_control_ui(mut commands: Commands) {
                     })
                     .with_children(|speed_parent| {
                         speed_parent.spawn(TextBundle::from_section(
-                            *label,
+                            label,
                             TextStyle {
-                                font_size: 14.0,
+                                font_size: 12.0,
                                 color: Color::WHITE,
                                 ..default()
                             },
                         ));
                     })
-                    .insert(SpeedButton { target_speed: *speed });
+                    .insert(SpeedButton { target_speed: speed });
             }
 
             // Instructions
             parent.spawn(TextBundle::from_section(
-                "Click buttons or use keyboard shortcuts",
+                "Click buttons or use keyboard shortcuts (SPACE=Pause, 1-9=Speed)",
                 TextStyle {
-                    font_size: 12.0,
+                    font_size: 11.0,
                     color: Color::srgb(0.7, 0.7, 0.7),
                     ..default()
                 },
@@ -212,11 +269,61 @@ pub fn time_control_input_system(
     }
 }
 
-/// Update speed display UI
+/// Handle button clicks for time control
+pub fn handle_time_control_buttons(
+    mut interaction_query: Query<
+        (&Interaction, &mut BackgroundColor, Option<&PlayPauseButton>, Option<&SpeedPresetButton>),
+        (Changed<Interaction>, Or<(With<PlayPauseButton>, With<SpeedPresetButton>)>),
+    >,
+    mut time_control: ResMut<TimeControl>,
+) {
+    for (interaction, mut background_color, play_pause_button, speed_preset_button) in &mut interaction_query {
+        match *interaction {
+            Interaction::Pressed => {
+                if play_pause_button.is_some() {
+                    // Toggle play/pause
+                    time_control.is_paused = !time_control.is_paused;
+                    if time_control.is_paused {
+                        info!("Simulation paused");
+                    } else {
+                        info!("Simulation resumed at {}x speed", time_control.speed_multiplier);
+                    }
+                } else if let Some(SpeedPresetButton(speed)) = speed_preset_button {
+                    // Set speed preset
+                    time_control.speed_multiplier = *speed;
+                    time_control.is_paused = false;
+                    info!("Speed set to {}x", speed);
+                }
+            }
+            Interaction::Hovered => {
+                // Hover effect - lighten the color
+                if play_pause_button.is_some() {
+                    *background_color = Color::srgb(0.3, 0.7, 0.3).into();
+                } else if speed_preset_button.is_some() {
+                    *background_color = Color::srgb(0.4, 0.4, 0.7).into();
+                }
+            }
+            Interaction::None => {
+                // Reset to normal color
+                if play_pause_button.is_some() {
+                    *background_color = Color::srgb(0.2, 0.6, 0.2).into();
+                } else if speed_preset_button.is_some() {
+                    *background_color = Color::srgb(0.3, 0.3, 0.6).into();
+                }
+            }
+        }
+    }
+}
+
+/// Update speed display and play/pause button icon
 pub fn update_speed_display_system(
     time_control: Res<TimeControl>,
     mut speed_display_query: Query<&mut Text, With<SpeedDisplay>>,
+    _play_pause_button_query: Query<Entity, With<PlayPauseButton>>,
+    _children_query: Query<&Children>,
+    _text_query: Query<&mut Text, Without<SpeedDisplay>>,
 ) {
+    // Update speed display
     if let Ok(mut text) = speed_display_query.get_single_mut() {
         if time_control.is_paused {
             text.sections[0].value = "Speed: PAUSED".to_string();
