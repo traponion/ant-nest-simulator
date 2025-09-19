@@ -21,6 +21,7 @@ pub mod particle;
 pub mod rendering;
 pub mod reproduction;
 pub mod time_control;
+pub mod visual_effects_toggle;
 
 // Re-export all system functions for easy importing
 pub use active_disasters_ui::*;
@@ -36,3 +37,4 @@ pub use particle::*;
 pub use rendering::*;
 pub use reproduction::*;
 pub use time_control::*;
+pub use visual_effects_toggle::*;

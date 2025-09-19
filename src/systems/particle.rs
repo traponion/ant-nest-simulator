@@ -1,5 +1,5 @@
 use crate::components::{
-    DisasterState, DisasterType, Particle, ParticleData, ParticleType, TimeControl,
+    DisasterState, DisasterType, Particle, ParticleData, ParticleType, TimeControl, VisualEffectsSettings,
 };
 use crate::systems::time_control::effective_delta_time;
 use bevy::prelude::*;
@@ -39,7 +39,13 @@ pub fn particle_spawner_system(
     time: Res<Time>,
     time_control: Res<TimeControl>,
     windows: Query<&Window>,
+    visual_effects_settings: Res<VisualEffectsSettings>,
 ) {
+    // Skip particle spawning if particles are disabled for accessibility
+    if !visual_effects_settings.particles_enabled {
+        return;
+    }
+
     let delta_time = effective_delta_time(&time, &time_control);
 
     // Update window dimensions

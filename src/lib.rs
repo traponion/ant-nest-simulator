@@ -42,6 +42,7 @@ impl Plugin for AntNestPlugin {
         app.init_resource::<components::TimeControl>()
             .init_resource::<components::DisasterState>()
             .init_resource::<components::ColorOverlayConfig>()
+            .init_resource::<components::VisualEffectsSettings>()
             .init_resource::<systems::ParticleConfig>()
             .add_systems(
                 Startup,
@@ -95,6 +96,7 @@ impl Plugin for AntNestPlugin {
                     systems::update_active_disasters_display,
                     systems::update_disaster_progress_bars,
                     systems::update_disaster_duration_text,
+                    systems::visual_effects_toggle_system,
                 ),
             )
             .add_systems(

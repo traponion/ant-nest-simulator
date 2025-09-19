@@ -398,3 +398,38 @@ impl DisasterType {
         }
     }
 }
+
+/// Resource for managing visual effects accessibility settings
+#[derive(Resource, Default)]
+pub struct VisualEffectsSettings {
+    /// Whether particle effects are enabled (can be toggled for accessibility)
+    pub particles_enabled: bool,
+    /// Whether color overlays are enabled (can be toggled for accessibility)
+    pub overlays_enabled: bool,
+}
+
+impl VisualEffectsSettings {
+    /// Create new settings with effects enabled by default
+    pub fn new() -> Self {
+        Self {
+            particles_enabled: true,
+            overlays_enabled: true,
+        }
+    }
+
+    /// Toggle particle effects on/off
+    pub fn toggle_particles(&mut self) {
+        self.particles_enabled = !self.particles_enabled;
+    }
+
+    /// Toggle color overlays on/off
+    pub fn toggle_overlays(&mut self) {
+        self.overlays_enabled = !self.overlays_enabled;
+    }
+
+    /// Toggle all visual effects on/off
+    pub fn toggle_all(&mut self) {
+        self.particles_enabled = !self.particles_enabled;
+        self.overlays_enabled = !self.overlays_enabled;
+    }
+}
