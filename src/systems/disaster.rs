@@ -1,6 +1,8 @@
-use bevy::prelude::*;
-use crate::components::{DisasterState, DisasterType, SoilCell, Ant, AntBehavior, Lifecycle, Position, TimeControl};
+use crate::components::{
+    Ant, AntBehavior, DisasterState, DisasterType, Lifecycle, Position, SoilCell, TimeControl,
+};
 use crate::systems::time_control::effective_delta_time;
+use bevy::prelude::*;
 
 /// System for handling disaster keyboard input
 pub fn disaster_input_system(
@@ -9,9 +11,13 @@ pub fn disaster_input_system(
 ) {
     // Rain disaster - R key
     if input.just_pressed(KeyCode::KeyR) {
-        if !disaster_state.is_active(DisasterType::Rain) && !disaster_state.is_on_cooldown(DisasterType::Rain) {
+        if !disaster_state.is_active(DisasterType::Rain)
+            && !disaster_state.is_on_cooldown(DisasterType::Rain)
+        {
             disaster_state.start_disaster(DisasterType::Rain, 20.0); // 20 seconds duration
-            disaster_state.cooldown_timers.insert(DisasterType::Rain, 5.0); // 5 second cooldown
+            disaster_state
+                .cooldown_timers
+                .insert(DisasterType::Rain, 5.0); // 5 second cooldown
             info!("Rain disaster started! Duration: 20 seconds");
         } else if disaster_state.is_on_cooldown(DisasterType::Rain) {
             info!("Rain is on cooldown");
@@ -22,9 +28,13 @@ pub fn disaster_input_system(
 
     // Drought disaster - D key
     if input.just_pressed(KeyCode::KeyD) {
-        if !disaster_state.is_active(DisasterType::Drought) && !disaster_state.is_on_cooldown(DisasterType::Drought) {
+        if !disaster_state.is_active(DisasterType::Drought)
+            && !disaster_state.is_on_cooldown(DisasterType::Drought)
+        {
             disaster_state.start_disaster(DisasterType::Drought, 45.0); // 45 seconds duration
-            disaster_state.cooldown_timers.insert(DisasterType::Drought, 8.0); // 8 second cooldown
+            disaster_state
+                .cooldown_timers
+                .insert(DisasterType::Drought, 8.0); // 8 second cooldown
             info!("Drought disaster started! Duration: 45 seconds");
         } else if disaster_state.is_on_cooldown(DisasterType::Drought) {
             info!("Drought is on cooldown");
@@ -35,9 +45,13 @@ pub fn disaster_input_system(
 
     // Cold Snap disaster - C key
     if input.just_pressed(KeyCode::KeyC) {
-        if !disaster_state.is_active(DisasterType::ColdSnap) && !disaster_state.is_on_cooldown(DisasterType::ColdSnap) {
+        if !disaster_state.is_active(DisasterType::ColdSnap)
+            && !disaster_state.is_on_cooldown(DisasterType::ColdSnap)
+        {
             disaster_state.start_disaster(DisasterType::ColdSnap, 30.0); // 30 seconds duration
-            disaster_state.cooldown_timers.insert(DisasterType::ColdSnap, 6.0); // 6 second cooldown
+            disaster_state
+                .cooldown_timers
+                .insert(DisasterType::ColdSnap, 6.0); // 6 second cooldown
             info!("Cold Snap disaster started! Duration: 30 seconds");
         } else if disaster_state.is_on_cooldown(DisasterType::ColdSnap) {
             info!("Cold Snap is on cooldown");
@@ -48,9 +62,13 @@ pub fn disaster_input_system(
 
     // Invasive Species disaster - I key
     if input.just_pressed(KeyCode::KeyI) {
-        if !disaster_state.is_active(DisasterType::InvasiveSpecies) && !disaster_state.is_on_cooldown(DisasterType::InvasiveSpecies) {
+        if !disaster_state.is_active(DisasterType::InvasiveSpecies)
+            && !disaster_state.is_on_cooldown(DisasterType::InvasiveSpecies)
+        {
             disaster_state.start_disaster(DisasterType::InvasiveSpecies, 60.0); // 60 seconds duration
-            disaster_state.cooldown_timers.insert(DisasterType::InvasiveSpecies, 10.0); // 10 second cooldown
+            disaster_state
+                .cooldown_timers
+                .insert(DisasterType::InvasiveSpecies, 10.0); // 10 second cooldown
             info!("Invasive Species disaster started! Duration: 60 seconds");
         } else if disaster_state.is_on_cooldown(DisasterType::InvasiveSpecies) {
             info!("Invasive Species is on cooldown");

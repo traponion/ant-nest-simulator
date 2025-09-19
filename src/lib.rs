@@ -42,6 +42,7 @@ impl Plugin for AntNestPlugin {
         app.init_resource::<components::TimeControl>()
             .init_resource::<components::DisasterState>()
             .init_resource::<components::ColorOverlayConfig>()
+            .init_resource::<systems::ParticleConfig>()
             .add_systems(
                 Startup,
                 (
@@ -70,6 +71,9 @@ impl Plugin for AntNestPlugin {
                     systems::disaster_effect_system,
                     systems::color_overlay_system,
                     systems::update_overlay_size_system,
+                    systems::particle_spawner_system,
+                    systems::particle_update_system,
+                    systems::update_particle_config_system,
                 ),
             );
     }

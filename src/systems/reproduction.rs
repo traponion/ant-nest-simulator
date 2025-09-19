@@ -1,10 +1,10 @@
-use bevy::prelude::*;
-use rand::prelude::*;
 use crate::components::{
-    Position, Queen, Egg, ReproductionState, AntBehavior, AntState, Lifecycle,
-    Ant, SoilCell, TimeControl
+    Ant, AntBehavior, AntState, Egg, Lifecycle, Position, Queen, ReproductionState, SoilCell,
+    TimeControl,
 };
 use crate::systems::time_control::effective_delta_time;
+use bevy::prelude::*;
+use rand::prelude::*;
 
 /// Spawn initial queen ant at the center of the nest
 pub fn spawn_queen_ant(mut commands: Commands) {
@@ -30,7 +30,7 @@ pub fn spawn_queen_ant(mut commands: Commands) {
         Ant,
         SpriteBundle {
             sprite: Sprite {
-                color: Color::srgb(0.8, 0.0, 0.8), // Purple color for queen
+                color: Color::srgb(0.8, 0.0, 0.8),      // Purple color for queen
                 custom_size: Some(Vec2::new(3.0, 3.0)), // Slightly larger than workers
                 ..default()
             },
@@ -43,6 +43,7 @@ pub fn spawn_queen_ant(mut commands: Commands) {
 }
 
 /// System for queen ant egg laying behavior
+#[allow(clippy::type_complexity)]
 pub fn queen_reproduction_system(
     time: Res<Time>,
     time_control: Res<TimeControl>,
@@ -67,13 +68,18 @@ pub fn queen_reproduction_system(
 
         // Update reproductive capacity based on nutrition and population
         reproduction_state.reproductive_capacity = (avg_nutrition * 2.0).min(1.0)
-            * if current_ant_population < 20 { 1.0 } else { 0.3 }; // Slow down if overpopulated
+            * if current_ant_population < 20 {
+                1.0
+            } else {
+                0.3
+            }; // Slow down if overpopulated
 
         // Check if it's time to lay an egg and conditions are favorable
         if reproduction_state.time_since_last_egg >= reproduction_state.egg_laying_interval
             && lifecycle.energy > 50.0  // Queen needs enough energy
             && reproduction_state.reproductive_capacity > 0.3
-            && current_ant_population < 50 // Population cap
+            && current_ant_population < 50
+        // Population cap
         {
             lay_egg(&mut commands, position);
             reproduction_state.time_since_last_egg = 0.0;
@@ -96,7 +102,7 @@ fn lay_egg(commands: &mut Commands, queen_position: &Position) {
         },
         SpriteBundle {
             sprite: Sprite {
-                color: Color::srgb(1.0, 1.0, 0.8), // Pale yellow for eggs
+                color: Color::srgb(1.0, 1.0, 0.8),      // Pale yellow for eggs
                 custom_size: Some(Vec2::new(1.5, 1.5)), // Small eggs
                 ..default()
             },
@@ -136,7 +142,10 @@ fn hatch_egg(commands: &mut Commands, egg_entity: Entity, position: &Position) {
 
     // Spawn a new worker ant
     commands.spawn((
-        Position { x: position.x, y: position.y },
+        Position {
+            x: position.x,
+            y: position.y,
+        },
         AntBehavior {
             state: AntState::Foraging,
             target_position: None,
@@ -160,5 +169,8 @@ fn hatch_egg(commands: &mut Commands, egg_entity: Entity, position: &Position) {
         },
     ));
 
-    info!("Egg hatched into new worker ant at ({:.1}, {:.1})", position.x, position.y);
+    info!(
+        "Egg hatched into new worker ant at ({:.1}, {:.1})",
+        position.x, position.y
+    );
 }
