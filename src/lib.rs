@@ -102,6 +102,7 @@ impl Plugin for AntNestPlugin {
                 (
                     // UI systems
                     systems::time_control_input_system,
+                    systems::handle_time_control_buttons,
                     systems::update_speed_display_system,
                     systems::update_active_disasters_display,
                     systems::update_disaster_progress_bars,
