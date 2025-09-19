@@ -52,12 +52,14 @@ impl Plugin for AntNestPlugin {
                     systems::spawn_food_sources,
                     systems::spawn_queen_ant,
                     systems::setup_time_control_ui,
+                    systems::setup_active_disasters_panel,
                     systems::setup_disaster_control_panel,
                 ),
             )
             .add_systems(
                 Update,
                 (
+                    // Core simulation systems
                     systems::ant_movement_system,
                     systems::ant_lifecycle_system,
                     systems::environmental_update_system,
@@ -65,8 +67,12 @@ impl Plugin for AntNestPlugin {
                     systems::food_regeneration_system,
                     systems::queen_reproduction_system,
                     systems::egg_hatching_system,
-                    systems::time_control_input_system,
-                    systems::update_speed_display_system,
+                ),
+            )
+            .add_systems(
+                Update,
+                (
+                    // Disaster and visual effects systems
                     systems::disaster_input_system,
                     systems::disaster_timer_system,
                     systems::disaster_effect_system,
@@ -78,6 +84,27 @@ impl Plugin for AntNestPlugin {
                     systems::update_disaster_status_system,
                     systems::update_cooldown_timers_system,
                     systems::disaster_trigger_feedback_system,
+                ),
+            )
+            .add_systems(
+                Update,
+                (
+                    // UI systems
+                    systems::time_control_input_system,
+                    systems::update_speed_display_system,
+                    systems::update_active_disasters_display,
+                    systems::update_disaster_progress_bars,
+                    systems::update_disaster_duration_text,
+                ),
+            )
+            .add_systems(
+                Update,
+                (
+                    // Invasive species systems
+                    systems::invasive_species_spawning_system,
+                    systems::invasive_species_behavior_system,
+                    systems::ant_defensive_behavior_system,
+                    systems::invasive_species_cleanup_system,
                 ),
             );
     }
