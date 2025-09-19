@@ -815,3 +815,24 @@ pub struct SpeedButton {
 /// Component for speed display text
 #[derive(Component)]
 pub struct SpeedDisplay;
+
+/// Component for speed slider container
+#[derive(Component)]
+pub struct SpeedSlider {
+    /// Current value of the slider (1.0 to 100.0)
+    pub current_value: f32,
+    /// Whether the user is currently dragging the slider
+    pub is_dragging: bool,
+}
+
+/// Component for the visual track of the speed slider
+#[derive(Component)]
+pub struct SpeedSliderTrack;
+
+/// Component for the draggable handle of the speed slider
+#[derive(Component)]
+pub struct SpeedSliderHandle;
+
+/// Component for displaying the current slider value
+#[derive(Component)]
+pub struct SpeedSliderValueDisplay;
