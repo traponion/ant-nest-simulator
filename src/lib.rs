@@ -47,6 +47,7 @@ impl Plugin for AntNestPlugin {
                 systems::setup_world,
                 systems::spawn_soil_grid,
                 systems::spawn_initial_ants,
+                systems::spawn_food_sources,
                 systems::spawn_queen_ant,
                 systems::setup_time_control_ui,
             ))

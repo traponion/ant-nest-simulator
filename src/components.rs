@@ -47,6 +47,8 @@ pub enum AntState {
     Returning,
     Resting,
     Digging,
+    /// Carrying food back to the colony
+    CarryingFood,
 }
 
 /// Time control resource for managing simulation speed
@@ -87,4 +89,30 @@ pub struct ReproductionState {
     pub egg_laying_interval: f32,
     /// Current reproductive capacity based on colony resources
     pub reproductive_capacity: f32,
+}
+
+/// Marker component for food entities
+#[derive(Component)]
+pub struct Food;
+
+/// Component for food source properties
+#[derive(Component)]
+pub struct FoodSource {
+    /// Nutritional value provided when consumed (energy points)
+    pub nutrition_value: f32,
+    /// Whether this food source is currently available for consumption
+    pub is_available: bool,
+    /// Time remaining until this food source regenerates (if consumed)
+    pub regeneration_timer: f32,
+    /// Base regeneration time for this food source
+    pub regeneration_time: f32,
+}
+
+/// Component for tracking what an ant is currently carrying
+#[derive(Component)]
+pub struct Inventory {
+    /// Energy value of the food being carried (0.0 if nothing)
+    pub carried_food_value: f32,
+    /// Position where the ant should return to (colony center)
+    pub home_position: Position,
 }
