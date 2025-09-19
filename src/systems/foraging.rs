@@ -1,11 +1,12 @@
 use crate::components::{
-    Ant, AntBehavior, AntState, Food, FoodSource, Inventory, Lifecycle, Position, TimeControl,
+    Ant, AntBehavior, AntState, Food, FoodSource, Inventory, Lifecycle, Position, SpatialGrid, TimeControl,
 };
 use crate::systems::time_control::effective_delta_time;
 use bevy::prelude::*;
 
 /// System for handling food consumption and energy recovery
 pub fn food_consumption_system(
+    spatial_grid: Res<SpatialGrid>,
     mut ant_query: Query<
         (
             Entity,
@@ -26,18 +27,22 @@ pub fn food_consumption_system(
             continue;
         }
 
-        // Check for food sources within consumption range (2.0 units)
-        for (_food_entity, food_pos, mut food_source) in food_query.iter_mut() {
-            if !food_source.is_available {
-                continue;
-            }
+        // Check for food sources within consumption range (2.0 units) using spatial indexing
+        let consumption_radius = 2.0;
+        let nearby_food_entities = spatial_grid.get_entities_in_radius(ant_pos, consumption_radius);
 
-            let dx = food_pos.x - ant_pos.x;
-            let dy = food_pos.y - ant_pos.y;
-            let distance = (dx * dx + dy * dy).sqrt();
+        for food_entity in nearby_food_entities {
+            if let Ok((_entity, food_pos, mut food_source)) = food_query.get_mut(food_entity) {
+                if !food_source.is_available {
+                    continue;
+                }
 
-            // If ant is close enough to consume food
-            if distance <= 2.0 {
+                let dx = food_pos.x - ant_pos.x;
+                let dy = food_pos.y - ant_pos.y;
+                let distance = (dx * dx + dy * dy).sqrt();
+
+                // If ant is close enough to consume food
+                if distance <= consumption_radius {
                 // Consume the food
                 food_source.is_available = false;
                 food_source.regeneration_timer = food_source.regeneration_time;
@@ -60,6 +65,7 @@ pub fn food_consumption_system(
 
                 // Only consume one food source per frame per ant
                 break;
+                }
             }
         }
     }

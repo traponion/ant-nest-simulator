@@ -44,6 +44,11 @@ impl Plugin for AntNestPlugin {
             .init_resource::<components::ColorOverlayConfig>()
             .init_resource::<components::VisualEffectsSettings>()
             .init_resource::<systems::ParticleConfig>()
+            .insert_resource(components::SpatialGrid::new(
+                16.0, // Cell size of 16 units
+                components::Position { x: -80.0, y: -60.0 }, // World min
+                components::Position { x: 80.0, y: 60.0 },   // World max
+            ))
             .add_systems(
                 Startup,
                 (
@@ -55,6 +60,7 @@ impl Plugin for AntNestPlugin {
                     systems::setup_time_control_ui,
                     systems::setup_active_disasters_panel,
                     systems::setup_disaster_control_panel,
+                    systems::initialize_spatial_grid_system,
                 ),
             )
             .add_systems(
@@ -68,6 +74,8 @@ impl Plugin for AntNestPlugin {
                     systems::food_regeneration_system,
                     systems::queen_reproduction_system,
                     systems::egg_hatching_system,
+                    // Spatial optimization systems
+                    systems::update_food_sources_in_grid_system,
                 ),
             )
             .add_systems(

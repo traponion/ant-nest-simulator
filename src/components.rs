@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 /// Position component for entities in 2D space
-#[derive(Component, Clone)]
+#[derive(Component, Clone, Default)]
 pub struct Position {
     pub x: f32,
     pub y: f32,
@@ -431,5 +431,105 @@ impl VisualEffectsSettings {
     pub fn toggle_all(&mut self) {
         self.particles_enabled = !self.particles_enabled;
         self.overlays_enabled = !self.overlays_enabled;
+    }
+}
+
+/// Grid cell coordinates for spatial partitioning
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct GridCell {
+    pub x: i32,
+    pub y: i32,
+}
+
+/// Resource for spatial partitioning of entities
+/// Provides O(1) lookup time for nearby entities instead of O(n) brute force search
+#[derive(Resource, Default)]
+pub struct SpatialGrid {
+    /// Grid cell size in world units
+    pub cell_size: f32,
+    /// Map from grid cells to lists of entities in that cell
+    pub grid: std::collections::HashMap<GridCell, Vec<Entity>>,
+    /// World bounds for the grid
+    pub world_min: Position,
+    pub world_max: Position,
+}
+
+impl SpatialGrid {
+    /// Create new spatial grid with specified cell size and world bounds
+    pub fn new(cell_size: f32, world_min: Position, world_max: Position) -> Self {
+        Self {
+            cell_size,
+            grid: std::collections::HashMap::new(),
+            world_min,
+            world_max,
+        }
+    }
+
+    /// Convert world position to grid cell coordinates
+    pub fn world_to_grid(&self, position: &Position) -> GridCell {
+        GridCell {
+            x: (position.x / self.cell_size).floor() as i32,
+            y: (position.y / self.cell_size).floor() as i32,
+        }
+    }
+
+    /// Get all entities in a specific grid cell
+    pub fn get_entities_in_cell(&self, cell: GridCell) -> Vec<Entity> {
+        self.grid.get(&cell).cloned().unwrap_or_default()
+    }
+
+    /// Get all entities within a radius around a position
+    /// Returns entities from all grid cells that could potentially contain entities within the radius
+    pub fn get_entities_in_radius(&self, position: &Position, radius: f32) -> Vec<Entity> {
+        let center_cell = self.world_to_grid(position);
+        let cell_radius = (radius / self.cell_size).ceil() as i32;
+
+        let mut entities = Vec::new();
+
+        for dx in -cell_radius..=cell_radius {
+            for dy in -cell_radius..=cell_radius {
+                let cell = GridCell {
+                    x: center_cell.x + dx,
+                    y: center_cell.y + dy,
+                };
+                entities.extend(self.get_entities_in_cell(cell));
+            }
+        }
+
+        entities
+    }
+
+    /// Add entity to the spatial grid at given position
+    pub fn insert_entity(&mut self, entity: Entity, position: &Position) {
+        let cell = self.world_to_grid(position);
+        self.grid.entry(cell).or_insert_with(Vec::new).push(entity);
+    }
+
+    /// Remove entity from the spatial grid
+    pub fn remove_entity(&mut self, entity: Entity, position: &Position) {
+        let cell = self.world_to_grid(position);
+        if let Some(entities) = self.grid.get_mut(&cell) {
+            entities.retain(|&e| e != entity);
+            if entities.is_empty() {
+                self.grid.remove(&cell);
+            }
+        }
+    }
+
+    /// Update entity position in the grid (remove from old cell, add to new cell)
+    pub fn update_entity_position(&mut self, entity: Entity, old_position: &Position, new_position: &Position) {
+        let old_cell = self.world_to_grid(old_position);
+        let new_cell = self.world_to_grid(new_position);
+
+        // Only update if the entity moved to a different cell
+        if old_cell != new_cell {
+            self.remove_entity(entity, old_position);
+            self.insert_entity(entity, new_position);
+        }
+    }
+
+    /// Clear all entities from the grid
+    pub fn clear(&mut self) {
+        self.grid.clear();
     }
 }
