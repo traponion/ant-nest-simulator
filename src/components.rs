@@ -411,226 +411,171 @@ impl DisasterType {
     }
 }
 
-/// Age groups for population analysis
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum AgeGroup {
-    Egg,
-    Young,   // 0-25% of max age
-    Adult,   // 25-75% of max age
-    Elderly, // 75-100% of max age
+/// Resource for managing visual effects accessibility settings
+#[derive(Resource, Default)]
+pub struct VisualEffectsSettings {
+    /// Whether particle effects are enabled (can be toggled for accessibility)
+    pub particles_enabled: bool,
+    /// Whether color overlays are enabled (can be toggled for accessibility)
+    pub overlays_enabled: bool,
 }
 
-/// Types of metrics displayed in analytics dashboard
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum MetricType {
-    Population,
-    FoodCollected,
-    AverageEnergy,
-    ForagingSuccess,
-    BirthRate,
-    DeathRate,
-}
-
-/// Snapshot of population data at a specific time
-#[derive(Debug, Clone)]
-pub struct PopulationSnapshot {
-    pub timestamp: f32,
-    pub total_population: usize,
-    pub population_by_age: std::collections::HashMap<AgeGroup, usize>,
-    pub birth_count: usize,
-    pub death_count: usize,
-}
-
-/// Snapshot of resource data at a specific time
-#[derive(Debug, Clone)]
-pub struct ResourceSnapshot {
-    pub timestamp: f32,
-    pub food_collected: f32,
-    pub average_energy: f32,
-    pub foraging_attempts: usize,
-    pub successful_foraging: usize,
-}
-
-/// Resource for managing colony analytics and statistics
-#[derive(Resource)]
-pub struct ColonyAnalytics {
-    // Population metrics
-    pub total_population: usize,
-    pub population_by_age: std::collections::HashMap<AgeGroup, usize>,
-    pub birth_count: usize,
-    pub death_count: usize,
-
-    // Resource metrics
-    pub food_collected: f32,
-    pub average_energy: f32,
-    pub foraging_attempts: usize,
-    pub successful_foraging: usize,
-
-    // Historical data (circular buffers for memory efficiency)
-    pub population_history: std::collections::VecDeque<PopulationSnapshot>,
-    pub resource_history: std::collections::VecDeque<ResourceSnapshot>,
-
-    // Update timing
-    pub update_timer: f32,
-    pub update_interval: f32, // Update frequency (e.g., 1.0 = once per second)
-
-    // Dashboard visibility
-    pub is_visible: bool,
-
-    // Historical data limits
-    pub max_history_entries: usize,
-}
-
-impl Default for ColonyAnalytics {
-    fn default() -> Self {
-        let mut population_by_age = std::collections::HashMap::new();
-        population_by_age.insert(AgeGroup::Egg, 0);
-        population_by_age.insert(AgeGroup::Young, 0);
-        population_by_age.insert(AgeGroup::Adult, 0);
-        population_by_age.insert(AgeGroup::Elderly, 0);
-
+impl VisualEffectsSettings {
+    /// Create new settings with effects enabled by default
+    pub fn new() -> Self {
         Self {
-            total_population: 0,
-            population_by_age,
-            birth_count: 0,
-            death_count: 0,
-            food_collected: 0.0,
-            average_energy: 0.0,
-            foraging_attempts: 0,
-            successful_foraging: 0,
-            population_history: std::collections::VecDeque::new(),
-            resource_history: std::collections::VecDeque::new(),
-            update_timer: 0.0,
-            update_interval: 1.0,     // Update once per second
-            is_visible: true,         // Start with dashboard visible
-            max_history_entries: 300, // Keep 5 minutes of data at 1Hz
+            particles_enabled: true,
+            overlays_enabled: true,
         }
+    }
+
+    /// Toggle particle effects on/off
+    pub fn toggle_particles(&mut self) {
+        self.particles_enabled = !self.particles_enabled;
+    }
+
+    /// Toggle color overlays on/off
+    pub fn toggle_overlays(&mut self) {
+        self.overlays_enabled = !self.overlays_enabled;
+    }
+
+    /// Toggle all visual effects on/off
+    pub fn toggle_all(&mut self) {
+        self.particles_enabled = !self.particles_enabled;
+        self.overlays_enabled = !self.overlays_enabled;
     }
 }
 
-impl ColonyAnalytics {
-    /// Calculate foraging success rate as a percentage
-    pub fn foraging_success_rate(&self) -> f32 {
-        if self.foraging_attempts == 0 {
-            0.0
-        } else {
-            (self.successful_foraging as f32 / self.foraging_attempts as f32) * 100.0
-        }
+/// Resource for tracking comprehensive colony statistics and metrics
+#[derive(Resource, Default)]
+pub struct ColonyStatistics {
+    // Population Statistics
+    pub total_ant_count: usize,
+    pub queen_count: usize,
+    pub egg_count: usize,
+    pub average_incubation_time: f32,
+    pub young_ants: usize,      // Age < 30% of max_age
+    pub adult_ants: usize,      // Age 30-70% of max_age
+    pub elderly_ants: usize,    // Age > 70% of max_age
+    pub recent_births: usize,
+    pub recent_deaths: usize,
+
+    // Resource Management
+    pub available_food_sources: usize,
+    pub total_food_nutrition: f32,
+    pub average_ant_energy: f32,
+    pub min_ant_energy: f32,
+    pub max_ant_energy: f32,
+    pub ants_carrying_food: usize,
+    pub total_carried_food_value: f32,
+
+    // Environmental Status
+    pub average_soil_moisture: f32,
+    pub min_soil_moisture: f32,
+    pub max_soil_moisture: f32,
+    pub average_soil_temperature: f32,
+    pub min_soil_temperature: f32,
+    pub max_soil_temperature: f32,
+    pub average_soil_nutrition: f32,
+    pub min_soil_nutrition: f32,
+    pub max_soil_nutrition: f32,
+    pub active_disasters_count: usize,
+
+    // Behavioral Insights
+    pub ants_foraging: usize,
+    pub ants_returning: usize,
+    pub ants_resting: usize,
+    pub ants_digging: usize,
+    pub ants_carrying: usize,
+
+    // Queen Reproduction Statistics
+    pub queen_reproduction_capacity: f32,
+    pub time_since_last_egg: f32,
+
+    // Performance tracking
+    pub last_update_time: f32,
+}
+
+impl ColonyStatistics {
+    /// Create a new empty statistics resource
+    pub fn new() -> Self {
+        Self::default()
     }
 
-    /// Calculate birth rate (births per minute)
-    pub fn birth_rate(&self) -> f32 {
-        if self.population_history.len() < 2 {
+    /// Reset all statistics to default values
+    pub fn reset(&mut self) {
+        *self = Self::default();
+    }
+
+    /// Get total population (all ants + queen)
+    pub fn total_population(&self) -> usize {
+        self.total_ant_count + self.queen_count
+    }
+
+    /// Get foraging efficiency as a percentage
+    pub fn foraging_efficiency(&self) -> f32 {
+        if self.total_ant_count == 0 {
             return 0.0;
         }
 
-        let time_span = 60.0; // Calculate per minute
-        let recent_entries: Vec<_> = self
-            .population_history
-            .iter()
-            .rev()
-            .take_while(|snapshot| {
-                let latest_time = self.population_history.back().unwrap().timestamp;
-                latest_time - snapshot.timestamp <= time_span
-            })
-            .collect();
-
-        if recent_entries.len() < 2 {
-            return 0.0;
-        }
-
-        let oldest = recent_entries.last().unwrap();
-        let newest = recent_entries.first().unwrap();
-        let time_diff = newest.timestamp - oldest.timestamp;
-
-        if time_diff > 0.0 {
-            let birth_diff = newest.birth_count.saturating_sub(oldest.birth_count);
-            (birth_diff as f32 / time_diff) * 60.0 // Convert to per minute
-        } else {
-            0.0
-        }
+        let foraging_ants = self.ants_foraging + self.ants_carrying;
+        (foraging_ants as f32 / self.total_ant_count as f32) * 100.0
     }
 
-    /// Calculate death rate (deaths per minute)
-    pub fn death_rate(&self) -> f32 {
-        if self.population_history.len() < 2 {
+    /// Get average energy percentage across all ants
+    pub fn average_energy_percentage(&self) -> f32 {
+        if self.total_ant_count == 0 || self.max_ant_energy == 0.0 {
             return 0.0;
         }
-
-        let time_span = 60.0; // Calculate per minute
-        let recent_entries: Vec<_> = self
-            .population_history
-            .iter()
-            .rev()
-            .take_while(|snapshot| {
-                let latest_time = self.population_history.back().unwrap().timestamp;
-                latest_time - snapshot.timestamp <= time_span
-            })
-            .collect();
-
-        if recent_entries.len() < 2 {
-            return 0.0;
-        }
-
-        let oldest = recent_entries.last().unwrap();
-        let newest = recent_entries.first().unwrap();
-        let time_diff = newest.timestamp - oldest.timestamp;
-
-        if time_diff > 0.0 {
-            let death_diff = newest.death_count.saturating_sub(oldest.death_count);
-            (death_diff as f32 / time_diff) * 60.0 // Convert to per minute
-        } else {
-            0.0
-        }
+        (self.average_ant_energy / self.max_ant_energy) * 100.0
     }
 
-    /// Add a new population snapshot to history
-    pub fn add_population_snapshot(&mut self, timestamp: f32) {
-        let snapshot = PopulationSnapshot {
-            timestamp,
-            total_population: self.total_population,
-            population_by_age: self.population_by_age.clone(),
-            birth_count: self.birth_count,
-            death_count: self.death_count,
-        };
-
-        self.population_history.push_back(snapshot);
-
-        // Maintain maximum history size
-        while self.population_history.len() > self.max_history_entries {
-            self.population_history.pop_front();
+    /// Get formatted age distribution text
+    pub fn age_distribution_text(&self) -> String {
+        if self.total_ant_count == 0 {
+            return "No ants".to_string();
         }
+
+        let young_pct = (self.young_ants as f32 / self.total_ant_count as f32) * 100.0;
+        let adult_pct = (self.adult_ants as f32 / self.total_ant_count as f32) * 100.0;
+        let elderly_pct = (self.elderly_ants as f32 / self.total_ant_count as f32) * 100.0;
+
+        format!("Young: {:.0}%, Adult: {:.0}%, Elderly: {:.0}%", young_pct, adult_pct, elderly_pct)
     }
 
-    /// Add a new resource snapshot to history
-    pub fn add_resource_snapshot(&mut self, timestamp: f32) {
-        let snapshot = ResourceSnapshot {
-            timestamp,
-            food_collected: self.food_collected,
-            average_energy: self.average_energy,
-            foraging_attempts: self.foraging_attempts,
-            successful_foraging: self.successful_foraging,
-        };
-
-        self.resource_history.push_back(snapshot);
-
-        // Maintain maximum history size
-        while self.resource_history.len() > self.max_history_entries {
-            self.resource_history.pop_front();
+    /// Get formatted behavioral state distribution
+    pub fn behavior_distribution_text(&self) -> String {
+        if self.total_ant_count == 0 {
+            return "No ants".to_string();
         }
+
+        let foraging_pct = (self.ants_foraging as f32 / self.total_ant_count as f32) * 100.0;
+        let returning_pct = (self.ants_returning as f32 / self.total_ant_count as f32) * 100.0;
+        let resting_pct = (self.ants_resting as f32 / self.total_ant_count as f32) * 100.0;
+        let digging_pct = (self.ants_digging as f32 / self.total_ant_count as f32) * 100.0;
+        let carrying_pct = (self.ants_carrying as f32 / self.total_ant_count as f32) * 100.0;
+
+        format!(
+            "Foraging: {:.0}%, Returning: {:.0}%, Resting: {:.0}%, Digging: {:.0}%, Carrying: {:.0}%",
+            foraging_pct, returning_pct, resting_pct, digging_pct, carrying_pct
+        )
     }
 }
 
-/// Marker component for analytics dashboard panel
+/// Component marker for the statistics display panel
 #[derive(Component)]
-pub struct AnalyticsDashboard;
+pub struct StatisticsPanel;
 
-/// Component for individual metric displays in the analytics dashboard
+/// Component for statistics toggle functionality
 #[derive(Component)]
-pub struct MetricDisplay {
-    pub metric_type: MetricType,
+pub struct StatisticsToggle {
+    pub is_visible: bool,
 }
 
-/// Component for analytics toggle button
-#[derive(Component)]
-pub struct AnalyticsToggleButton;
+impl Default for StatisticsToggle {
+    fn default() -> Self {
+        Self {
+            is_visible: false, // Start hidden by default
+        }
+    }
+}

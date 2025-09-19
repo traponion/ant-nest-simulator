@@ -168,8 +168,7 @@ pub fn update_disaster_progress_bars(
     mut progress_query: Query<(&DisasterProgressBar, &mut Style)>,
 ) {
     for (progress_bar, mut style) in progress_query.iter_mut() {
-        if let Some(remaining_time) = disaster_state.get_remaining_time(progress_bar.disaster_type)
-        {
+        if let Some(remaining_time) = disaster_state.get_remaining_time(progress_bar.disaster_type) {
             let progress_ratio = remaining_time / progress_bar.max_duration;
             let progress_percentage = (progress_ratio * 100.0).clamp(0.0, 100.0);
             style.width = Val::Percent(progress_percentage);
@@ -183,8 +182,7 @@ pub fn update_disaster_duration_text(
     mut text_query: Query<(&DisasterDurationText, &mut Text)>,
 ) {
     for (duration_text, mut text) in text_query.iter_mut() {
-        if let Some(remaining_time) = disaster_state.get_remaining_time(duration_text.disaster_type)
-        {
+        if let Some(remaining_time) = disaster_state.get_remaining_time(duration_text.disaster_type) {
             text.sections[0].value = format!("{:.1}s", remaining_time);
         }
     }

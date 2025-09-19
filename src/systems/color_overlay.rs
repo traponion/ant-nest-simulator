@@ -1,5 +1,5 @@
-use crate::components::{ColorOverlay, ColorOverlayConfig, DisasterState, DisasterType};
 use bevy::prelude::*;
+use crate::components::{ColorOverlay, ColorOverlayConfig, DisasterState, DisasterType, VisualEffectsSettings};
 
 /// System for managing color overlay entities based on active disasters
 pub fn color_overlay_system(
@@ -8,6 +8,7 @@ pub fn color_overlay_system(
     mut overlay_config: ResMut<ColorOverlayConfig>,
     overlay_query: Query<Entity, With<ColorOverlay>>,
     windows: Query<&Window>,
+    visual_effects_settings: Res<VisualEffectsSettings>,
 ) {
     // Get window size for fullscreen overlay
     let window = windows.single();
@@ -19,6 +20,11 @@ pub fn color_overlay_system(
         commands.entity(entity).despawn();
     }
     overlay_config.overlay_entity = None;
+
+    // Skip overlay creation if overlays are disabled for accessibility
+    if !visual_effects_settings.overlays_enabled {
+        return;
+    }
 
     // Calculate blended color for active disasters
     let blended_color = calculate_blended_overlay_color(&disaster_state, &overlay_config);
