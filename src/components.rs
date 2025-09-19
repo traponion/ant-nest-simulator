@@ -815,3 +815,140 @@ pub struct SpeedButton {
 /// Component for speed display text
 #[derive(Component)]
 pub struct SpeedDisplay;
+
+/// Settings and configuration components
+
+/// Resource for user settings and preferences
+#[derive(Resource, Clone)]
+pub struct UserSettings {
+    // Visual settings
+    pub visual_effects_enabled: bool,
+    pub ui_scale: f32,
+    pub color_theme: ColorTheme,
+    pub performance_mode: bool,
+
+    // Accessibility settings
+    pub high_contrast: bool,
+    pub reduced_motion: bool,
+    pub large_ui_elements: bool,
+    pub keyboard_navigation: bool,
+
+    // Application settings
+    pub auto_save_interval: f32,
+    pub default_speed: f32,
+    pub window_size: (u32, u32),
+    pub panel_layout: PanelLayout,
+}
+
+/// Color theme options for the application
+#[derive(Clone, Default, PartialEq)]
+pub enum ColorTheme {
+    #[default]
+    Default,
+    HighContrast,
+    ColorblindFriendly,
+}
+
+/// Panel layout configuration options
+#[derive(Clone, Default, PartialEq)]
+pub enum PanelLayout {
+    #[default]
+    Standard,
+    Compact,
+    FullScreen,
+}
+
+impl Default for UserSettings {
+    fn default() -> Self {
+        Self {
+            // Visual settings defaults
+            visual_effects_enabled: true,
+            ui_scale: 1.0,
+            color_theme: ColorTheme::Default,
+            performance_mode: false,
+
+            // Accessibility settings defaults
+            high_contrast: false,
+            reduced_motion: false,
+            large_ui_elements: false,
+            keyboard_navigation: false,
+
+            // Application settings defaults
+            auto_save_interval: 300.0, // 5 minutes
+            default_speed: 1.0,
+            window_size: (1200, 800),
+            panel_layout: PanelLayout::Standard,
+        }
+    }
+}
+
+/// Component marker for the settings panel
+#[derive(Component)]
+pub struct SettingsPanel;
+
+/// Component for settings toggle button
+#[derive(Component)]
+pub struct SettingsToggle {
+    pub is_visible: bool,
+}
+
+impl Default for SettingsToggle {
+    fn default() -> Self {
+        Self {
+            is_visible: false, // Start hidden by default
+        }
+    }
+}
+
+/// Component for settings category tabs
+#[derive(Component)]
+pub struct SettingsCategory {
+    pub category: SettingsCategoryType,
+    pub is_active: bool,
+}
+
+/// Types of settings categories
+#[derive(Clone, PartialEq)]
+pub enum SettingsCategoryType {
+    Visual,
+    Accessibility,
+    Application,
+}
+
+/// Component for individual setting items
+#[derive(Component)]
+pub struct SettingItem {
+    pub setting_type: SettingType,
+}
+
+/// Types of individual settings
+#[derive(Clone, PartialEq)]
+pub enum SettingType {
+    VisualEffectsToggle,
+    UIScale,
+    ColorTheme,
+    PerformanceMode,
+    HighContrast,
+    ReducedMotion,
+    LargeUIElements,
+    KeyboardNavigation,
+    AutoSaveInterval,
+    DefaultSpeed,
+    PanelLayout,
+}
+
+/// Component for settings control buttons
+#[derive(Component)]
+pub struct SettingsButton {
+    pub action: SettingsAction,
+}
+
+/// Actions that settings buttons can perform
+#[derive(Clone, PartialEq)]
+pub enum SettingsAction {
+    ApplySettings,
+    ResetToDefaults,
+    SaveSettings,
+    LoadSettings,
+    ClosePanel,
+}

@@ -45,6 +45,7 @@ impl Plugin for AntNestPlugin {
             .init_resource::<components::VisualEffectsSettings>()
             .init_resource::<components::PerformanceMetrics>()
             .init_resource::<components::ColonyStatistics>()
+            .init_resource::<components::UserSettings>()
             .init_resource::<systems::ParticleConfig>()
             .insert_resource(components::SpatialGrid::new(
                 16.0, // Cell size of 16 units
@@ -66,6 +67,8 @@ impl Plugin for AntNestPlugin {
                     systems::setup_performance_monitoring_ui,
                     systems::initialize_spatial_grid_system,
                     systems::setup_statistics_panel,
+                    systems::settings_ui::setup_settings_panel,
+                    systems::settings_ui::setup_settings_toggle_button,
                 ),
             )
             // Core simulation systems
@@ -106,6 +109,8 @@ impl Plugin for AntNestPlugin {
                     systems::update_play_pause_button_system,
                     systems::button_click_system,
                     systems::visual_effects_toggle_system,
+                    systems::settings_ui::settings_toggle_input_system,
+                    systems::settings_ui::handle_settings_interactions_system,
                 ),
             )
             // Visual effects systems
