@@ -66,3 +66,25 @@ impl Default for TimeControl {
         }
     }
 }
+
+/// Marker component for queen ant entities
+#[derive(Component)]
+pub struct Queen;
+
+/// Component for egg entities with incubation time
+#[derive(Component)]
+pub struct Egg {
+    /// Time remaining until hatching (in seconds)
+    pub incubation_time: f32,
+}
+
+/// Component for managing ant reproduction behavior
+#[derive(Component)]
+pub struct ReproductionState {
+    /// Time since last egg laying (in seconds)
+    pub time_since_last_egg: f32,
+    /// Minimum time between egg laying attempts (in seconds)
+    pub egg_laying_interval: f32,
+    /// Current reproductive capacity based on colony resources
+    pub reproductive_capacity: f32,
+}
