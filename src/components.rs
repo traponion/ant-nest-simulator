@@ -580,3 +580,21 @@ impl Default for StatisticsToggle {
         }
     }
 }
+
+/// UI components for time control panel
+#[derive(Component)]
+pub struct TimeControlPanel;
+
+/// Component for play/pause button
+#[derive(Component)]
+pub struct PlayPauseButton;
+
+/// Component for speed control buttons
+#[derive(Component)]
+pub struct SpeedButton {
+    pub target_speed: f32,
+}
+
+/// Component for speed display text
+#[derive(Component)]
+pub struct SpeedDisplay;
