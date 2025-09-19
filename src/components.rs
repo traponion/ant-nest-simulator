@@ -165,3 +165,105 @@ pub struct InvasiveSpecies {
     /// Rate at which this species consumes food sources
     pub food_consumption_rate: f32,
 }
+
+/// Marker component for particle entities
+#[derive(Component)]
+pub struct Particle;
+
+/// Component for particle behavior and visual properties
+#[derive(Component)]
+pub struct ParticleData {
+    /// Particle type determining its behavior and appearance
+    pub particle_type: ParticleType,
+    /// Remaining lifetime before particle despawns (in seconds)
+    pub lifetime: f32,
+    /// Maximum lifetime this particle started with
+    pub max_lifetime: f32,
+    /// Velocity vector for particle movement
+    pub velocity: Vec2,
+    /// Base color (may be modified by lifetime for fade effects)
+    pub base_color: Color,
+    /// Size of the particle sprite
+    pub size: Vec2,
+}
+
+/// Types of particles for different disaster effects
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum ParticleType {
+    /// Rain droplet particles - fall downward with blue color
+    RainDrop,
+    /// Dust particles for drought - rise upward with brown/yellow color
+    DustMote,
+    /// Snowflake particles for cold snap - fall downward with white/blue color
+    Snowflake,
+    /// Environmental disturbance particles for invasive species - random movement with red color
+    EnvironmentalDisturbance,
+}
+
+impl ParticleData {
+    /// Create a new rain drop particle
+    pub fn new_rain_drop(lifetime: f32, initial_velocity: Vec2) -> Self {
+        Self {
+            particle_type: ParticleType::RainDrop,
+            lifetime,
+            max_lifetime: lifetime,
+            velocity: initial_velocity,
+            base_color: Color::srgba(0.2, 0.6, 1.0, 0.8), // Light blue with transparency
+            size: Vec2::new(2.0, 4.0), // Small elongated droplet
+        }
+    }
+
+    /// Create a new dust mote particle for drought
+    pub fn new_dust_mote(lifetime: f32, initial_velocity: Vec2) -> Self {
+        Self {
+            particle_type: ParticleType::DustMote,
+            lifetime,
+            max_lifetime: lifetime,
+            velocity: initial_velocity,
+            base_color: Color::srgba(0.8, 0.6, 0.3, 0.6), // Sandy brown with transparency
+            size: Vec2::new(3.0, 3.0), // Small square dust
+        }
+    }
+
+    /// Create a new snowflake particle for cold snap
+    pub fn new_snowflake(lifetime: f32, initial_velocity: Vec2) -> Self {
+        Self {
+            particle_type: ParticleType::Snowflake,
+            lifetime,
+            max_lifetime: lifetime,
+            velocity: initial_velocity,
+            base_color: Color::srgba(0.9, 0.9, 1.0, 0.7), // Light blue-white with transparency
+            size: Vec2::new(3.0, 3.0), // Small snowflake
+        }
+    }
+
+    /// Create a new environmental disturbance particle for invasive species
+    pub fn new_environmental_disturbance(lifetime: f32, initial_velocity: Vec2) -> Self {
+        Self {
+            particle_type: ParticleType::EnvironmentalDisturbance,
+            lifetime,
+            max_lifetime: lifetime,
+            velocity: initial_velocity,
+            base_color: Color::srgba(1.0, 0.3, 0.2, 0.5), // Red with transparency
+            size: Vec2::new(2.0, 2.0), // Small disturbance particle
+        }
+    }
+
+    /// Get the current alpha based on lifetime for fade-out effect
+    pub fn get_current_alpha(&self) -> f32 {
+        let life_ratio = self.lifetime / self.max_lifetime;
+        // Fade out over the last 25% of lifetime
+        if life_ratio < 0.25 {
+            life_ratio * 4.0 * self.base_color.alpha()
+        } else {
+            self.base_color.alpha()
+        }
+    }
+
+    /// Get the current color with lifetime-based alpha
+    pub fn get_current_color(&self) -> Color {
+        let mut color = self.base_color;
+        color.set_alpha(self.get_current_alpha());
+        color
+    }
+}
