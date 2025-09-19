@@ -11,6 +11,7 @@
 pub mod active_disasters_ui;
 pub mod color_overlay;
 pub mod disaster;
+pub mod disaster_ui;
 pub mod environment;
 pub mod foraging;
 pub mod invasive_species;
@@ -25,6 +26,7 @@ pub mod time_control;
 pub use active_disasters_ui::*;
 pub use color_overlay::*;
 pub use disaster::*;
+pub use disaster_ui::*;
 pub use environment::*;
 pub use foraging::*;
 pub use invasive_species::*;
