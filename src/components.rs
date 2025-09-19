@@ -48,3 +48,21 @@ pub enum AntState {
     Resting,
     Digging,
 }
+
+/// Time control resource for managing simulation speed
+#[derive(Resource)]
+pub struct TimeControl {
+    /// Current speed multiplier (1.0 = normal speed, 0.0 = paused, 100.0 = max speed)
+    pub speed_multiplier: f32,
+    /// Whether the simulation is paused
+    pub is_paused: bool,
+}
+
+impl Default for TimeControl {
+    fn default() -> Self {
+        Self {
+            speed_multiplier: 1.0,
+            is_paused: false,
+        }
+    }
+}

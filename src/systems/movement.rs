@@ -1,10 +1,12 @@
 use bevy::prelude::*;
 use rand::prelude::*;
-use crate::components::{Position, AntBehavior, AntState, Ant, Lifecycle};
+use crate::components::{Position, AntBehavior, AntState, Ant, Lifecycle, TimeControl};
+use crate::systems::time_control::effective_delta_time;
 
 /// System for ant movement and behavior
 pub fn ant_movement_system(
     time: Res<Time>,
+    time_control: Res<TimeControl>,
     mut ant_query: Query<(&mut Position, &mut AntBehavior, &mut Transform), (With<Ant>, With<Lifecycle>)>,
 ) {
     let mut rng = thread_rng();
@@ -26,7 +28,8 @@ pub fn ant_movement_system(
                     let distance = (dx * dx + dy * dy).sqrt();
 
                     if distance > 1.0 {
-                        let move_distance = behavior.speed * time.delta_seconds();
+                        let delta_time = effective_delta_time(&time, &time_control);
+                        let move_distance = behavior.speed * delta_time;
                         position.x += (dx / distance) * move_distance;
                         position.y += (dy / distance) * move_distance;
 
