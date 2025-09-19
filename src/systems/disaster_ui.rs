@@ -347,6 +347,7 @@ pub fn disaster_trigger_feedback_system(
         }
     }
 }
+<<<<<<< HEAD
 
 /// Handle hover effects for disaster control buttons
 pub fn handle_disaster_control_interactions(
