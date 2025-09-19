@@ -54,6 +54,7 @@ impl Plugin for AntNestPlugin {
                     systems::setup_time_control_ui,
                 ),
             )
+            // Core simulation systems
             .add_systems(
                 Update,
                 (
@@ -64,11 +65,27 @@ impl Plugin for AntNestPlugin {
                     systems::food_regeneration_system,
                     systems::queen_reproduction_system,
                     systems::egg_hatching_system,
-                    systems::time_control_input_system,
-                    systems::update_speed_display_system,
+                ),
+            )
+            // Disaster and invasive species systems
+            .add_systems(
+                Update,
+                (
                     systems::disaster_input_system,
                     systems::disaster_timer_system,
                     systems::disaster_effect_system,
+                    systems::invasive_species_spawn_system,
+                    systems::invasive_species_behavior_system,
+                    systems::invasive_species_cleanup_system,
+                    systems::invasive_species_food_consumption_system,
+                ),
+            )
+            // UI and visual effects systems
+            .add_systems(
+                Update,
+                (
+                    systems::time_control_input_system,
+                    systems::update_speed_display_system,
                     systems::color_overlay_system,
                     systems::update_overlay_size_system,
                     systems::particle_spawner_system,
