@@ -93,32 +93,42 @@ impl Plugin for AntNestPlugin {
                     systems::disaster_timer_system,
                     systems::disaster_effect_system,
                     systems::invasive_species_spawn_system,
-                    systems::invasive_species::invasive_species_behavior_system,
-                    systems::invasive_species::invasive_species_cleanup_system,
                     systems::invasive_species_food_consumption_system,
                 ),
             )
-            // UI and visual effects systems
+            // UI systems (first part)
             .add_systems(
                 Update,
                 (
                     systems::time_control_input_system,
                     systems::update_speed_display_system,
+                    systems::handle_time_control_buttons,
+                    systems::update_play_pause_button_system,
+                    systems::button_click_system,
+                    systems::visual_effects_toggle_system,
+                ),
+            )
+            // Visual effects systems
+            .add_systems(
+                Update,
+                (
                     systems::color_overlay_system,
                     systems::update_overlay_size_system,
                     systems::particle_spawner_system,
                     systems::particle_update_system,
                     systems::update_particle_config_system,
+                ),
+            )
+            // Disaster UI systems
+            .add_systems(
+                Update,
+                (
                     systems::update_disaster_status_system,
                     systems::update_cooldown_timers_system,
                     systems::disaster_trigger_feedback_system,
-                    systems::handle_time_control_buttons,
-                    systems::update_play_pause_button_system,
-                    systems::button_click_system,
                     systems::update_active_disasters_display,
                     systems::update_disaster_progress_bars,
                     systems::update_disaster_duration_text,
-                    systems::visual_effects_toggle_system,
                 ),
             )
             // Performance monitoring, statistics, and persistence systems
