@@ -304,3 +304,48 @@ impl ParticleData {
         color
     }
 }
+
+impl DisasterType {
+    /// Get the display name for UI
+    pub fn display_name(&self) -> &'static str {
+        match self {
+            DisasterType::Rain => "Rain",
+            DisasterType::Drought => "Drought",
+            DisasterType::ColdSnap => "Cold Snap",
+            DisasterType::InvasiveSpecies => "Invasive Species",
+        }
+    }
+
+    /// Get the display color for active disaster UI
+    pub fn get_active_color(&self) -> Color {
+        match self {
+            DisasterType::Rain => Color::srgb(0.3, 0.8, 1.0),          // Blue
+            DisasterType::Drought => Color::srgb(1.0, 0.7, 0.2),       // Orange
+            DisasterType::ColdSnap => Color::srgb(0.7, 0.9, 1.0),      // Light blue
+            DisasterType::InvasiveSpecies => Color::srgb(1.0, 0.4, 0.4), // Red
+        }
+    }
+}
+
+/// Component for active disasters display panel
+#[derive(Component)]
+pub struct ActiveDisastersPanel;
+
+/// Component for individual active disaster entry
+#[derive(Component)]
+pub struct ActiveDisasterEntry {
+    pub disaster_type: DisasterType,
+}
+
+/// Component for disaster duration progress bar
+#[derive(Component)]
+pub struct DisasterProgressBar {
+    pub disaster_type: DisasterType,
+    pub max_duration: f32,
+}
+
+/// Component for disaster duration text display
+#[derive(Component)]
+pub struct DisasterDurationText {
+    pub disaster_type: DisasterType,
+}

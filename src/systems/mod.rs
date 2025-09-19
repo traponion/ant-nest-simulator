@@ -8,6 +8,7 @@
 //! - Time Control: Time acceleration and pause functionality
 //! - Color Overlay: Visual effects for disaster feedback
 
+pub mod active_disasters_ui;
 pub mod color_overlay;
 pub mod disaster;
 pub mod environment;
@@ -20,6 +21,7 @@ pub mod reproduction;
 pub mod time_control;
 
 // Re-export all system functions for easy importing
+pub use active_disasters_ui::*;
 pub use color_overlay::*;
 pub use disaster::*;
 pub use environment::*;

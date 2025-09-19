@@ -52,6 +52,7 @@ impl Plugin for AntNestPlugin {
                     systems::spawn_food_sources,
                     systems::spawn_queen_ant,
                     systems::setup_time_control_ui,
+                    systems::setup_active_disasters_panel,
                 ),
             )
             .add_systems(
@@ -74,6 +75,9 @@ impl Plugin for AntNestPlugin {
                     systems::particle_spawner_system,
                     systems::particle_update_system,
                     systems::update_particle_config_system,
+                    systems::update_active_disasters_display,
+                    systems::update_disaster_progress_bars,
+                    systems::update_disaster_duration_text,
                 ),
             );
     }
