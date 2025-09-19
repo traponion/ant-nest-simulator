@@ -20,6 +20,7 @@ pub mod movement;
 pub mod particle;
 pub mod rendering;
 pub mod reproduction;
+pub mod statistics;
 pub mod time_control;
 pub mod visual_effects_toggle;
 
@@ -36,5 +37,6 @@ pub use movement::*;
 pub use particle::*;
 pub use rendering::*;
 pub use reproduction::*;
+pub use statistics::*;
 pub use time_control::*;
 pub use visual_effects_toggle::*;

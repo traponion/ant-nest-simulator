@@ -408,6 +408,106 @@ pub struct VisualEffectsSettings {
     pub overlays_enabled: bool,
 }
 
+/// Resource for tracking colony statistics and metrics
+#[derive(Resource, Default)]
+pub struct ColonyStatistics {
+    // Population Statistics
+    pub total_ant_count: u32,
+    pub queen_count: u32,
+    pub egg_count: u32,
+    pub young_ants: u32,
+    pub adult_ants: u32,
+    pub elderly_ants: u32,
+    pub recent_births: u32,
+    pub recent_deaths: u32,
+
+    // Resource Management
+    pub available_food_sources: u32,
+    pub total_food_sources: u32,
+    pub average_energy: f32,
+    pub min_energy: f32,
+    pub max_energy: f32,
+    pub food_consumption_rate: f32,
+    pub foraging_efficiency: f32,
+
+    // Environmental Status
+    pub average_soil_moisture: f32,
+    pub average_soil_temperature: f32,
+    pub average_soil_nutrition: f32,
+    pub soil_moisture_range: (f32, f32),
+    pub soil_temperature_range: (f32, f32),
+    pub soil_nutrition_range: (f32, f32),
+    pub active_disasters: Vec<DisasterType>,
+
+    // Behavioral Insights
+    pub foraging_ants: u32,
+    pub returning_ants: u32,
+    pub resting_ants: u32,
+    pub digging_ants: u32,
+    pub carrying_ants: u32,
+    pub invasive_species_count: u32,
+    pub queen_reproduction_rate: f32,
+    pub average_ant_age: f32,
+
+    // UI State
+    pub is_visible: bool,
+    pub last_updated: f64,
+}
+
+impl ColonyStatistics {
+    /// Toggle the visibility of the statistics panel
+    pub fn toggle_visibility(&mut self) {
+        self.is_visible = !self.is_visible;
+    }
+
+    /// Reset all counters that track rates or recent events
+    pub fn reset_rate_counters(&mut self) {
+        self.recent_births = 0;
+        self.recent_deaths = 0;
+    }
+
+    /// Calculate total soil cells based on available data
+    pub fn get_total_soil_cells(&self) -> u32 {
+        // This will be calculated by the statistics system
+        0
+    }
+
+    /// Get ant state distribution as percentages
+    pub fn get_ant_state_percentages(&self) -> (f32, f32, f32, f32, f32) {
+        let total = self.total_ant_count as f32;
+        if total == 0.0 {
+            return (0.0, 0.0, 0.0, 0.0, 0.0);
+        }
+
+        (
+            (self.foraging_ants as f32 / total) * 100.0,
+            (self.returning_ants as f32 / total) * 100.0,
+            (self.resting_ants as f32 / total) * 100.0,
+            (self.digging_ants as f32 / total) * 100.0,
+            (self.carrying_ants as f32 / total) * 100.0,
+        )
+    }
+}
+
+/// Component marker for the statistics panel UI
+#[derive(Component)]
+pub struct StatisticsPanel;
+
+/// Component for statistics text sections
+#[derive(Component)]
+pub struct StatisticsText {
+    pub section_type: StatisticsSectionType,
+}
+
+/// Types of statistics sections for UI organization
+#[derive(Debug, Clone, PartialEq)]
+pub enum StatisticsSectionType {
+    Population,
+    Resources,
+    Environment,
+    Behavior,
+}
+
 impl VisualEffectsSettings {
     /// Create new settings with effects enabled by default
     pub fn new() -> Self {
