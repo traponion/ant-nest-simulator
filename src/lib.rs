@@ -42,6 +42,7 @@ impl Plugin for AntNestPlugin {
         app.init_resource::<components::TimeControl>()
             .init_resource::<components::DisasterState>()
             .init_resource::<components::ColorOverlayConfig>()
+            .init_resource::<components::ColonyAnalytics>()
             .init_resource::<systems::ParticleConfig>()
             .add_systems(
                 Startup,
@@ -54,6 +55,7 @@ impl Plugin for AntNestPlugin {
                     systems::setup_time_control_ui,
                     systems::setup_active_disasters_panel,
                     systems::setup_disaster_control_panel,
+                    systems::setup_analytics_dashboard,
                 ),
             )
             .add_systems(
@@ -95,6 +97,9 @@ impl Plugin for AntNestPlugin {
                     systems::update_active_disasters_display,
                     systems::update_disaster_progress_bars,
                     systems::update_disaster_duration_text,
+                    systems::analytics_toggle_system,
+                    systems::analytics_data_collection_system,
+                    systems::update_analytics_display_system,
                 ),
             )
             .add_systems(

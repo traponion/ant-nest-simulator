@@ -9,6 +9,7 @@
 //! - Color Overlay: Visual effects for disaster feedback
 
 pub mod active_disasters_ui;
+pub mod analytics;
 pub mod color_overlay;
 pub mod disaster;
 pub mod disaster_ui;
@@ -24,6 +25,7 @@ pub mod time_control;
 
 // Re-export all system functions for easy importing
 pub use active_disasters_ui::*;
+pub use analytics::*;
 pub use color_overlay::*;
 pub use disaster::*;
 pub use disaster_ui::*;

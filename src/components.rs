@@ -398,3 +398,225 @@ impl DisasterType {
         }
     }
 }
+
+/// Age groups for population analysis
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum AgeGroup {
+    Egg,
+    Young,     // 0-25% of max age
+    Adult,     // 25-75% of max age
+    Elderly,   // 75-100% of max age
+}
+
+/// Types of metrics displayed in analytics dashboard
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum MetricType {
+    Population,
+    FoodCollected,
+    AverageEnergy,
+    ForagingSuccess,
+    BirthRate,
+    DeathRate,
+}
+
+/// Snapshot of population data at a specific time
+#[derive(Debug, Clone)]
+pub struct PopulationSnapshot {
+    pub timestamp: f32,
+    pub total_population: usize,
+    pub population_by_age: std::collections::HashMap<AgeGroup, usize>,
+    pub birth_count: usize,
+    pub death_count: usize,
+}
+
+/// Snapshot of resource data at a specific time
+#[derive(Debug, Clone)]
+pub struct ResourceSnapshot {
+    pub timestamp: f32,
+    pub food_collected: f32,
+    pub average_energy: f32,
+    pub foraging_attempts: usize,
+    pub successful_foraging: usize,
+}
+
+/// Resource for managing colony analytics and statistics
+#[derive(Resource)]
+pub struct ColonyAnalytics {
+    // Population metrics
+    pub total_population: usize,
+    pub population_by_age: std::collections::HashMap<AgeGroup, usize>,
+    pub birth_count: usize,
+    pub death_count: usize,
+
+    // Resource metrics
+    pub food_collected: f32,
+    pub average_energy: f32,
+    pub foraging_attempts: usize,
+    pub successful_foraging: usize,
+
+    // Historical data (circular buffers for memory efficiency)
+    pub population_history: std::collections::VecDeque<PopulationSnapshot>,
+    pub resource_history: std::collections::VecDeque<ResourceSnapshot>,
+
+    // Update timing
+    pub update_timer: f32,
+    pub update_interval: f32, // Update frequency (e.g., 1.0 = once per second)
+
+    // Dashboard visibility
+    pub is_visible: bool,
+
+    // Historical data limits
+    pub max_history_entries: usize,
+}
+
+impl Default for ColonyAnalytics {
+    fn default() -> Self {
+        let mut population_by_age = std::collections::HashMap::new();
+        population_by_age.insert(AgeGroup::Egg, 0);
+        population_by_age.insert(AgeGroup::Young, 0);
+        population_by_age.insert(AgeGroup::Adult, 0);
+        population_by_age.insert(AgeGroup::Elderly, 0);
+
+        Self {
+            total_population: 0,
+            population_by_age,
+            birth_count: 0,
+            death_count: 0,
+            food_collected: 0.0,
+            average_energy: 0.0,
+            foraging_attempts: 0,
+            successful_foraging: 0,
+            population_history: std::collections::VecDeque::new(),
+            resource_history: std::collections::VecDeque::new(),
+            update_timer: 0.0,
+            update_interval: 1.0, // Update once per second
+            is_visible: true, // Start with dashboard visible
+            max_history_entries: 300, // Keep 5 minutes of data at 1Hz
+        }
+    }
+}
+
+impl ColonyAnalytics {
+    /// Calculate foraging success rate as a percentage
+    pub fn foraging_success_rate(&self) -> f32 {
+        if self.foraging_attempts == 0 {
+            0.0
+        } else {
+            (self.successful_foraging as f32 / self.foraging_attempts as f32) * 100.0
+        }
+    }
+
+    /// Calculate birth rate (births per minute)
+    pub fn birth_rate(&self) -> f32 {
+        if self.population_history.len() < 2 {
+            return 0.0;
+        }
+
+        let time_span = 60.0; // Calculate per minute
+        let recent_entries: Vec<_> = self.population_history
+            .iter()
+            .rev()
+            .take_while(|snapshot| {
+                let latest_time = self.population_history.back().unwrap().timestamp;
+                latest_time - snapshot.timestamp <= time_span
+            })
+            .collect();
+
+        if recent_entries.len() < 2 {
+            return 0.0;
+        }
+
+        let oldest = recent_entries.last().unwrap();
+        let newest = recent_entries.first().unwrap();
+        let time_diff = newest.timestamp - oldest.timestamp;
+
+        if time_diff > 0.0 {
+            let birth_diff = newest.birth_count.saturating_sub(oldest.birth_count);
+            (birth_diff as f32 / time_diff) * 60.0 // Convert to per minute
+        } else {
+            0.0
+        }
+    }
+
+    /// Calculate death rate (deaths per minute)
+    pub fn death_rate(&self) -> f32 {
+        if self.population_history.len() < 2 {
+            return 0.0;
+        }
+
+        let time_span = 60.0; // Calculate per minute
+        let recent_entries: Vec<_> = self.population_history
+            .iter()
+            .rev()
+            .take_while(|snapshot| {
+                let latest_time = self.population_history.back().unwrap().timestamp;
+                latest_time - snapshot.timestamp <= time_span
+            })
+            .collect();
+
+        if recent_entries.len() < 2 {
+            return 0.0;
+        }
+
+        let oldest = recent_entries.last().unwrap();
+        let newest = recent_entries.first().unwrap();
+        let time_diff = newest.timestamp - oldest.timestamp;
+
+        if time_diff > 0.0 {
+            let death_diff = newest.death_count.saturating_sub(oldest.death_count);
+            (death_diff as f32 / time_diff) * 60.0 // Convert to per minute
+        } else {
+            0.0
+        }
+    }
+
+    /// Add a new population snapshot to history
+    pub fn add_population_snapshot(&mut self, timestamp: f32) {
+        let snapshot = PopulationSnapshot {
+            timestamp,
+            total_population: self.total_population,
+            population_by_age: self.population_by_age.clone(),
+            birth_count: self.birth_count,
+            death_count: self.death_count,
+        };
+
+        self.population_history.push_back(snapshot);
+
+        // Maintain maximum history size
+        while self.population_history.len() > self.max_history_entries {
+            self.population_history.pop_front();
+        }
+    }
+
+    /// Add a new resource snapshot to history
+    pub fn add_resource_snapshot(&mut self, timestamp: f32) {
+        let snapshot = ResourceSnapshot {
+            timestamp,
+            food_collected: self.food_collected,
+            average_energy: self.average_energy,
+            foraging_attempts: self.foraging_attempts,
+            successful_foraging: self.successful_foraging,
+        };
+
+        self.resource_history.push_back(snapshot);
+
+        // Maintain maximum history size
+        while self.resource_history.len() > self.max_history_entries {
+            self.resource_history.pop_front();
+        }
+    }
+}
+
+/// Marker component for analytics dashboard panel
+#[derive(Component)]
+pub struct AnalyticsDashboard;
+
+/// Component for individual metric displays in the analytics dashboard
+#[derive(Component)]
+pub struct MetricDisplay {
+    pub metric_type: MetricType,
+}
+
+/// Component for analytics toggle button
+#[derive(Component)]
+pub struct AnalyticsToggleButton;
