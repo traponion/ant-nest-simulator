@@ -1,6 +1,6 @@
+use crate::components::{Ant, AntBehavior, AntState, Lifecycle, Position, Soil, SoilCell};
 use bevy::prelude::*;
 use rand::prelude::*;
-use crate::components::{Position, SoilCell, Soil, AntBehavior, AntState, Lifecycle, Ant};
 
 /// Basic camera setup for 2D pixel art view
 pub fn setup_world(mut commands: Commands) {
@@ -36,7 +36,7 @@ pub fn spawn_soil_grid(mut commands: Commands) {
                 Soil,
                 SpriteBundle {
                     sprite: Sprite {
-                        color: Color::srgb(0.6, 0.4, 0.2), // Brown color for soil
+                        color: Color::srgb(0.6, 0.4, 0.2),      // Brown color for soil
                         custom_size: Some(Vec2::new(3.0, 3.0)), // Small brown dots
                         ..default()
                     },
@@ -78,7 +78,7 @@ pub fn spawn_initial_ants(mut commands: Commands) {
             Ant,
             SpriteBundle {
                 sprite: Sprite {
-                    color: Color::BLACK, // Black color for ants
+                    color: Color::BLACK,                    // Black color for ants
                     custom_size: Some(Vec2::new(2.0, 2.0)), // 2-pixel black dots
                     ..default()
                 },

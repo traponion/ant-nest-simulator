@@ -1,5 +1,5 @@
-use bevy::prelude::*;
 use crate::components::TimeControl;
+use bevy::prelude::*;
 
 /// UI components for time control
 #[derive(Component)]
@@ -62,7 +62,10 @@ pub fn time_control_input_system(
         if time_control.is_paused {
             info!("Simulation paused");
         } else {
-            info!("Simulation resumed at {}x speed", time_control.speed_multiplier);
+            info!(
+                "Simulation resumed at {}x speed",
+                time_control.speed_multiplier
+            );
         }
     }
 

@@ -1,13 +1,17 @@
+use crate::components::{Ant, AntBehavior, AntState, Lifecycle, Position, TimeControl};
+use crate::systems::time_control::effective_delta_time;
 use bevy::prelude::*;
 use rand::prelude::*;
-use crate::components::{Position, AntBehavior, AntState, Ant, Lifecycle, TimeControl};
-use crate::systems::time_control::effective_delta_time;
 
 /// System for ant movement and behavior
+#[allow(clippy::type_complexity)]
 pub fn ant_movement_system(
     time: Res<Time>,
     time_control: Res<TimeControl>,
-    mut ant_query: Query<(&mut Position, &mut AntBehavior, &mut Transform), (With<Ant>, With<Lifecycle>)>,
+    mut ant_query: Query<
+        (&mut Position, &mut AntBehavior, &mut Transform),
+        (With<Ant>, With<Lifecycle>),
+    >,
 ) {
     let mut rng = thread_rng();
 
@@ -41,7 +45,7 @@ pub fn ant_movement_system(
                         behavior.target_position = None;
                     }
                 }
-            },
+            }
             _ => {
                 // Other states will be implemented later
             }

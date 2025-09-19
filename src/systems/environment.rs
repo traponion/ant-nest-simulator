@@ -1,7 +1,7 @@
-use bevy::prelude::*;
-use rand::prelude::*;
 use crate::components::{SoilCell, TimeControl};
 use crate::systems::time_control::effective_delta_time;
+use bevy::prelude::*;
+use rand::prelude::*;
 
 /// System for environmental simulation
 pub fn environmental_update_system(

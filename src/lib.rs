@@ -13,16 +13,14 @@
 //!
 //! ## Usage
 //!
-//! ```rust
-//! use ant_nest_simulator::prelude::*;
+//! ```rust,no_run
+//! use ant_nest_simulator::AntNestPlugin;
 //! use bevy::prelude::*;
 //!
-//! fn main() {
-//!     App::new()
-//!         .add_plugins(DefaultPlugins)
-//!         .add_plugins(AntNestPlugin)
-//!         .run();
-//! }
+//! App::new()
+//!     .add_plugins(DefaultPlugins)
+//!     .add_plugins(AntNestPlugin)
+//!     .run();
 //! ```
 
 pub mod components;
@@ -41,20 +39,25 @@ pub struct AntNestPlugin;
 
 impl Plugin for AntNestPlugin {
     fn build(&self, app: &mut App) {
-        app
-            .init_resource::<components::TimeControl>()
-            .add_systems(Startup, (
-                systems::setup_world,
-                systems::spawn_soil_grid,
-                systems::spawn_initial_ants,
-                systems::setup_time_control_ui,
-            ))
-            .add_systems(Update, (
-                systems::ant_movement_system,
-                systems::ant_lifecycle_system,
-                systems::environmental_update_system,
-                systems::time_control_input_system,
-                systems::update_speed_display_system,
-            ));
+        app.init_resource::<components::TimeControl>()
+            .add_systems(
+                Startup,
+                (
+                    systems::setup_world,
+                    systems::spawn_soil_grid,
+                    systems::spawn_initial_ants,
+                    systems::setup_time_control_ui,
+                ),
+            )
+            .add_systems(
+                Update,
+                (
+                    systems::ant_movement_system,
+                    systems::ant_lifecycle_system,
+                    systems::environmental_update_system,
+                    systems::time_control_input_system,
+                    systems::update_speed_display_system,
+                ),
+            );
     }
 }
