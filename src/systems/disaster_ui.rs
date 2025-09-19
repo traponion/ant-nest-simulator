@@ -1,6 +1,6 @@
 use crate::components::{
     CooldownTimer, DisasterControlButton, DisasterControlPanel, DisasterState, DisasterStatusIndicator,
-    DisasterStatusBackground, DisasterTriggerFeedback, DisasterType,
+    DisasterStatusBackground, DisasterTriggerFeedback, DisasterType, DisasterCooldownProgressBar,
 };
 use bevy::prelude::*;
 
@@ -43,16 +43,18 @@ pub fn setup_disaster_control_panel(mut commands: Commands) {
             ];
 
             for disaster_type in disasters.iter() {
-                // Container for each disaster control
+                // Container for each disaster control (interactive button)
                 parent
-                    .spawn(NodeBundle {
+                    .spawn(ButtonBundle {
                         style: Style {
                             flex_direction: FlexDirection::Column,
                             padding: UiRect::all(Val::Px(8.0)),
                             row_gap: Val::Px(4.0),
+                            border: UiRect::all(Val::Px(1.0)),
                             ..default()
                         },
                         background_color: Color::srgba(0.2, 0.2, 0.2, 0.6).into(),
+                        border_color: Color::srgba(0.3, 0.3, 0.3, 0.4).into(),
                         border_radius: BorderRadius::all(Val::Px(4.0)),
                         ..default()
                     })
@@ -172,6 +174,40 @@ pub fn setup_disaster_control_panel(mut commands: Commands) {
                                     ),
                                     CooldownTimer {
                                         disaster_type: *disaster_type,
+                                    },
+                                ));
+                            });
+
+                        // Cooldown progress bar (only visible during cooldown)
+                        disaster_parent
+                            .spawn(NodeBundle {
+                                style: Style {
+                                    width: Val::Percent(100.0),
+                                    height: Val::Px(6.0),
+                                    margin: UiRect::top(Val::Px(4.0)),
+                                    ..default()
+                                },
+                                background_color: Color::srgba(0.3, 0.3, 0.3, 0.6).into(),
+                                border_radius: BorderRadius::all(Val::Px(3.0)),
+                                visibility: Visibility::Hidden, // Initially hidden, shown during cooldown
+                                ..default()
+                            })
+                            .with_children(|progress_parent| {
+                                // Progress bar fill
+                                progress_parent.spawn((
+                                    NodeBundle {
+                                        style: Style {
+                                            width: Val::Percent(0.0), // Will be updated dynamically
+                                            height: Val::Percent(100.0),
+                                            ..default()
+                                        },
+                                        background_color: Color::srgb(1.0, 0.6, 0.0).into(), // Orange for cooldown
+                                        border_radius: BorderRadius::all(Val::Px(3.0)),
+                                        ..default()
+                                    },
+                                    DisasterCooldownProgressBar {
+                                        disaster_type: *disaster_type,
+                                        max_cooldown: get_disaster_cooldown_duration(*disaster_type),
                                     },
                                 ));
                             });
@@ -309,5 +345,84 @@ pub fn disaster_trigger_feedback_system(
                 },
             ));
         }
+    }
+}
+
+/// Handle hover effects for disaster control buttons
+pub fn handle_disaster_control_interactions(
+    mut interaction_query: Query<
+        (&Interaction, &mut BackgroundColor, &mut BorderColor, &DisasterControlButton),
+        Changed<Interaction>,
+    >,
+    disaster_state: Res<DisasterState>,
+) {
+    for (interaction, mut background_color, mut border_color, button) in &mut interaction_query {
+        let disaster_type = button.disaster_type;
+
+        match *interaction {
+            Interaction::Pressed => {
+                // Trigger disaster (this will be handled by existing keyboard input system)
+                // Just provide visual feedback for the press
+                *background_color = Color::srgba(0.4, 0.4, 0.4, 0.8).into();
+                *border_color = Color::srgba(0.6, 0.6, 0.6, 0.8).into();
+            }
+            Interaction::Hovered => {
+                // Hover effect - lighten the color based on disaster state
+                if disaster_state.is_active(disaster_type) {
+                    *background_color = Color::srgba(0.3, 0.3, 0.3, 0.7).into();
+                    *border_color = Color::srgba(0.5, 0.5, 0.5, 0.7).into();
+                } else if disaster_state.is_on_cooldown(disaster_type) {
+                    *background_color = Color::srgba(0.3, 0.3, 0.3, 0.7).into();
+                    *border_color = Color::srgba(0.5, 0.5, 0.5, 0.7).into();
+                } else {
+                    // Available - more prominent hover effect
+                    *background_color = Color::srgba(0.3, 0.3, 0.3, 0.8).into();
+                    *border_color = Color::srgba(0.5, 0.5, 0.5, 1.0).into();
+                }
+            }
+            Interaction::None => {
+                // Reset to normal color
+                *background_color = Color::srgba(0.2, 0.2, 0.2, 0.6).into();
+                *border_color = Color::srgba(0.3, 0.3, 0.3, 0.4).into();
+            }
+        }
+    }
+}
+
+/// Update cooldown progress bars based on current cooldown timers
+pub fn update_cooldown_progress_bars_system(
+    disaster_state: Res<DisasterState>,
+    mut progress_query: Query<(&DisasterCooldownProgressBar, &mut Style)>,
+) {
+    for (progress_bar, mut style) in progress_query.iter_mut() {
+        let disaster_type = progress_bar.disaster_type;
+
+        if disaster_state.is_on_cooldown(disaster_type) {
+            if let Some(cooldown_time) = disaster_state.cooldown_timers.get(&disaster_type) {
+                if *cooldown_time > 0.0 {
+                    // Calculate progress ratio (inverted for cooldown - starts at 100% and goes to 0%)
+                    let progress_ratio = *cooldown_time / progress_bar.max_cooldown;
+                    let progress_percentage = (progress_ratio * 100.0).clamp(0.0, 100.0);
+                    style.width = Val::Percent(progress_percentage);
+                } else {
+                    // Cooldown finished, hide progress bar
+                    style.width = Val::Percent(0.0);
+                }
+            }
+        } else {
+            // Not on cooldown, hide progress bar
+            style.width = Val::Percent(0.0);
+        }
+    }
+}
+
+/// Helper function to get the cooldown duration for each disaster type
+/// This should match the cooldown durations set in the disaster system
+fn get_disaster_cooldown_duration(disaster_type: DisasterType) -> f32 {
+    match disaster_type {
+        DisasterType::Rain => 10.0,
+        DisasterType::Drought => 15.0,
+        DisasterType::ColdSnap => 12.0,
+        DisasterType::InvasiveSpecies => 20.0,
     }
 }
