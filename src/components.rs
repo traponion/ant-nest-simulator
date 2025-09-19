@@ -304,3 +304,65 @@ impl ParticleData {
         color
     }
 }
+
+/// UI components for disaster control panel
+#[derive(Component)]
+pub struct DisasterControlPanel;
+
+/// Component for individual disaster control UI elements
+#[derive(Component)]
+pub struct DisasterControlButton {
+    pub disaster_type: DisasterType,
+}
+
+/// Component for cooldown timer display
+#[derive(Component)]
+pub struct CooldownTimer {
+    pub disaster_type: DisasterType,
+}
+
+/// Component for disaster status indicator
+#[derive(Component)]
+pub struct DisasterStatusIndicator {
+    pub disaster_type: DisasterType,
+}
+
+/// Component for visual feedback when disaster is triggered
+#[derive(Component)]
+pub struct DisasterTriggerFeedback {
+    pub disaster_type: DisasterType,
+    pub fade_timer: f32,
+}
+
+impl DisasterType {
+    /// Get the display name for UI
+    pub fn display_name(&self) -> &'static str {
+        match self {
+            DisasterType::Rain => "Rain",
+            DisasterType::Drought => "Drought",
+            DisasterType::ColdSnap => "Cold Snap",
+            DisasterType::InvasiveSpecies => "Invasive Species",
+        }
+    }
+
+    /// Get the keyboard shortcut key for UI
+    pub fn shortcut_key(&self) -> &'static str {
+        match self {
+            DisasterType::Rain => "R",
+            DisasterType::Drought => "D",
+            DisasterType::ColdSnap => "C",
+            DisasterType::InvasiveSpecies => "I",
+        }
+    }
+
+    /// Get the status color based on current state
+    pub fn get_status_color(&self, disaster_state: &DisasterState) -> Color {
+        if disaster_state.is_active(*self) {
+            Color::srgb(1.0, 0.3, 0.3) // Red for active
+        } else if disaster_state.is_on_cooldown(*self) {
+            Color::srgb(1.0, 0.6, 0.0) // Orange for cooldown
+        } else {
+            Color::srgb(0.3, 1.0, 0.3) // Green for available
+        }
+    }
+}

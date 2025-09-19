@@ -10,6 +10,7 @@
 
 pub mod color_overlay;
 pub mod disaster;
+pub mod disaster_ui;
 pub mod environment;
 pub mod foraging;
 pub mod lifecycle;
@@ -22,6 +23,7 @@ pub mod time_control;
 // Re-export all system functions for easy importing
 pub use color_overlay::*;
 pub use disaster::*;
+pub use disaster_ui::*;
 pub use environment::*;
 pub use foraging::*;
 pub use lifecycle::*;
