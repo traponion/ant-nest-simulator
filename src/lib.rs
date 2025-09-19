@@ -42,6 +42,7 @@ impl Plugin for AntNestPlugin {
         app.init_resource::<components::TimeControl>()
             .init_resource::<components::DisasterState>()
             .init_resource::<components::ColorOverlayConfig>()
+            .init_resource::<components::ColonyAnalytics>()
             .init_resource::<systems::ParticleConfig>()
             .add_systems(
                 Startup,
@@ -52,13 +53,16 @@ impl Plugin for AntNestPlugin {
                     systems::spawn_food_sources,
                     systems::spawn_queen_ant,
                     systems::setup_time_control_ui,
-                    systems::setup_active_disasters_ui,
+                    systems::setup_active_disasters_panel,
+                    systems::setup_disaster_control_panel,
+                    systems::setup_analytics_dashboard,
                 ),
             )
             // Core simulation systems
             .add_systems(
                 Update,
                 (
+                    // Core simulation systems
                     systems::ant_movement_system,
                     systems::ant_lifecycle_system,
                     systems::environmental_update_system,
@@ -76,8 +80,8 @@ impl Plugin for AntNestPlugin {
                     systems::disaster_timer_system,
                     systems::disaster_effect_system,
                     systems::invasive_species_spawn_system,
-                    systems::invasive_species_behavior_system,
-                    systems::invasive_species_cleanup_system,
+                    systems::invasive_species::invasive_species_behavior_system,
+                    systems::invasive_species::invasive_species_cleanup_system,
                     systems::invasive_species_food_consumption_system,
                 ),
             )
@@ -92,7 +96,23 @@ impl Plugin for AntNestPlugin {
                     systems::particle_spawner_system,
                     systems::particle_update_system,
                     systems::update_particle_config_system,
-                    systems::update_active_disasters_display_system,
+                    systems::update_disaster_status_system,
+                    systems::update_cooldown_timers_system,
+                    systems::disaster_trigger_feedback_system,
+                    systems::update_active_disasters_display,
+                    systems::update_disaster_progress_bars,
+                    systems::update_disaster_duration_text,
+                    systems::analytics_toggle_system,
+                    systems::analytics_data_collection_system,
+                    systems::update_analytics_display_system,
+                ),
+            )
+            .add_systems(
+                Update,
+                (
+                    // Additional invasive species systems
+                    systems::invasive_species_spawning_system,
+                    systems::ant_defensive_behavior_system,
                 ),
             );
     }
