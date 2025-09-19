@@ -80,8 +80,8 @@ impl Plugin for AntNestPlugin {
                     systems::disaster_timer_system,
                     systems::disaster_effect_system,
                     systems::invasive_species_spawn_system,
-                    systems::invasive_species_behavior_system,
-                    systems::invasive_species_cleanup_system,
+                    systems::invasive_species::invasive_species_behavior_system,
+                    systems::invasive_species::invasive_species_cleanup_system,
                     systems::invasive_species_food_consumption_system,
                 ),
             )
