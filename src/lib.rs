@@ -118,6 +118,21 @@ impl Plugin for AntNestPlugin {
                     systems::settings_ui::handle_settings_interactions_system,
                 ),
             )
+            // Enhanced UI animation systems
+            .add_systems(
+                Update,
+                (
+                    systems::update_color_animations_system,
+                    systems::update_transform_animations_system,
+                    systems::update_style_animations_system,
+                    systems::enhanced_button_interactions_system,
+                    systems::animated_slider_handle_system,
+                    systems::tooltip_system,
+                    systems::accessibility_system,
+                    systems::keyboard_navigation_system,
+                    systems::enhanced_speed_display_system,
+                ),
+            )
             // Visual effects systems
             .add_systems(
                 Update,
