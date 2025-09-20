@@ -17,13 +17,13 @@ pub fn setup_active_disasters_panel(mut commands: Commands) {
                 max_height: Val::Px(250.0), // More height for improved spacing
                 flex_direction: FlexDirection::Column,
                 padding: UiRect::all(Val::Px(16.0)), // More padding
-                row_gap: Val::Px(10.0), // More spacing between items
+                row_gap: Val::Px(10.0),              // More spacing between items
                 border: UiRect::all(Val::Px(2.0)),
                 ..default()
             },
             background_color: Color::srgba(0.05, 0.05, 0.1, 0.92).into(), // Slightly bluer dark background
-            border_color: Color::srgba(0.8, 0.4, 0.2, 0.6).into(), // Warm orange border
-            border_radius: BorderRadius::all(Val::Px(10.0)), // More rounded corners
+            border_color: Color::srgba(0.8, 0.4, 0.2, 0.6).into(),        // Warm orange border
+            border_radius: BorderRadius::all(Val::Px(10.0)),              // More rounded corners
             visibility: Visibility::Hidden, // Initially hidden, shown when disasters are active
             ..default()
         })
@@ -109,12 +109,12 @@ fn create_disaster_entry(
                 flex_direction: FlexDirection::Column,
                 padding: UiRect::all(Val::Px(12.0)), // More padding for better spacing
                 margin: UiRect::bottom(Val::Px(6.0)), // More space between entries
-                border: UiRect::all(Val::Px(1.0)), // Add border for better definition
+                border: UiRect::all(Val::Px(1.0)),   // Add border for better definition
                 ..default()
             },
             background_color: Color::srgba(0.15, 0.15, 0.15, 0.85).into(), // Slightly darker background
             border_color: disaster_type.get_active_color().with_alpha(0.3).into(), // Colored border
-            border_radius: BorderRadius::all(Val::Px(6.0)), // Slightly more rounded
+            border_radius: BorderRadius::all(Val::Px(6.0)),                // Slightly more rounded
             ..default()
         })
         .with_children(|disaster_parent| {
@@ -214,7 +214,10 @@ fn create_disaster_entry(
                                 margin: UiRect::all(Val::Px(1.0)), // Small margin for border effect
                                 ..default()
                             },
-                            background_color: disaster_type.get_active_color().with_alpha(0.8).into(),
+                            background_color: disaster_type
+                                .get_active_color()
+                                .with_alpha(0.8)
+                                .into(),
                             border_radius: BorderRadius::all(Val::Px(4.0)),
                             ..default()
                         },
@@ -234,7 +237,8 @@ pub fn update_disaster_progress_bars(
     mut progress_query: Query<(&DisasterProgressBar, &mut Style)>,
 ) {
     for (progress_bar, mut style) in progress_query.iter_mut() {
-        if let Some(remaining_time) = disaster_state.get_remaining_time(progress_bar.disaster_type) {
+        if let Some(remaining_time) = disaster_state.get_remaining_time(progress_bar.disaster_type)
+        {
             let progress_ratio = remaining_time / progress_bar.max_duration;
             let progress_percentage = (progress_ratio * 100.0).clamp(0.0, 100.0);
             style.width = Val::Percent(progress_percentage);
@@ -248,7 +252,8 @@ pub fn update_disaster_duration_text(
     mut text_query: Query<(&DisasterDurationText, &mut Text)>,
 ) {
     for (duration_text, mut text) in text_query.iter_mut() {
-        if let Some(remaining_time) = disaster_state.get_remaining_time(duration_text.disaster_type) {
+        if let Some(remaining_time) = disaster_state.get_remaining_time(duration_text.disaster_type)
+        {
             text.sections[0].value = format!("{:.1}s", remaining_time);
         }
     }

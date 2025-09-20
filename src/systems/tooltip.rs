@@ -1,4 +1,4 @@
-use crate::components::{Tooltip, TooltipDisplay, TooltipTrigger, TooltipPosition, UITheme};
+use crate::components::{Tooltip, TooltipDisplay, TooltipPosition, TooltipTrigger, UITheme};
 use bevy::prelude::*;
 
 /// System to manage tooltip triggers and display timing
@@ -118,9 +118,9 @@ pub fn tooltip_cleanup_system(
     tooltip_query: Query<Entity, With<TooltipDisplay>>,
     trigger_query: Query<&TooltipTrigger>,
 ) {
-    let any_tooltip_should_show = trigger_query.iter().any(|trigger| {
-        trigger.is_hovered && trigger.hover_timer >= trigger.show_delay
-    });
+    let any_tooltip_should_show = trigger_query
+        .iter()
+        .any(|trigger| trigger.is_hovered && trigger.hover_timer >= trigger.show_delay);
 
     if !any_tooltip_should_show {
         for entity in &tooltip_query {

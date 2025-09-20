@@ -8,9 +8,9 @@ pub fn setup_statistics_panel(mut commands: Commands) {
         .spawn(NodeBundle {
             style: Style {
                 position_type: PositionType::Absolute,
-                left: Val::Px(20.0),    // Bottom-left corner
+                left: Val::Px(20.0), // Bottom-left corner
                 bottom: Val::Px(20.0),
-                width: Val::Px(350.0),  // Wide enough for comprehensive data
+                width: Val::Px(350.0), // Wide enough for comprehensive data
                 height: Val::Auto,
                 flex_direction: FlexDirection::Column,
                 padding: UiRect::all(Val::Px(15.0)),
@@ -40,21 +40,39 @@ pub fn setup_statistics_panel(mut commands: Commands) {
             parent.spawn(create_stat_text("Total Ants: 0", "population_total"));
             parent.spawn(create_stat_text("Queen: 0", "population_queen"));
             parent.spawn(create_stat_text("Eggs: 0", "population_eggs"));
-            parent.spawn(create_stat_text("Age Distribution: No ants", "population_age"));
+            parent.spawn(create_stat_text(
+                "Age Distribution: No ants",
+                "population_age",
+            ));
 
             // Resource Section
             create_statistics_section(parent, "Resources");
             parent.spawn(create_stat_text("Food Sources: 0", "resource_food"));
             parent.spawn(create_stat_text("Avg Energy: 0%", "resource_energy"));
-            parent.spawn(create_stat_text("Foraging Efficiency: 0%", "resource_efficiency"));
+            parent.spawn(create_stat_text(
+                "Foraging Efficiency: 0%",
+                "resource_efficiency",
+            ));
             parent.spawn(create_stat_text("Carrying Food: 0", "resource_carrying"));
 
             // Environment Section
             create_statistics_section(parent, "Environment");
-            parent.spawn(create_stat_text("Soil Moisture: 0%", "environment_moisture"));
-            parent.spawn(create_stat_text("Soil Temperature: 0°C", "environment_temperature"));
-            parent.spawn(create_stat_text("Soil Nutrition: 0%", "environment_nutrition"));
-            parent.spawn(create_stat_text("Active Disasters: 0", "environment_disasters"));
+            parent.spawn(create_stat_text(
+                "Soil Moisture: 0%",
+                "environment_moisture",
+            ));
+            parent.spawn(create_stat_text(
+                "Soil Temperature: 0°C",
+                "environment_temperature",
+            ));
+            parent.spawn(create_stat_text(
+                "Soil Nutrition: 0%",
+                "environment_nutrition",
+            ));
+            parent.spawn(create_stat_text(
+                "Active Disasters: 0",
+                "environment_disasters",
+            ));
 
             // Behavior Section
             create_statistics_section(parent, "Behavior");
@@ -116,41 +134,59 @@ pub fn update_statistics_display(
         let new_text = match name.as_str() {
             "population_total" => format!("Total Ants: {}", colony_stats.total_ant_count),
             "population_queen" => format!("Queen: {}", colony_stats.queen_count),
-            "population_eggs" => format!("Eggs: {} (Avg hatch: {:.1}s)",
-                colony_stats.egg_count, colony_stats.average_incubation_time),
+            "population_eggs" => format!(
+                "Eggs: {} (Avg hatch: {:.1}s)",
+                colony_stats.egg_count, colony_stats.average_incubation_time
+            ),
             "population_age" => format!("Age: {}", colony_stats.age_distribution_text()),
 
-            "resource_food" => format!("Food Sources: {} (Total: {:.0})",
-                colony_stats.available_food_sources, colony_stats.total_food_nutrition),
-            "resource_energy" => format!("Avg Energy: {:.0}% ({:.0}-{:.0})",
+            "resource_food" => format!(
+                "Food Sources: {} (Total: {:.0})",
+                colony_stats.available_food_sources, colony_stats.total_food_nutrition
+            ),
+            "resource_energy" => format!(
+                "Avg Energy: {:.0}% ({:.0}-{:.0})",
                 colony_stats.average_energy_percentage(),
-                colony_stats.min_ant_energy, colony_stats.max_ant_energy),
-            "resource_efficiency" => format!("Foraging Efficiency: {:.1}%",
-                colony_stats.foraging_efficiency()),
-            "resource_carrying" => format!("Carrying Food: {} (Value: {:.0})",
-                colony_stats.ants_carrying_food, colony_stats.total_carried_food_value),
+                colony_stats.min_ant_energy,
+                colony_stats.max_ant_energy
+            ),
+            "resource_efficiency" => format!(
+                "Foraging Efficiency: {:.1}%",
+                colony_stats.foraging_efficiency()
+            ),
+            "resource_carrying" => format!(
+                "Carrying Food: {} (Value: {:.0})",
+                colony_stats.ants_carrying_food, colony_stats.total_carried_food_value
+            ),
 
-            "environment_moisture" => format!("Soil Moisture: {:.1}% ({:.1}-{:.1})",
+            "environment_moisture" => format!(
+                "Soil Moisture: {:.1}% ({:.1}-{:.1})",
                 colony_stats.average_soil_moisture * 100.0,
                 colony_stats.min_soil_moisture * 100.0,
-                colony_stats.max_soil_moisture * 100.0),
-            "environment_temperature" => format!("Soil Temperature: {:.1}°C ({:.1}-{:.1})",
+                colony_stats.max_soil_moisture * 100.0
+            ),
+            "environment_temperature" => format!(
+                "Soil Temperature: {:.1}°C ({:.1}-{:.1})",
                 colony_stats.average_soil_temperature,
                 colony_stats.min_soil_temperature,
-                colony_stats.max_soil_temperature),
-            "environment_nutrition" => format!("Soil Nutrition: {:.1}% ({:.1}-{:.1})",
+                colony_stats.max_soil_temperature
+            ),
+            "environment_nutrition" => format!(
+                "Soil Nutrition: {:.1}% ({:.1}-{:.1})",
                 colony_stats.average_soil_nutrition * 100.0,
                 colony_stats.min_soil_nutrition * 100.0,
-                colony_stats.max_soil_nutrition * 100.0),
-            "environment_disasters" => format!("Active Disasters: {}",
-                colony_stats.active_disasters_count),
+                colony_stats.max_soil_nutrition * 100.0
+            ),
+            "environment_disasters" => {
+                format!("Active Disasters: {}", colony_stats.active_disasters_count)
+            }
 
             "behavior_activity" => colony_stats.behavior_distribution_text(),
 
             _ => continue,
         };
 
-        if text.sections.len() > 0 {
+        if !text.sections.is_empty() {
             text.sections[0].value = new_text;
         }
     }

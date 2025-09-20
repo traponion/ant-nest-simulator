@@ -1,5 +1,6 @@
 use crate::components::{
-    Ant, AntBehavior, AntState, Food, FoodSource, InvasiveSpecies, Inventory, Lifecycle, Position, SpatialGrid, TimeControl,
+    Ant, AntBehavior, AntState, Food, FoodSource, InvasiveSpecies, Inventory, Lifecycle, Position,
+    SpatialGrid, TimeControl,
 };
 use crate::systems::time_control::effective_delta_time;
 use bevy::prelude::*;
@@ -43,28 +44,30 @@ pub fn food_consumption_system(
 
                 // If ant is close enough to consume food
                 if distance <= consumption_radius {
-                // Consume the food
-                food_source.is_available = false;
-                food_source.regeneration_timer = food_source.regeneration_time;
+                    // Consume the food
+                    food_source.is_available = false;
+                    food_source.regeneration_timer = food_source.regeneration_time;
 
-                // Recover energy
-                ant_lifecycle.energy += food_source.nutrition_value;
-                ant_lifecycle.energy = ant_lifecycle.energy.min(ant_lifecycle.max_energy); // Cap at max energy
+                    // Recover energy
+                    ant_lifecycle.energy += food_source.nutrition_value;
+                    ant_lifecycle.energy = ant_lifecycle.energy.min(ant_lifecycle.max_energy); // Cap at max energy
 
-                // Set inventory to carry food value back to colony
-                inventory.carried_food_value = food_source.nutrition_value;
+                    // Set inventory to carry food value back to colony
+                    inventory.carried_food_value = food_source.nutrition_value;
 
-                // Change state to carrying food back to colony
-                ant_behavior.state = AntState::CarryingFood;
-                ant_behavior.target_position = Some(inventory.home_position.clone());
+                    // Change state to carrying food back to colony
+                    ant_behavior.state = AntState::CarryingFood;
+                    ant_behavior.target_position = Some(inventory.home_position.clone());
 
-                info!(
-                    "Ant consumed food! Energy: {:.1}/{:.1}, Carrying: {:.1}",
-                    ant_lifecycle.energy, ant_lifecycle.max_energy, inventory.carried_food_value
-                );
+                    info!(
+                        "Ant consumed food! Energy: {:.1}/{:.1}, Carrying: {:.1}",
+                        ant_lifecycle.energy,
+                        ant_lifecycle.max_energy,
+                        inventory.carried_food_value
+                    );
 
-                // Only consume one food source per frame per ant
-                break;
+                    // Only consume one food source per frame per ant
+                    break;
                 }
             }
         }
@@ -114,7 +117,8 @@ pub fn invasive_species_food_consumption_system(
                 // Consume food more aggressively based on consumption rate
                 food_source.is_available = false;
                 // Invasive species damage food sources - longer regeneration time
-                food_source.regeneration_timer = food_source.regeneration_time * invasive.food_consumption_rate * 1.5;
+                food_source.regeneration_timer =
+                    food_source.regeneration_time * invasive.food_consumption_rate * 1.5;
 
                 info!(
                     "Invasive species consumed food! Regeneration extended to: {:.1}s",

@@ -14,7 +14,10 @@ pub fn initialize_spatial_grid_system(
         spatial_grid.insert_entity(entity, position);
     }
 
-    info!("Spatial grid initialized with {} food sources", food_query.iter().count());
+    info!(
+        "Spatial grid initialized with {} food sources",
+        food_query.iter().count()
+    );
 }
 
 /// System to track food source position changes and update spatial grid accordingly
@@ -22,7 +25,10 @@ pub fn initialize_spatial_grid_system(
 pub fn update_food_sources_in_grid_system(
     mut spatial_grid: ResMut<SpatialGrid>,
     // Query for food sources that have changed (added or moved)
-    changed_food_query: Query<(Entity, &Position), (With<Food>, With<FoodSource>, Changed<Position>)>,
+    changed_food_query: Query<
+        (Entity, &Position),
+        (With<Food>, With<FoodSource>, Changed<Position>),
+    >,
     // Query for all food sources to handle additions
     all_food_query: Query<(Entity, &Position), (With<Food>, With<FoodSource>)>,
     mut last_food_count: Local<usize>,
@@ -41,7 +47,7 @@ pub fn update_food_sources_in_grid_system(
     }
 
     // Handle position changes for existing food sources
-    for (_entity, _new_position) in changed_food_query.iter() {
+    if let Some((_entity, _new_position)) = changed_food_query.iter().next() {
         // For position changes, we need the old position, but Change detection doesn't provide it
         // For now, we'll rebuild the entire grid when any food source moves
         // TODO: Optimize this by storing previous positions
@@ -49,7 +55,7 @@ pub fn update_food_sources_in_grid_system(
         for (entity, position) in all_food_query.iter() {
             spatial_grid.insert_entity(entity, position);
         }
-        break; // Only need to rebuild once per frame
+        // Only need to rebuild once per frame
     }
 }
 
@@ -85,7 +91,11 @@ pub fn debug_spatial_grid_system(
             "Spatial Grid Stats: {} entities across {} cells (avg: {:.1} per cell)",
             total_entities,
             occupied_cells,
-            if occupied_cells > 0 { total_entities as f32 / occupied_cells as f32 } else { 0.0 }
+            if occupied_cells > 0 {
+                total_entities as f32 / occupied_cells as f32
+            } else {
+                0.0
+            }
         );
     }
 }

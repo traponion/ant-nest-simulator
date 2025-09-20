@@ -1,7 +1,8 @@
 use crate::components::{
-    CooldownTimer, DisasterControlButton, DisasterControlPanel, DisasterState, DisasterStatusIndicator,
-    DisasterStatusBackground, DisasterTriggerFeedback, DisasterType, DisasterCooldownProgressBar, UITheme,
-    Tooltip, TooltipTrigger, TooltipPosition, UIAnimation, GlowEffect, FadeAnimation, FocusIndicator, AccessibilityFeatures,
+    AccessibilityFeatures, CooldownTimer, DisasterControlButton, DisasterControlPanel,
+    DisasterCooldownProgressBar, DisasterState, DisasterStatusBackground, DisasterStatusIndicator,
+    DisasterTriggerFeedback, DisasterType, FadeAnimation, FocusIndicator, GlowEffect, Tooltip,
+    TooltipPosition, TooltipTrigger, UIAnimation, UITheme,
 };
 use bevy::prelude::*;
 
@@ -387,7 +388,12 @@ pub fn disaster_trigger_feedback_system(
 /// Handle hover effects for disaster control buttons
 pub fn handle_disaster_control_interactions(
     mut interaction_query: Query<
-        (&Interaction, &mut BackgroundColor, &mut BorderColor, &DisasterControlButton),
+        (
+            &Interaction,
+            &mut BackgroundColor,
+            &mut BorderColor,
+            &DisasterControlButton,
+        ),
         Changed<Interaction>,
     >,
     disaster_state: Res<DisasterState>,

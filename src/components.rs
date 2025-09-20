@@ -538,7 +538,7 @@ impl SpatialGrid {
     /// Add entity to the spatial grid at given position
     pub fn insert_entity(&mut self, entity: Entity, position: &Position) {
         let cell = self.world_to_grid(position);
-        self.grid.entry(cell).or_insert_with(Vec::new).push(entity);
+        self.grid.entry(cell).or_default().push(entity);
     }
 
     /// Remove entity from the spatial grid
@@ -553,7 +553,12 @@ impl SpatialGrid {
     }
 
     /// Update entity position in the grid (remove from old cell, add to new cell)
-    pub fn update_entity_position(&mut self, entity: Entity, old_position: &Position, new_position: &Position) {
+    pub fn update_entity_position(
+        &mut self,
+        entity: Entity,
+        old_position: &Position,
+        new_position: &Position,
+    ) {
         let old_cell = self.world_to_grid(old_position);
         let new_cell = self.world_to_grid(new_position);
 
@@ -621,7 +626,8 @@ impl PerformanceMetrics {
 
         // Calculate average frame time and FPS
         if !self.frame_times.is_empty() {
-            self.frame_time_ms = self.frame_times.iter().sum::<f32>() / self.frame_times.len() as f32 * 1000.0;
+            self.frame_time_ms =
+                self.frame_times.iter().sum::<f32>() / self.frame_times.len() as f32 * 1000.0;
             self.fps = 1.0 / (self.frame_time_ms / 1000.0);
         }
     }
@@ -652,9 +658,9 @@ pub struct ColonyStatistics {
     pub queen_count: usize,
     pub egg_count: usize,
     pub average_incubation_time: f32,
-    pub young_ants: usize,      // Age < 30% of max_age
-    pub adult_ants: usize,      // Age 30-70% of max_age
-    pub elderly_ants: usize,    // Age > 70% of max_age
+    pub young_ants: usize,   // Age < 30% of max_age
+    pub adult_ants: usize,   // Age 30-70% of max_age
+    pub elderly_ants: usize, // Age > 70% of max_age
     pub recent_births: usize,
     pub recent_deaths: usize,
 
@@ -738,7 +744,10 @@ impl ColonyStatistics {
         let adult_pct = (self.adult_ants as f32 / self.total_ant_count as f32) * 100.0;
         let elderly_pct = (self.elderly_ants as f32 / self.total_ant_count as f32) * 100.0;
 
-        format!("Young: {:.0}%, Adult: {:.0}%, Elderly: {:.0}%", young_pct, adult_pct, elderly_pct)
+        format!(
+            "Young: {:.0}%, Adult: {:.0}%, Elderly: {:.0}%",
+            young_pct, adult_pct, elderly_pct
+        )
     }
 
     /// Get formatted behavioral state distribution
@@ -765,17 +774,9 @@ impl ColonyStatistics {
 pub struct StatisticsPanel;
 
 /// Component for statistics toggle functionality
-#[derive(Component)]
+#[derive(Component, Default)]
 pub struct StatisticsToggle {
     pub is_visible: bool,
-}
-
-impl Default for StatisticsToggle {
-    fn default() -> Self {
-        Self {
-            is_visible: false, // Start hidden by default
-        }
-    }
 }
 
 /// Component for the performance monitoring panel
@@ -850,7 +851,6 @@ pub struct SpeedSliderProgress;
 pub struct SpeedSliderValueDisplay;
 
 /// Settings and configuration components
-
 /// Resource for user settings and preferences
 #[derive(Resource, Clone)]
 pub struct UserSettings {
@@ -920,17 +920,9 @@ impl Default for UserSettings {
 pub struct SettingsPanel;
 
 /// Component for settings toggle button
-#[derive(Component)]
+#[derive(Component, Default)]
 pub struct SettingsToggle {
     pub is_visible: bool,
-}
-
-impl Default for SettingsToggle {
-    fn default() -> Self {
-        Self {
-            is_visible: false, // Start hidden by default
-        }
-    }
 }
 
 /// Component for settings category tabs
@@ -987,7 +979,6 @@ pub enum SettingsAction {
 }
 
 /// Tooltip system components for enhanced user experience
-
 /// Component for tooltip data attached to UI elements
 #[derive(Component, Clone)]
 pub struct Tooltip {
@@ -1155,77 +1146,77 @@ pub struct UITheme {
 #[derive(Clone)]
 pub struct UIColors {
     // Surface Colors
-    pub surface_primary: Color,           // Main panel backgrounds
-    pub surface_secondary: Color,         // Secondary panel areas
-    pub surface_elevated: Color,          // Elevated elements (buttons, cards)
+    pub surface_primary: Color,   // Main panel backgrounds
+    pub surface_secondary: Color, // Secondary panel areas
+    pub surface_elevated: Color,  // Elevated elements (buttons, cards)
 
     // Border Colors
-    pub border_primary: Color,            // Main borders
-    pub border_secondary: Color,          // Subtle borders
-    pub border_focus: Color,              // Focus indicators
+    pub border_primary: Color,   // Main borders
+    pub border_secondary: Color, // Subtle borders
+    pub border_focus: Color,     // Focus indicators
 
     // Text Colors
-    pub text_primary: Color,              // Main text
-    pub text_secondary: Color,            // Secondary text
-    pub text_accent: Color,               // Accent text (speed display)
-    pub text_muted: Color,                // Muted text (instructions)
+    pub text_primary: Color,   // Main text
+    pub text_secondary: Color, // Secondary text
+    pub text_accent: Color,    // Accent text (speed display)
+    pub text_muted: Color,     // Muted text (instructions)
 
     // Interactive Colors
-    pub action_primary: Color,            // Primary action buttons (play/pause)
-    pub action_secondary: Color,          // Secondary actions (speed presets)
-    pub action_success: Color,            // Success states
-    pub action_warning: Color,            // Warning states
-    pub action_danger: Color,             // Danger states
+    pub action_primary: Color,   // Primary action buttons (play/pause)
+    pub action_secondary: Color, // Secondary actions (speed presets)
+    pub action_success: Color,   // Success states
+    pub action_warning: Color,   // Warning states
+    pub action_danger: Color,    // Danger states
 
     // Semantic Colors
-    pub accent_blue: Color,               // Blue accents
-    pub accent_green: Color,              // Green accents
-    pub accent_orange: Color,             // Orange accents
-    pub accent_red: Color,                // Red accents
+    pub accent_blue: Color,   // Blue accents
+    pub accent_green: Color,  // Green accents
+    pub accent_orange: Color, // Orange accents
+    pub accent_red: Color,    // Red accents
 }
 
 /// Typography scale for consistent text hierarchy
 #[derive(Clone)]
 pub struct UITypography {
-    pub heading_large: f32,               // 24px - Main panel titles
-    pub heading_medium: f32,              // 20px - Section headers
-    pub heading_small: f32,               // 18px - Subsection headers
-    pub body_large: f32,                  // 16px - Primary body text
-    pub body_medium: f32,                 // 14px - Secondary body text
-    pub body_small: f32,                  // 12px - Captions, labels
-    pub caption: f32,                     // 10px - Fine print, instructions
+    pub heading_large: f32,  // 24px - Main panel titles
+    pub heading_medium: f32, // 20px - Section headers
+    pub heading_small: f32,  // 18px - Subsection headers
+    pub body_large: f32,     // 16px - Primary body text
+    pub body_medium: f32,    // 14px - Secondary body text
+    pub body_small: f32,     // 12px - Captions, labels
+    pub caption: f32,        // 10px - Fine print, instructions
 }
 
 /// Spacing system for consistent layout rhythm
 #[derive(Clone)]
 pub struct UISpacing {
-    pub xs: f32,                          // 4px
-    pub sm: f32,                          // 8px
-    pub md: f32,                          // 12px
-    pub lg: f32,                          // 16px
-    pub xl: f32,                          // 24px
-    pub xxl: f32,                         // 32px
+    pub xs: f32,  // 4px
+    pub sm: f32,  // 8px
+    pub md: f32,  // 12px
+    pub lg: f32,  // 16px
+    pub xl: f32,  // 24px
+    pub xxl: f32, // 32px
 }
 
 /// Border and radius system for consistent shapes
 #[derive(Clone)]
 pub struct UIBorders {
-    pub width_thin: f32,                  // 1px
-    pub width_medium: f32,                // 2px
-    pub width_thick: f32,                 // 3px
-    pub radius_small: f32,                // 4px
-    pub radius_medium: f32,               // 8px
-    pub radius_large: f32,                // 12px
-    pub radius_round: f32,                // 50% (for circular elements)
+    pub width_thin: f32,    // 1px
+    pub width_medium: f32,  // 2px
+    pub width_thick: f32,   // 3px
+    pub radius_small: f32,  // 4px
+    pub radius_medium: f32, // 8px
+    pub radius_large: f32,  // 12px
+    pub radius_round: f32,  // 50% (for circular elements)
 }
 
 /// Interactive state colors for hover, active, disabled states
 #[derive(Clone)]
 pub struct UIStates {
-    pub hover_overlay: Color,             // Overlay for hover states
-    pub active_overlay: Color,            // Overlay for active states
-    pub disabled_overlay: Color,          // Overlay for disabled states
-    pub focus_outline: Color,             // Focus outline color
+    pub hover_overlay: Color,    // Overlay for hover states
+    pub active_overlay: Color,   // Overlay for active states
+    pub disabled_overlay: Color, // Overlay for disabled states
+    pub focus_outline: Color,    // Focus outline color
 }
 
 impl Default for UITheme {
@@ -1249,8 +1240,8 @@ impl Default for UITheme {
                 text_muted: Color::srgb(0.6, 0.6, 0.6),
 
                 // Interactive Colors - More vibrant and accessible
-                action_primary: Color::srgb(0.2, 0.7, 0.2),     // Green for play/pause
-                action_secondary: Color::srgb(0.3, 0.4, 0.8),   // Blue for speed controls
+                action_primary: Color::srgb(0.2, 0.7, 0.2), // Green for play/pause
+                action_secondary: Color::srgb(0.3, 0.4, 0.8), // Blue for speed controls
                 action_success: Color::srgb(0.1, 0.8, 0.1),
                 action_warning: Color::srgb(1.0, 0.7, 0.1),
                 action_danger: Color::srgb(0.9, 0.2, 0.2),
@@ -1307,9 +1298,13 @@ impl UITheme {
         // Use predefined hover colors based on common base colors
         match base_color {
             // Primary action button hover
-            c if c.to_srgba() == self.colors.action_primary.to_srgba() => Color::srgb(0.3, 0.8, 0.3),
+            c if c.to_srgba() == self.colors.action_primary.to_srgba() => {
+                Color::srgb(0.3, 0.8, 0.3)
+            }
             // Secondary action button hover
-            c if c.to_srgba() == self.colors.action_secondary.to_srgba() => Color::srgb(0.4, 0.5, 0.9),
+            c if c.to_srgba() == self.colors.action_secondary.to_srgba() => {
+                Color::srgb(0.4, 0.5, 0.9)
+            }
             // Default: slightly lighter overlay effect
             _ => Color::srgba(0.8, 0.8, 0.8, 0.1),
         }
@@ -1320,9 +1315,13 @@ impl UITheme {
         // Use predefined active colors based on common base colors
         match base_color {
             // Primary action button active
-            c if c.to_srgba() == self.colors.action_primary.to_srgba() => Color::srgb(0.1, 0.5, 0.1),
+            c if c.to_srgba() == self.colors.action_primary.to_srgba() => {
+                Color::srgb(0.1, 0.5, 0.1)
+            }
             // Secondary action button active
-            c if c.to_srgba() == self.colors.action_secondary.to_srgba() => Color::srgb(0.2, 0.3, 0.6),
+            c if c.to_srgba() == self.colors.action_secondary.to_srgba() => {
+                Color::srgb(0.2, 0.3, 0.6)
+            }
             // Default: slightly darker overlay effect
             _ => Color::srgba(0.0, 0.0, 0.0, 0.2),
         }

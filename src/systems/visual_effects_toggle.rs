@@ -10,29 +10,41 @@ pub fn visual_effects_toggle_system(
     if input.just_pressed(KeyCode::KeyV) {
         visual_effects_settings.toggle_all();
 
-        let status = if visual_effects_settings.particles_enabled && visual_effects_settings.overlays_enabled {
+        let status = if visual_effects_settings.particles_enabled
+            && visual_effects_settings.overlays_enabled
+        {
             "enabled"
         } else {
             "disabled"
         };
 
-        info!("Visual effects toggled: {} (particles: {}, overlays: {})",
-              status,
-              visual_effects_settings.particles_enabled,
-              visual_effects_settings.overlays_enabled);
+        info!(
+            "Visual effects toggled: {} (particles: {}, overlays: {})",
+            status,
+            visual_effects_settings.particles_enabled,
+            visual_effects_settings.overlays_enabled
+        );
     }
 
     // Toggle only particles with 'P' key (advanced option)
     if input.just_pressed(KeyCode::KeyP) {
         visual_effects_settings.toggle_particles();
-        let status = if visual_effects_settings.particles_enabled { "enabled" } else { "disabled" };
+        let status = if visual_effects_settings.particles_enabled {
+            "enabled"
+        } else {
+            "disabled"
+        };
         info!("Particle effects {}", status);
     }
 
     // Toggle only overlays with 'O' key (advanced option)
     if input.just_pressed(KeyCode::KeyO) {
         visual_effects_settings.toggle_overlays();
-        let status = if visual_effects_settings.overlays_enabled { "enabled" } else { "disabled" };
+        let status = if visual_effects_settings.overlays_enabled {
+            "enabled"
+        } else {
+            "disabled"
+        };
         info!("Color overlay effects {}", status);
     }
 }
