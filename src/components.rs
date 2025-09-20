@@ -1103,7 +1103,7 @@ impl Default for FocusIndicator {
     fn default() -> Self {
         Self {
             is_focused: false,
-            focus_color: Color::rgb(0.3, 0.6, 1.0), // Blue focus color
+            focus_color: Color::srgb(0.3, 0.6, 1.0), // Blue focus color
             focus_width: 2.0,
         }
     }

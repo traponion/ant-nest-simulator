@@ -1,7 +1,7 @@
 use crate::components::{
     AccessibilityFeatures, CooldownTimer, DisasterControlButton, DisasterControlPanel,
     DisasterCooldownProgressBar, DisasterState, DisasterStatusBackground, DisasterStatusIndicator,
-    DisasterTriggerFeedback, DisasterType, FadeAnimation, FocusIndicator, GlowEffect, Tooltip,
+    DisasterTriggerFeedback, DisasterType, FocusIndicator, GlowEffect, Tooltip,
     TooltipPosition, TooltipTrigger, UIAnimation, UITheme,
 };
 use bevy::prelude::*;
@@ -529,10 +529,10 @@ pub fn handle_active_disaster_glow_effects(
 /// Get appropriate glow color for each disaster type
 fn get_disaster_glow_color(disaster_type: DisasterType, theme: &UITheme) -> Color {
     match disaster_type {
-        DisasterType::Rain => Color::rgb(0.2, 0.6, 1.0), // Blue glow
-        DisasterType::Drought => Color::rgb(1.0, 0.6, 0.2), // Orange glow
-        DisasterType::ColdSnap => Color::rgb(0.7, 0.9, 1.0), // Light blue glow
-        DisasterType::InvasiveSpecies => Color::rgb(0.9, 0.2, 0.2), // Red glow
+        DisasterType::Rain => Color::srgb(0.2, 0.6, 1.0), // Blue glow
+        DisasterType::Drought => Color::srgb(1.0, 0.6, 0.2), // Orange glow
+        DisasterType::ColdSnap => Color::srgb(0.7, 0.9, 1.0), // Light blue glow
+        DisasterType::InvasiveSpecies => Color::srgb(0.9, 0.2, 0.2), // Red glow
     }
 }
 

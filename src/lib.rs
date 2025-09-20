@@ -80,17 +80,21 @@ impl Plugin for AntNestPlugin {
             .add_systems(
                 Update,
                 (
-                    // Core simulation systems
-                    systems::ant_movement_system,
-                    systems::ant_lifecycle_system,
-                    systems::environmental_update_system,
-                    systems::food_consumption_system,
-                    systems::food_regeneration_system,
-                    systems::queen_reproduction_system,
-                    systems::egg_hatching_system,
-                    // Spatial optimization systems
-                    systems::update_food_sources_in_grid_system,
-                    systems::colony_statistics_calculation_system,
+                    // Core simulation systems - run sequentially to avoid Position conflicts
+                    (
+                        systems::ant_movement_system,
+                        systems::ant_lifecycle_system,
+                        systems::environmental_update_system,
+                        systems::food_consumption_system,
+                        systems::food_regeneration_system,
+                        systems::queen_reproduction_system,
+                        systems::egg_hatching_system,
+                    ).chain(),
+                    // Spatial optimization systems - separate group
+                    (
+                        systems::update_food_sources_in_grid_system,
+                        systems::colony_statistics_calculation_system,
+                    ),
                 ),
             )
             .add_systems(

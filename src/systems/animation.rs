@@ -79,11 +79,11 @@ pub fn glow_effect_system(
             let pulse = (time_factor.sin() * 0.5 + 0.5) * glow.intensity;
 
             // Apply glow effect by modifying background color brightness
-            let base_color = glow.color;
-            let glowed_color = Color::rgb(
-                (base_color.r() + pulse).min(1.0),
-                (base_color.g() + pulse).min(1.0),
-                (base_color.b() + pulse).min(1.0),
+            let base_linear = glow.color.to_linear();
+            let glowed_color = Color::srgb(
+                (base_linear.red + pulse).min(1.0),
+                (base_linear.green + pulse).min(1.0),
+                (base_linear.blue + pulse).min(1.0),
             );
 
             *background_color = glowed_color.into();
@@ -105,8 +105,7 @@ pub fn fade_animation_system(
             fade.current_alpha = fade.start_alpha.lerp(fade.target_alpha, progress);
 
             // Apply alpha to background color
-            let mut color = background_color.0;
-            color.set_a(fade.current_alpha);
+            let color = background_color.0.with_alpha(fade.current_alpha);
             *background_color = color.into();
 
             // Stop animation when complete
@@ -136,7 +135,7 @@ pub fn focus_indicator_system(
 
             if focus.is_focused {
                 focus.is_focused = false;
-                border_color.0 = Color::TRANSPARENT;
+                border_color.0 = Color::NONE;
                 found_focused = true;
             } else if found_focused {
                 focus.is_focused = true;
