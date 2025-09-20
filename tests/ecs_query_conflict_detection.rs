@@ -6,8 +6,8 @@
 //!
 //! Addresses Issue #81: Improve ECS Query Conflict Detection and Prevention
 
-use bevy::prelude::*;
 use ant_nest_simulator::components::*;
+use bevy::prelude::*;
 
 /// Test core ant simulation systems for query conflicts
 ///
@@ -63,7 +63,13 @@ fn test_core_ant_systems_compatibility() {
     }
 
     // If we reach here, no query conflicts occurred
-    assert!(true, "Core ant systems initialized without query conflicts");
+    // Verify that the test ant entity still exists
+    let world = app.world_mut();
+    let ant_count = world.query::<&Ant>().iter(world).count();
+    assert_eq!(
+        ant_count, 1,
+        "Core ant systems should maintain entities without conflicts"
+    );
 }
 
 /// Test environmental and soil systems for compatibility
@@ -118,7 +124,18 @@ fn test_environmental_systems_compatibility() {
         app.update();
     }
 
-    assert!(true, "Environmental systems initialized without query conflicts");
+    // Verify that soil and food entities still exist after updates
+    let world = app.world_mut();
+    let soil_count = world.query::<&Soil>().iter(world).count();
+    let food_count = world.query::<&Food>().iter(world).count();
+    assert_eq!(
+        soil_count, 1,
+        "Environmental systems should maintain soil entities"
+    );
+    assert_eq!(
+        food_count, 1,
+        "Environmental systems should maintain food entities"
+    );
 }
 
 /// Test invasive species systems compatibility
@@ -180,7 +197,21 @@ fn test_invasive_species_systems_compatibility() {
         app.update();
     }
 
-    assert!(true, "Invasive species systems initialized without query conflicts");
+    // Verify that ant and invasive species entities still exist
+    let world = app.world_mut();
+    let ant_count = world.query::<&Ant>().iter(world).count();
+    let invasive_count = world.query::<&InvasiveSpecies>().iter(world).count();
+    assert_eq!(
+        ant_count, 1,
+        "Invasive species systems should maintain ant entities"
+    );
+    // Note: Invasive species may be cleaned up by systems during updates
+    // The important thing is that no ECS conflicts occurred
+    assert!(
+        invasive_count <= 1,
+        "Invasive species systems should handle entities without conflicts (found {})",
+        invasive_count
+    );
 }
 
 /// Test reproduction and lifecycle systems
@@ -233,7 +264,18 @@ fn test_reproduction_systems_compatibility() {
         app.update();
     }
 
-    assert!(true, "Reproduction systems initialized without query conflicts");
+    // Verify that queen and egg entities still exist
+    let world = app.world_mut();
+    let queen_count = world.query::<&Queen>().iter(world).count();
+    let egg_count = world.query::<&Egg>().iter(world).count();
+    assert_eq!(
+        queen_count, 1,
+        "Reproduction systems should maintain queen entities"
+    );
+    assert!(
+        egg_count >= 1,
+        "Reproduction systems should maintain or create egg entities"
+    );
 }
 
 /// Comprehensive test that gradually adds system groups
@@ -314,5 +356,11 @@ fn test_gradual_system_addition() {
         app.update();
     }
 
-    assert!(true, "All system groups added successfully without conflicts");
+    // Verify that the test ant entity still exists after all system additions
+    let world = app.world_mut();
+    let ant_count = world.query::<&Ant>().iter(world).count();
+    assert_eq!(
+        ant_count, 1,
+        "All system groups should work together without conflicts"
+    );
 }
