@@ -50,6 +50,7 @@ impl Plugin for AntNestPlugin {
             .init_resource::<components::ColonyStatistics>()
             .init_resource::<components::UserSettings>()
             .init_resource::<components::UITheme>()
+            .init_resource::<components::ColonyDevelopmentPhase>()
             .init_resource::<systems::ParticleConfig>()
             .insert_resource(components::SpatialGrid::new(
                 16.0,                                        // Cell size of 16 units
@@ -72,6 +73,7 @@ impl Plugin for AntNestPlugin {
                     systems::setup_statistics_panel,
                     systems::settings_ui::setup_settings_panel,
                     systems::settings_ui::setup_settings_toggle_button,
+                    systems::setup_colony_development_ui,
                 ),
             )
             // Core simulation systems
@@ -86,6 +88,10 @@ impl Plugin for AntNestPlugin {
                     systems::food_regeneration_system,
                     systems::queen_reproduction_system,
                     systems::egg_hatching_system,
+                    // Colony development systems
+                    systems::colony_development_management_system,
+                    systems::update_ant_age_groups_system,
+                    systems::apply_phase_behavior_modifiers_system,
                     // Spatial optimization systems
                     systems::update_food_sources_in_grid_system,
                     systems::colony_statistics_calculation_system,
@@ -124,6 +130,7 @@ impl Plugin for AntNestPlugin {
                     systems::toggle_performance_monitoring_system,
                     systems::statistics_toggle_input_system,
                     systems::update_statistics_display,
+                    systems::colony_development_ui_system,
                     systems::save_game_system,
                     systems::load_game_system,
                     systems::persistence_status_system,
