@@ -1,6 +1,7 @@
 use crate::components::{
     CooldownTimer, DisasterControlButton, DisasterControlPanel, DisasterState, DisasterStatusIndicator,
     DisasterStatusBackground, DisasterTriggerFeedback, DisasterType, DisasterCooldownProgressBar, UITheme,
+    Tooltip, TooltipTrigger, TooltipPosition,
 };
 use bevy::prelude::*;
 
@@ -462,6 +463,39 @@ fn get_disaster_cooldown_duration(disaster_type: DisasterType) -> f32 {
     }
 }
 
+/// Get detailed description for disaster type tooltip
+fn get_disaster_description(disaster_type: DisasterType) -> String {
+    match disaster_type {
+        DisasterType::Rain => "Heavy rainfall increases soil moisture and can help plants grow, but may flood tunnels and slow ant movement temporarily.".to_string(),
+        DisasterType::Drought => "Extended dry period reduces soil moisture and food availability, making foraging more challenging for the colony.".to_string(),
+        DisasterType::ColdSnap => "Sudden temperature drop slows ant metabolism and movement, reducing overall colony activity until conditions improve.".to_string(),
+        DisasterType::InvasiveSpecies => "Foreign insects invade the territory, competing for food sources and potentially attacking colony members.".to_string(),
+    }
+}
+
+/// Handle disaster control button animations and interactions with UITheme integration
+pub fn handle_disaster_control_button_interactions(
+    mut interaction_query: Query<
+        (&Interaction, &mut BackgroundColor, &DisasterControlButton),
+        (Changed<Interaction>, With<Button>),
+    >,
+    theme: Res<UITheme>,
+) {
+    for (interaction, mut background_color, _button) in &mut interaction_query {
+        match *interaction {
+            Interaction::Hovered => {
+                *background_color = theme.get_hover_color(theme.colors.surface_elevated).into();
+            }
+            Interaction::Pressed => {
+                *background_color = theme.get_active_color(theme.colors.surface_elevated).into();
+            }
+            Interaction::None => {
+                *background_color = theme.colors.surface_elevated.into();
+            }
+        }
+    }
+}
+
 /// Setup enhanced disaster control panel UI with UITheme integration (Phase 1)
 pub fn setup_enhanced_disaster_control_ui_v3(mut commands: Commands, theme: Res<UITheme>) {
     // Main disaster control panel container with UITheme
@@ -708,7 +742,13 @@ pub fn setup_enhanced_disaster_control_ui_v3(mut commands: Commands, theme: Res<
                     })
                     .insert(DisasterControlButton {
                         disaster_type: *disaster_type,
-                    });
+                    })
+                    .insert(Tooltip {
+                        text: get_disaster_description(*disaster_type),
+                        shortcut: Some(disaster_type.shortcut_key().to_string()),
+                        position: TooltipPosition::Left,
+                    })
+                    .insert(TooltipTrigger::default());
             }
 
             // Instructions with UITheme typography

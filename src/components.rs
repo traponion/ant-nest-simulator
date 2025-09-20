@@ -986,6 +986,48 @@ pub enum SettingsAction {
     ClosePanel,
 }
 
+/// Tooltip system components for enhanced user experience
+
+/// Component for tooltip data attached to UI elements
+#[derive(Component, Clone)]
+pub struct Tooltip {
+    pub text: String,
+    pub shortcut: Option<String>,
+    pub position: TooltipPosition,
+}
+
+/// Position options for tooltip display
+#[derive(Clone, PartialEq, Default)]
+pub enum TooltipPosition {
+    #[default]
+    Below,
+    Above,
+    Left,
+    Right,
+}
+
+/// Marker component for currently displayed tooltip
+#[derive(Component)]
+pub struct TooltipDisplay;
+
+/// Component for tooltip trigger state
+#[derive(Component)]
+pub struct TooltipTrigger {
+    pub is_hovered: bool,
+    pub hover_timer: f32,
+    pub show_delay: f32,
+}
+
+impl Default for TooltipTrigger {
+    fn default() -> Self {
+        Self {
+            is_hovered: false,
+            hover_timer: 0.0,
+            show_delay: 0.5, // Show tooltip after 500ms hover
+        }
+    }
+}
+
 /// Resource for unified UI theme and design system
 #[derive(Resource, Clone)]
 pub struct UITheme {

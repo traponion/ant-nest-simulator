@@ -28,6 +28,7 @@ pub mod settings_ui;
 pub mod spatial_grid;
 pub mod statistics_ui;
 pub mod time_control;
+pub mod tooltip;
 pub mod visual_effects_toggle;
 
 // Re-export all system functions for easy importing
@@ -50,4 +51,5 @@ pub use settings_ui::*;
 pub use spatial_grid::*;
 pub use statistics_ui::*;
 pub use time_control::*;
+pub use tooltip::*;
 pub use visual_effects_toggle::*;
