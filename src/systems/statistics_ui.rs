@@ -122,7 +122,11 @@ pub fn setup_statistics_panel(mut commands: Commands, ui_theme: Res<UITheme>) {
                 "role_nursery_workers",
                 &ui_theme,
             ));
-            parent.spawn(create_stat_text("Waste Managers: 0", "role_waste_managers", &ui_theme));
+            parent.spawn(create_stat_text(
+                "Waste Managers: 0",
+                "role_waste_managers",
+                &ui_theme,
+            ));
             parent.spawn(create_stat_text(
                 "Storage Workers: 0",
                 "role_storage_workers",
