@@ -19,6 +19,20 @@ pub struct SoilCell {
 #[derive(Component)]
 pub struct Ant;
 
+/// Queen ant marker component with founding state
+#[derive(Component)]
+pub struct Queen {
+    pub founding_state: FoundingState,
+}
+
+/// State machine for queen ant founding behavior
+#[derive(Clone, PartialEq)]
+pub enum FoundingState {
+    Seeking,     // Looking for suitable founding location
+    Digging,     // Creating the founding chamber
+    Established, // Settled in the founding chamber
+}
+
 /// MVP: Marker component for soil entities
 #[derive(Component)]
 pub struct Soil;
