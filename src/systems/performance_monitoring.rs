@@ -1,6 +1,6 @@
 use crate::components::{
-    Ant, EntityCountText, Food, FpsText, FrameTimeText, PerformanceMetrics, PerformancePanel,
-    Soil, SpatialGrid, SpatialStatsText,
+    Ant, EntityCountText, Food, FpsText, FrameTimeText, PerformanceMetrics, PerformancePanel, Soil,
+    SpatialGrid, SpatialStatsText,
 };
 use bevy::prelude::*;
 
@@ -113,7 +113,11 @@ pub fn collect_performance_metrics(
     performance_metrics.add_frame_time(time.delta_seconds());
 
     // Update metrics periodically (every 0.1 seconds)
-    if performance_metrics.update_timer.tick(time.delta()).just_finished() {
+    if performance_metrics
+        .update_timer
+        .tick(time.delta())
+        .just_finished()
+    {
         // Count entities
         let ant_count = ant_query.iter().count();
         let food_count = food_query.iter().count();
@@ -132,10 +136,42 @@ pub fn collect_performance_metrics(
 /// System to update the performance monitoring UI display
 pub fn update_performance_monitoring_ui(
     performance_metrics: Res<PerformanceMetrics>,
-    mut fps_query: Query<&mut Text, (With<FpsText>, Without<FrameTimeText>, Without<EntityCountText>, Without<SpatialStatsText>)>,
-    mut frame_time_query: Query<&mut Text, (With<FrameTimeText>, Without<FpsText>, Without<EntityCountText>, Without<SpatialStatsText>)>,
-    mut entity_count_query: Query<&mut Text, (With<EntityCountText>, Without<FpsText>, Without<FrameTimeText>, Without<SpatialStatsText>)>,
-    mut spatial_stats_query: Query<&mut Text, (With<SpatialStatsText>, Without<FpsText>, Without<FrameTimeText>, Without<EntityCountText>)>,
+    mut fps_query: Query<
+        &mut Text,
+        (
+            With<FpsText>,
+            Without<FrameTimeText>,
+            Without<EntityCountText>,
+            Without<SpatialStatsText>,
+        ),
+    >,
+    mut frame_time_query: Query<
+        &mut Text,
+        (
+            With<FrameTimeText>,
+            Without<FpsText>,
+            Without<EntityCountText>,
+            Without<SpatialStatsText>,
+        ),
+    >,
+    mut entity_count_query: Query<
+        &mut Text,
+        (
+            With<EntityCountText>,
+            Without<FpsText>,
+            Without<FrameTimeText>,
+            Without<SpatialStatsText>,
+        ),
+    >,
+    mut spatial_stats_query: Query<
+        &mut Text,
+        (
+            With<SpatialStatsText>,
+            Without<FpsText>,
+            Without<FrameTimeText>,
+            Without<EntityCountText>,
+        ),
+    >,
 ) {
     // Update FPS text
     for mut text in fps_query.iter_mut() {
@@ -179,8 +215,7 @@ pub fn update_performance_monitoring_ui(
     for mut text in spatial_stats_query.iter_mut() {
         text.sections[0].value = format!(
             "Spatial Grid: {} cells, {:.1} avg/cell",
-            performance_metrics.spatial_grid_cells,
-            performance_metrics.avg_entities_per_cell
+            performance_metrics.spatial_grid_cells, performance_metrics.avg_entities_per_cell
         );
     }
 }

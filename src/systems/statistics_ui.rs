@@ -147,41 +147,59 @@ pub fn update_statistics_display(
         let new_text = match name.as_str() {
             "population_total" => format!("Total Ants: {}", colony_stats.total_ant_count),
             "population_queen" => format!("Queen: {}", colony_stats.queen_count),
-            "population_eggs" => format!("Eggs: {} (Avg hatch: {:.1}s)",
-                colony_stats.egg_count, colony_stats.average_incubation_time),
+            "population_eggs" => format!(
+                "Eggs: {} (Avg hatch: {:.1}s)",
+                colony_stats.egg_count, colony_stats.average_incubation_time
+            ),
             "population_age" => format!("Age: {}", colony_stats.age_distribution_text()),
 
-            "resource_food" => format!("Food Sources: {} (Total: {:.0})",
-                colony_stats.available_food_sources, colony_stats.total_food_nutrition),
-            "resource_energy" => format!("Avg Energy: {:.0}% ({:.0}-{:.0})",
+            "resource_food" => format!(
+                "Food Sources: {} (Total: {:.0})",
+                colony_stats.available_food_sources, colony_stats.total_food_nutrition
+            ),
+            "resource_energy" => format!(
+                "Avg Energy: {:.0}% ({:.0}-{:.0})",
                 colony_stats.average_energy_percentage(),
-                colony_stats.min_ant_energy, colony_stats.max_ant_energy),
-            "resource_efficiency" => format!("Foraging Efficiency: {:.1}%",
-                colony_stats.foraging_efficiency()),
-            "resource_carrying" => format!("Carrying Food: {} (Value: {:.0})",
-                colony_stats.ants_carrying_food, colony_stats.total_carried_food_value),
+                colony_stats.min_ant_energy,
+                colony_stats.max_ant_energy
+            ),
+            "resource_efficiency" => format!(
+                "Foraging Efficiency: {:.1}%",
+                colony_stats.foraging_efficiency()
+            ),
+            "resource_carrying" => format!(
+                "Carrying Food: {} (Value: {:.0})",
+                colony_stats.ants_carrying_food, colony_stats.total_carried_food_value
+            ),
 
-            "environment_moisture" => format!("Soil Moisture: {:.1}% ({:.1}-{:.1})",
+            "environment_moisture" => format!(
+                "Soil Moisture: {:.1}% ({:.1}-{:.1})",
                 colony_stats.average_soil_moisture * 100.0,
                 colony_stats.min_soil_moisture * 100.0,
-                colony_stats.max_soil_moisture * 100.0),
-            "environment_temperature" => format!("Soil Temperature: {:.1}°C ({:.1}-{:.1})",
+                colony_stats.max_soil_moisture * 100.0
+            ),
+            "environment_temperature" => format!(
+                "Soil Temperature: {:.1}°C ({:.1}-{:.1})",
                 colony_stats.average_soil_temperature,
                 colony_stats.min_soil_temperature,
-                colony_stats.max_soil_temperature),
-            "environment_nutrition" => format!("Soil Nutrition: {:.1}% ({:.1}-{:.1})",
+                colony_stats.max_soil_temperature
+            ),
+            "environment_nutrition" => format!(
+                "Soil Nutrition: {:.1}% ({:.1}-{:.1})",
                 colony_stats.average_soil_nutrition * 100.0,
                 colony_stats.min_soil_nutrition * 100.0,
-                colony_stats.max_soil_nutrition * 100.0),
-            "environment_disasters" => format!("Active Disasters: {}",
-                colony_stats.active_disasters_count),
+                colony_stats.max_soil_nutrition * 100.0
+            ),
+            "environment_disasters" => {
+                format!("Active Disasters: {}", colony_stats.active_disasters_count)
+            }
 
             "behavior_activity" => colony_stats.behavior_distribution_text(),
 
             _ => continue,
         };
 
-        if text.sections.len() > 0 {
+        if !text.sections.is_empty() {
             text.sections[0].value = new_text;
         }
     }

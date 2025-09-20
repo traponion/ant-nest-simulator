@@ -181,4 +181,3 @@ pub fn get_movement_speed_modifier(disaster_state: &DisasterState) -> f32 {
 
     modifier
 }
-

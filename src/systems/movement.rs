@@ -1,6 +1,6 @@
 use crate::components::{
-    Ant, AntBehavior, AntState, DisasterState, Food, FoodSource, InvasiveSpecies, Inventory, Lifecycle, Position,
-    SpatialGrid, TimeControl,
+    Ant, AntBehavior, AntState, DisasterState, Food, FoodSource, InvasiveSpecies, Inventory,
+    Lifecycle, Position, SpatialGrid, TimeControl,
 };
 use crate::systems::{disaster::get_movement_speed_modifier, time_control::effective_delta_time};
 use bevy::prelude::*;
@@ -62,9 +62,14 @@ pub fn ant_movement_system(
         let avoiding_invasive = avoidance_vector.0.abs() > 0.1 || avoidance_vector.1.abs() > 0.1;
         if avoiding_invasive {
             // Normalize avoidance vector
-            let avoidance_length = (avoidance_vector.0 * avoidance_vector.0 + avoidance_vector.1 * avoidance_vector.1).sqrt();
+            let avoidance_length = (avoidance_vector.0 * avoidance_vector.0
+                + avoidance_vector.1 * avoidance_vector.1)
+                .sqrt();
             if avoidance_length > 0.0 {
-                let normalized_avoidance = (avoidance_vector.0 / avoidance_length, avoidance_vector.1 / avoidance_length);
+                let normalized_avoidance = (
+                    avoidance_vector.0 / avoidance_length,
+                    avoidance_vector.1 / avoidance_length,
+                );
 
                 // Override target position with avoidance direction
                 behavior.target_position = Some(Position {
@@ -84,7 +89,8 @@ pub fn ant_movement_system(
 
                     // Use spatial grid to get only nearby food sources within a reasonable search radius
                     let search_radius = 100.0; // Adjust based on game balance
-                    let nearby_food_entities = spatial_grid.get_entities_in_radius(&position, search_radius);
+                    let nearby_food_entities =
+                        spatial_grid.get_entities_in_radius(&position, search_radius);
 
                     for food_entity in nearby_food_entities {
                         // Get food data for this entity

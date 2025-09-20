@@ -538,7 +538,7 @@ impl SpatialGrid {
     /// Add entity to the spatial grid at given position
     pub fn insert_entity(&mut self, entity: Entity, position: &Position) {
         let cell = self.world_to_grid(position);
-        self.grid.entry(cell).or_insert_with(Vec::new).push(entity);
+        self.grid.entry(cell).or_default().push(entity);
     }
 
     /// Remove entity from the spatial grid
@@ -553,7 +553,12 @@ impl SpatialGrid {
     }
 
     /// Update entity position in the grid (remove from old cell, add to new cell)
-    pub fn update_entity_position(&mut self, entity: Entity, old_position: &Position, new_position: &Position) {
+    pub fn update_entity_position(
+        &mut self,
+        entity: Entity,
+        old_position: &Position,
+        new_position: &Position,
+    ) {
         let old_cell = self.world_to_grid(old_position);
         let new_cell = self.world_to_grid(new_position);
 
@@ -621,7 +626,8 @@ impl PerformanceMetrics {
 
         // Calculate average frame time and FPS
         if !self.frame_times.is_empty() {
-            self.frame_time_ms = self.frame_times.iter().sum::<f32>() / self.frame_times.len() as f32 * 1000.0;
+            self.frame_time_ms =
+                self.frame_times.iter().sum::<f32>() / self.frame_times.len() as f32 * 1000.0;
             self.fps = 1.0 / (self.frame_time_ms / 1000.0);
         }
     }
@@ -652,9 +658,9 @@ pub struct ColonyStatistics {
     pub queen_count: usize,
     pub egg_count: usize,
     pub average_incubation_time: f32,
-    pub young_ants: usize,      // Age < 30% of max_age
-    pub adult_ants: usize,      // Age 30-70% of max_age
-    pub elderly_ants: usize,    // Age > 70% of max_age
+    pub young_ants: usize,   // Age < 30% of max_age
+    pub adult_ants: usize,   // Age 30-70% of max_age
+    pub elderly_ants: usize, // Age > 70% of max_age
     pub recent_births: usize,
     pub recent_deaths: usize,
 
@@ -738,7 +744,10 @@ impl ColonyStatistics {
         let adult_pct = (self.adult_ants as f32 / self.total_ant_count as f32) * 100.0;
         let elderly_pct = (self.elderly_ants as f32 / self.total_ant_count as f32) * 100.0;
 
-        format!("Young: {:.0}%, Adult: {:.0}%, Elderly: {:.0}%", young_pct, adult_pct, elderly_pct)
+        format!(
+            "Young: {:.0}%, Adult: {:.0}%, Elderly: {:.0}%",
+            young_pct, adult_pct, elderly_pct
+        )
     }
 
     /// Get formatted behavioral state distribution
@@ -765,17 +774,9 @@ impl ColonyStatistics {
 pub struct StatisticsPanel;
 
 /// Component for statistics toggle functionality
-#[derive(Component)]
+#[derive(Component, Default)]
 pub struct StatisticsToggle {
     pub is_visible: bool,
-}
-
-impl Default for StatisticsToggle {
-    fn default() -> Self {
-        Self {
-            is_visible: false, // Start hidden by default
-        }
-    }
 }
 
 /// Component for the performance monitoring panel
@@ -850,7 +851,6 @@ pub struct SpeedSliderProgress;
 pub struct SpeedSliderValueDisplay;
 
 /// Settings and configuration components
-
 /// Resource for user settings and preferences
 #[derive(Resource, Clone)]
 pub struct UserSettings {
@@ -920,17 +920,9 @@ impl Default for UserSettings {
 pub struct SettingsPanel;
 
 /// Component for settings toggle button
-#[derive(Component)]
+#[derive(Component, Default)]
 pub struct SettingsToggle {
     pub is_visible: bool,
-}
-
-impl Default for SettingsToggle {
-    fn default() -> Self {
-        Self {
-            is_visible: false, // Start hidden by default
-        }
-    }
 }
 
 /// Component for settings category tabs
@@ -986,6 +978,153 @@ pub enum SettingsAction {
     ClosePanel,
 }
 
+/// Tooltip system components for enhanced user experience
+/// Component for tooltip data attached to UI elements
+#[derive(Component, Clone)]
+pub struct Tooltip {
+    pub text: String,
+    pub shortcut: Option<String>,
+    pub position: TooltipPosition,
+}
+
+/// Position options for tooltip display
+#[derive(Clone, PartialEq, Default)]
+pub enum TooltipPosition {
+    #[default]
+    Below,
+    Above,
+    Left,
+    Right,
+}
+
+/// Marker component for currently displayed tooltip
+#[derive(Component)]
+pub struct TooltipDisplay;
+
+/// Component for tooltip trigger state
+#[derive(Component)]
+pub struct TooltipTrigger {
+    pub is_hovered: bool,
+    pub hover_timer: f32,
+    pub show_delay: f32,
+}
+
+impl Default for TooltipTrigger {
+    fn default() -> Self {
+        Self {
+            is_hovered: false,
+            hover_timer: 0.0,
+            show_delay: 0.5, // Show tooltip after 500ms hover
+        }
+    }
+}
+
+/// Animation system components for smooth UI interactions
+/// Component for UI element animations
+#[derive(Component, Clone)]
+pub struct UIAnimation {
+    pub hover_scale: f32,
+    pub press_scale: f32,
+    pub transition_duration: f32,
+    pub current_scale: f32,
+    pub target_scale: f32,
+    pub is_animating: bool,
+}
+
+impl Default for UIAnimation {
+    fn default() -> Self {
+        Self {
+            hover_scale: 1.05,
+            press_scale: 0.95,
+            transition_duration: 0.15,
+            current_scale: 1.0,
+            target_scale: 1.0,
+            is_animating: false,
+        }
+    }
+}
+
+/// Component for glow effects on UI elements
+#[derive(Component, Clone)]
+pub struct GlowEffect {
+    pub intensity: f32,
+    pub color: Color,
+    pub pulse_speed: f32,
+    pub is_active: bool,
+}
+
+impl Default for GlowEffect {
+    fn default() -> Self {
+        Self {
+            intensity: 0.0,
+            color: Color::WHITE,
+            pulse_speed: 2.0,
+            is_active: false,
+        }
+    }
+}
+
+/// Component for fade in/out animations
+#[derive(Component, Clone)]
+pub struct FadeAnimation {
+    pub start_alpha: f32,
+    pub target_alpha: f32,
+    pub current_alpha: f32,
+    pub duration: f32,
+    pub elapsed: f32,
+    pub is_playing: bool,
+}
+
+impl Default for FadeAnimation {
+    fn default() -> Self {
+        Self {
+            start_alpha: 0.0,
+            target_alpha: 1.0,
+            current_alpha: 0.0,
+            duration: 0.3,
+            elapsed: 0.0,
+            is_playing: false,
+        }
+    }
+}
+
+/// Accessibility components for keyboard navigation and screen readers
+/// Component for focus indicators
+#[derive(Component, Clone)]
+pub struct FocusIndicator {
+    pub is_focused: bool,
+    pub focus_color: Color,
+    pub focus_width: f32,
+}
+
+impl Default for FocusIndicator {
+    fn default() -> Self {
+        Self {
+            is_focused: false,
+            focus_color: Color::srgb(0.3, 0.6, 1.0), // Blue focus color
+            focus_width: 2.0,
+        }
+    }
+}
+
+/// Component for accessibility features
+#[derive(Component, Clone)]
+pub struct AccessibilityFeatures {
+    pub aria_label: String,
+    pub role: String,
+    pub tab_index: i32,
+}
+
+impl Default for AccessibilityFeatures {
+    fn default() -> Self {
+        Self {
+            aria_label: String::new(),
+            role: "button".to_string(),
+            tab_index: 0,
+        }
+    }
+}
+
 /// Resource for unified UI theme and design system
 #[derive(Resource, Clone)]
 pub struct UITheme {
@@ -1005,77 +1144,77 @@ pub struct UITheme {
 #[derive(Clone)]
 pub struct UIColors {
     // Surface Colors
-    pub surface_primary: Color,           // Main panel backgrounds
-    pub surface_secondary: Color,         // Secondary panel areas
-    pub surface_elevated: Color,          // Elevated elements (buttons, cards)
+    pub surface_primary: Color,   // Main panel backgrounds
+    pub surface_secondary: Color, // Secondary panel areas
+    pub surface_elevated: Color,  // Elevated elements (buttons, cards)
 
     // Border Colors
-    pub border_primary: Color,            // Main borders
-    pub border_secondary: Color,          // Subtle borders
-    pub border_focus: Color,              // Focus indicators
+    pub border_primary: Color,   // Main borders
+    pub border_secondary: Color, // Subtle borders
+    pub border_focus: Color,     // Focus indicators
 
     // Text Colors
-    pub text_primary: Color,              // Main text
-    pub text_secondary: Color,            // Secondary text
-    pub text_accent: Color,               // Accent text (speed display)
-    pub text_muted: Color,                // Muted text (instructions)
+    pub text_primary: Color,   // Main text
+    pub text_secondary: Color, // Secondary text
+    pub text_accent: Color,    // Accent text (speed display)
+    pub text_muted: Color,     // Muted text (instructions)
 
     // Interactive Colors
-    pub action_primary: Color,            // Primary action buttons (play/pause)
-    pub action_secondary: Color,          // Secondary actions (speed presets)
-    pub action_success: Color,            // Success states
-    pub action_warning: Color,            // Warning states
-    pub action_danger: Color,             // Danger states
+    pub action_primary: Color,   // Primary action buttons (play/pause)
+    pub action_secondary: Color, // Secondary actions (speed presets)
+    pub action_success: Color,   // Success states
+    pub action_warning: Color,   // Warning states
+    pub action_danger: Color,    // Danger states
 
     // Semantic Colors
-    pub accent_blue: Color,               // Blue accents
-    pub accent_green: Color,              // Green accents
-    pub accent_orange: Color,             // Orange accents
-    pub accent_red: Color,                // Red accents
+    pub accent_blue: Color,   // Blue accents
+    pub accent_green: Color,  // Green accents
+    pub accent_orange: Color, // Orange accents
+    pub accent_red: Color,    // Red accents
 }
 
 /// Typography scale for consistent text hierarchy
 #[derive(Clone)]
 pub struct UITypography {
-    pub heading_large: f32,               // 24px - Main panel titles
-    pub heading_medium: f32,              // 20px - Section headers
-    pub heading_small: f32,               // 18px - Subsection headers
-    pub body_large: f32,                  // 16px - Primary body text
-    pub body_medium: f32,                 // 14px - Secondary body text
-    pub body_small: f32,                  // 12px - Captions, labels
-    pub caption: f32,                     // 10px - Fine print, instructions
+    pub heading_large: f32,  // 24px - Main panel titles
+    pub heading_medium: f32, // 20px - Section headers
+    pub heading_small: f32,  // 18px - Subsection headers
+    pub body_large: f32,     // 16px - Primary body text
+    pub body_medium: f32,    // 14px - Secondary body text
+    pub body_small: f32,     // 12px - Captions, labels
+    pub caption: f32,        // 10px - Fine print, instructions
 }
 
 /// Spacing system for consistent layout rhythm
 #[derive(Clone)]
 pub struct UISpacing {
-    pub xs: f32,                          // 4px
-    pub sm: f32,                          // 8px
-    pub md: f32,                          // 12px
-    pub lg: f32,                          // 16px
-    pub xl: f32,                          // 24px
-    pub xxl: f32,                         // 32px
+    pub xs: f32,  // 4px
+    pub sm: f32,  // 8px
+    pub md: f32,  // 12px
+    pub lg: f32,  // 16px
+    pub xl: f32,  // 24px
+    pub xxl: f32, // 32px
 }
 
 /// Border and radius system for consistent shapes
 #[derive(Clone)]
 pub struct UIBorders {
-    pub width_thin: f32,                  // 1px
-    pub width_medium: f32,                // 2px
-    pub width_thick: f32,                 // 3px
-    pub radius_small: f32,                // 4px
-    pub radius_medium: f32,               // 8px
-    pub radius_large: f32,                // 12px
-    pub radius_round: f32,                // 50% (for circular elements)
+    pub width_thin: f32,    // 1px
+    pub width_medium: f32,  // 2px
+    pub width_thick: f32,   // 3px
+    pub radius_small: f32,  // 4px
+    pub radius_medium: f32, // 8px
+    pub radius_large: f32,  // 12px
+    pub radius_round: f32,  // 50% (for circular elements)
 }
 
 /// Interactive state colors for hover, active, disabled states
 #[derive(Clone)]
 pub struct UIStates {
-    pub hover_overlay: Color,             // Overlay for hover states
-    pub active_overlay: Color,            // Overlay for active states
-    pub disabled_overlay: Color,          // Overlay for disabled states
-    pub focus_outline: Color,             // Focus outline color
+    pub hover_overlay: Color,    // Overlay for hover states
+    pub active_overlay: Color,   // Overlay for active states
+    pub disabled_overlay: Color, // Overlay for disabled states
+    pub focus_outline: Color,    // Focus outline color
 }
 
 impl Default for UITheme {
@@ -1099,8 +1238,8 @@ impl Default for UITheme {
                 text_muted: Color::srgb(0.6, 0.6, 0.6),
 
                 // Interactive Colors - More vibrant and accessible
-                action_primary: Color::srgb(0.2, 0.7, 0.2),     // Green for play/pause
-                action_secondary: Color::srgb(0.3, 0.4, 0.8),   // Blue for speed controls
+                action_primary: Color::srgb(0.2, 0.7, 0.2), // Green for play/pause
+                action_secondary: Color::srgb(0.3, 0.4, 0.8), // Blue for speed controls
                 action_success: Color::srgb(0.1, 0.8, 0.1),
                 action_warning: Color::srgb(1.0, 0.7, 0.1),
                 action_danger: Color::srgb(0.9, 0.2, 0.2),
@@ -1157,9 +1296,13 @@ impl UITheme {
         // Use predefined hover colors based on common base colors
         match base_color {
             // Primary action button hover
-            c if c.to_srgba() == self.colors.action_primary.to_srgba() => Color::srgb(0.3, 0.8, 0.3),
+            c if c.to_srgba() == self.colors.action_primary.to_srgba() => {
+                Color::srgb(0.3, 0.8, 0.3)
+            }
             // Secondary action button hover
-            c if c.to_srgba() == self.colors.action_secondary.to_srgba() => Color::srgb(0.4, 0.5, 0.9),
+            c if c.to_srgba() == self.colors.action_secondary.to_srgba() => {
+                Color::srgb(0.4, 0.5, 0.9)
+            }
             // Default: slightly lighter overlay effect
             _ => Color::srgba(0.8, 0.8, 0.8, 0.1),
         }
@@ -1170,9 +1313,13 @@ impl UITheme {
         // Use predefined active colors based on common base colors
         match base_color {
             // Primary action button active
-            c if c.to_srgba() == self.colors.action_primary.to_srgba() => Color::srgb(0.1, 0.5, 0.1),
+            c if c.to_srgba() == self.colors.action_primary.to_srgba() => {
+                Color::srgb(0.1, 0.5, 0.1)
+            }
             // Secondary action button active
-            c if c.to_srgba() == self.colors.action_secondary.to_srgba() => Color::srgb(0.2, 0.3, 0.6),
+            c if c.to_srgba() == self.colors.action_secondary.to_srgba() => {
+                Color::srgb(0.2, 0.3, 0.6)
+            }
             // Default: slightly darker overlay effect
             _ => Color::srgba(0.0, 0.0, 0.0, 0.2),
         }
@@ -1206,366 +1353,3 @@ impl UITheme {
     }
 }
 
-/// Animation system components for smooth UI transitions
-
-/// Component for managing UI element animations
-#[derive(Component)]
-pub struct UIAnimation {
-    /// Current animation progress (0.0 to 1.0)
-    pub progress: f32,
-    /// Animation duration in seconds
-    pub duration: f32,
-    /// Time elapsed since animation started
-    pub elapsed: f32,
-    /// Whether the animation is currently running
-    pub is_playing: bool,
-    /// Easing function to use for smooth transitions
-    pub easing: EasingFunction,
-    /// Target property to animate
-    pub target: AnimationTarget,
-    /// Start value for the animation
-    pub start_value: AnimationValue,
-    /// End value for the animation
-    pub end_value: AnimationValue,
-    /// Whether to loop the animation
-    pub should_loop: bool,
-}
-
-impl UIAnimation {
-    /// Create a new animation from start to end value
-    pub fn new(
-        duration: f32,
-        target: AnimationTarget,
-        start_value: AnimationValue,
-        end_value: AnimationValue,
-        easing: EasingFunction,
-    ) -> Self {
-        Self {
-            progress: 0.0,
-            duration,
-            elapsed: 0.0,
-            is_playing: false,
-            easing,
-            target,
-            start_value,
-            end_value,
-            should_loop: false,
-        }
-    }
-
-    /// Start the animation
-    pub fn start(&mut self) {
-        self.is_playing = true;
-        self.elapsed = 0.0;
-        self.progress = 0.0;
-    }
-
-    /// Stop the animation
-    pub fn stop(&mut self) {
-        self.is_playing = false;
-    }
-
-    /// Update animation progress
-    pub fn update(&mut self, delta_time: f32) {
-        if !self.is_playing {
-            return;
-        }
-
-        self.elapsed += delta_time;
-        self.progress = (self.elapsed / self.duration).clamp(0.0, 1.0);
-
-        if self.progress >= 1.0 {
-            if self.should_loop {
-                self.elapsed = 0.0;
-                self.progress = 0.0;
-            } else {
-                self.is_playing = false;
-            }
-        }
-    }
-
-    /// Get the current animated value using easing function
-    pub fn get_current_value(&self) -> AnimationValue {
-        let eased_progress = self.easing.apply(self.progress);
-        self.start_value.lerp(&self.end_value, eased_progress)
-    }
-}
-
-/// Easing functions for smooth animations
-#[derive(Clone, Copy, Debug)]
-pub enum EasingFunction {
-    Linear,
-    EaseIn,
-    EaseOut,
-    EaseInOut,
-    EaseInBack,
-    EaseOutBack,
-    EaseInOutBack,
-    Bounce,
-}
-
-impl EasingFunction {
-    /// Apply easing function to progress value (0.0 to 1.0)
-    pub fn apply(self, t: f32) -> f32 {
-        let t = t.clamp(0.0, 1.0);
-        match self {
-            EasingFunction::Linear => t,
-            EasingFunction::EaseIn => t * t,
-            EasingFunction::EaseOut => 1.0 - (1.0 - t) * (1.0 - t),
-            EasingFunction::EaseInOut => {
-                if t < 0.5 {
-                    2.0 * t * t
-                } else {
-                    1.0 - 2.0 * (1.0 - t) * (1.0 - t)
-                }
-            }
-            EasingFunction::EaseInBack => {
-                let c1 = 1.70158;
-                let c3 = c1 + 1.0;
-                c3 * t * t * t - c1 * t * t
-            }
-            EasingFunction::EaseOutBack => {
-                let c1 = 1.70158;
-                let c3 = c1 + 1.0;
-                1.0 + c3 * (t - 1.0).powi(3) + c1 * (t - 1.0).powi(2)
-            }
-            EasingFunction::EaseInOutBack => {
-                let c1 = 1.70158;
-                let c2 = c1 * 1.525;
-                if t < 0.5 {
-                    ((2.0 * t).powi(2) * ((c2 + 1.0) * 2.0 * t - c2)) / 2.0
-                } else {
-                    ((2.0 * t - 2.0).powi(2) * ((c2 + 1.0) * (t * 2.0 - 2.0) + c2) + 2.0) / 2.0
-                }
-            }
-            EasingFunction::Bounce => {
-                if t < 1.0 / 2.75 {
-                    7.5625 * t * t
-                } else if t < 2.0 / 2.75 {
-                    let t = t - 1.5 / 2.75;
-                    7.5625 * t * t + 0.75
-                } else if t < 2.5 / 2.75 {
-                    let t = t - 2.25 / 2.75;
-                    7.5625 * t * t + 0.9375
-                } else {
-                    let t = t - 2.625 / 2.75;
-                    7.5625 * t * t + 0.984375
-                }
-            }
-        }
-    }
-}
-
-/// Properties that can be animated
-#[derive(Clone, Copy, Debug)]
-pub enum AnimationTarget {
-    BackgroundColor,
-    BorderColor,
-    Scale,
-    Position,
-    Opacity,
-    Size,
-}
-
-/// Values that can be animated
-#[derive(Clone, Copy, Debug)]
-pub enum AnimationValue {
-    Color(Color),
-    Float(f32),
-    Vec2(Vec2),
-    Vec3(Vec3),
-}
-
-impl AnimationValue {
-    /// Linear interpolation between two animation values
-    pub fn lerp(&self, other: &AnimationValue, t: f32) -> AnimationValue {
-        match (self, other) {
-            (AnimationValue::Color(a), AnimationValue::Color(b)) => {
-                let r = a.to_linear().red + (b.to_linear().red - a.to_linear().red) * t;
-                let g = a.to_linear().green + (b.to_linear().green - a.to_linear().green) * t;
-                let b_val = a.to_linear().blue + (b.to_linear().blue - a.to_linear().blue) * t;
-                let alpha = a.alpha() + (b.alpha() - a.alpha()) * t;
-                AnimationValue::Color(Color::LinearRgba(LinearRgba::new(r, g, b_val, alpha)))
-            }
-            (AnimationValue::Float(a), AnimationValue::Float(b)) => {
-                AnimationValue::Float(a + (b - a) * t)
-            }
-            (AnimationValue::Vec2(a), AnimationValue::Vec2(b)) => {
-                AnimationValue::Vec2(*a + (*b - *a) * t)
-            }
-            (AnimationValue::Vec3(a), AnimationValue::Vec3(b)) => {
-                AnimationValue::Vec3(*a + (*b - *a) * t)
-            }
-            _ => *self, // Fallback for mismatched types
-        }
-    }
-}
-
-/// Component for tooltip display
-#[derive(Component)]
-pub struct Tooltip {
-    /// Text to display in the tooltip
-    pub text: String,
-    /// Whether the tooltip is currently visible
-    pub is_visible: bool,
-    /// Delay before showing tooltip (in seconds)
-    pub show_delay: f32,
-    /// Time elapsed since hover started
-    pub hover_time: f32,
-    /// Position offset from the target element
-    pub offset: Vec2,
-    /// Tooltip background color
-    pub background_color: Color,
-    /// Tooltip text color
-    pub text_color: Color,
-}
-
-impl Tooltip {
-    /// Create a new tooltip with default styling
-    pub fn new(text: String) -> Self {
-        Self {
-            text,
-            is_visible: false,
-            show_delay: 0.5, // Show after 500ms hover
-            hover_time: 0.0,
-            offset: Vec2::new(0.0, -30.0), // Show above element
-            background_color: Color::srgba(0.1, 0.1, 0.1, 0.9),
-            text_color: Color::srgb(0.9, 0.9, 0.9),
-        }
-    }
-
-    /// Update tooltip state based on hover
-    pub fn update(&mut self, is_hovered: bool, delta_time: f32) {
-        if is_hovered {
-            self.hover_time += delta_time;
-            if self.hover_time >= self.show_delay {
-                self.is_visible = true;
-            }
-        } else {
-            self.hover_time = 0.0;
-            self.is_visible = false;
-        }
-    }
-}
-
-/// Component for enhanced keyboard focus indicators
-#[derive(Component)]
-pub struct FocusIndicator {
-    /// Whether this element is currently focused
-    pub is_focused: bool,
-    /// Color for the focus outline
-    pub focus_color: Color,
-    /// Width of the focus outline
-    pub outline_width: f32,
-    /// Animation for focus transitions
-    pub focus_animation: Option<UIAnimation>,
-}
-
-impl FocusIndicator {
-    /// Create a new focus indicator with theme colors
-    pub fn new(theme: &UITheme) -> Self {
-        Self {
-            is_focused: false,
-            focus_color: theme.colors.border_focus,
-            outline_width: theme.borders.width_medium,
-            focus_animation: None,
-        }
-    }
-
-    /// Set focus state and start animation
-    pub fn set_focus(&mut self, focused: bool) {
-        if self.is_focused != focused {
-            self.is_focused = focused;
-
-            // Create focus animation
-            let start_opacity = if focused { 0.0 } else { 1.0 };
-            let end_opacity = if focused { 1.0 } else { 0.0 };
-
-            let mut animation = UIAnimation::new(
-                0.2, // 200ms transition
-                AnimationTarget::Opacity,
-                AnimationValue::Float(start_opacity),
-                AnimationValue::Float(end_opacity),
-                EasingFunction::EaseOut,
-            );
-            animation.start();
-            self.focus_animation = Some(animation);
-        }
-    }
-}
-
-/// Component for enhanced accessibility features
-#[derive(Component)]
-pub struct AccessibilityFeatures {
-    /// ARIA label for screen readers
-    pub aria_label: String,
-    /// ARIA role for the element
-    pub aria_role: String,
-    /// Whether this element is keyboard focusable
-    pub is_focusable: bool,
-    /// Tab order index for keyboard navigation
-    pub tab_index: i32,
-    /// High contrast mode color overrides
-    pub high_contrast_colors: Option<HighContrastColors>,
-}
-
-/// High contrast color overrides for accessibility
-#[derive(Clone)]
-pub struct HighContrastColors {
-    pub background: Color,
-    pub text: Color,
-    pub border: Color,
-}
-
-impl AccessibilityFeatures {
-    /// Create accessibility features for a button
-    pub fn button(label: String, tab_index: i32) -> Self {
-        Self {
-            aria_label: label,
-            aria_role: "button".to_string(),
-            is_focusable: true,
-            tab_index,
-            high_contrast_colors: Some(HighContrastColors {
-                background: Color::srgb(0.0, 0.0, 0.0),
-                text: Color::srgb(1.0, 1.0, 1.0),
-                border: Color::srgb(1.0, 1.0, 1.0),
-            }),
-        }
-    }
-
-    /// Create accessibility features for a slider
-    pub fn slider(label: String, tab_index: i32) -> Self {
-        Self {
-            aria_label: label,
-            aria_role: "slider".to_string(),
-            is_focusable: true,
-            tab_index,
-            high_contrast_colors: Some(HighContrastColors {
-                background: Color::srgb(0.2, 0.2, 0.2),
-                text: Color::srgb(1.0, 1.0, 1.0),
-                border: Color::srgb(1.0, 1.0, 1.0),
-            }),
-        }
-    }
-}
-
-/// Resource for managing global animation settings
-#[derive(Resource)]
-pub struct AnimationSettings {
-    /// Whether animations are enabled globally
-    pub animations_enabled: bool,
-    /// Global animation speed multiplier (1.0 = normal, 0.5 = half speed, 2.0 = double speed)
-    pub speed_multiplier: f32,
-    /// Whether to respect user's reduced motion preferences
-    pub respect_reduced_motion: bool,
-}
-
-impl Default for AnimationSettings {
-    fn default() -> Self {
-        Self {
-            animations_enabled: true,
-            speed_multiplier: 1.0,
-            respect_reduced_motion: true,
-        }
-    }
-}

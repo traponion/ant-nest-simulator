@@ -23,6 +23,10 @@
 //!     .run();
 //! ```
 
+// Allow clippy warnings that are common in game development and don't affect functionality
+#![allow(clippy::type_complexity)]
+#![allow(clippy::too_many_arguments)]
+
 pub mod components;
 pub mod systems;
 
@@ -47,10 +51,9 @@ impl Plugin for AntNestPlugin {
             .init_resource::<components::ColonyStatistics>()
             .init_resource::<components::UserSettings>()
             .init_resource::<components::UITheme>()
-            .init_resource::<components::AnimationSettings>()
             .init_resource::<systems::ParticleConfig>()
             .insert_resource(components::SpatialGrid::new(
-                16.0, // Cell size of 16 units
+                16.0,                                        // Cell size of 16 units
                 components::Position { x: -80.0, y: -60.0 }, // World min
                 components::Position { x: 80.0, y: 60.0 },   // World max
             ))
@@ -63,7 +66,7 @@ impl Plugin for AntNestPlugin {
                     systems::spawn_initial_ants,
                     systems::spawn_food_sources,
                     systems::spawn_queen_ant,
-                    systems::setup_enhanced_time_control_ui_v3,
+                    systems::setup_themed_time_control_ui,
                     systems::setup_active_disasters_panel,
                     systems::setup_enhanced_disaster_control_ui_v3,
                     systems::setup_performance_monitoring_ui,
@@ -77,17 +80,22 @@ impl Plugin for AntNestPlugin {
             .add_systems(
                 Update,
                 (
-                    // Core simulation systems
-                    systems::ant_movement_system,
-                    systems::ant_lifecycle_system,
-                    systems::environmental_update_system,
-                    systems::food_consumption_system,
-                    systems::food_regeneration_system,
-                    systems::queen_reproduction_system,
-                    systems::egg_hatching_system,
-                    // Spatial optimization systems
-                    systems::update_food_sources_in_grid_system,
-                    systems::colony_statistics_calculation_system,
+                    // Core simulation systems - run sequentially to avoid Position conflicts
+                    (
+                        systems::ant_movement_system,
+                        systems::ant_lifecycle_system,
+                        systems::environmental_update_system,
+                        systems::food_consumption_system,
+                        systems::food_regeneration_system,
+                        systems::queen_reproduction_system,
+                        systems::egg_hatching_system,
+                    )
+                        .chain(),
+                    // Spatial optimization systems - separate group
+                    (
+                        systems::update_food_sources_in_grid_system,
+                        systems::colony_statistics_calculation_system,
+                    ),
                 ),
             )
             .add_systems(
@@ -101,7 +109,7 @@ impl Plugin for AntNestPlugin {
                     systems::invasive_species_food_consumption_system,
                 ),
             )
-            // UI systems (first part)
+            // Time control and UI interaction systems
             .add_systems(
                 Update,
                 (
@@ -115,11 +123,34 @@ impl Plugin for AntNestPlugin {
                     systems::update_slider_progress_system,
                     systems::handle_speed_preset_buttons_system,
                     systems::visual_effects_toggle_system,
+                ),
+            )
+            // Settings and accessibility systems
+            .add_systems(
+                Update,
+                (
                     systems::settings_ui::settings_toggle_input_system,
                     systems::settings_ui::handle_settings_interactions_system,
-                    // Enhanced UI v3 systems
-                    systems::update_ui_animations_system,
-                    systems::tooltip_system,
+                    systems::accessibility_system,
+                ),
+            )
+            // Tooltip systems
+            .add_systems(
+                Update,
+                (
+                    systems::tooltip_trigger_system,
+                    systems::tooltip_display_system,
+                    systems::tooltip_cleanup_system,
+                ),
+            )
+            // Animation systems
+            .add_systems(
+                Update,
+                (
+                    systems::ui_animation_system,
+                    systems::ui_animation_update_system,
+                    systems::glow_effect_system,
+                    systems::fade_animation_system,
                     systems::focus_indicator_system,
                 ),
             )
@@ -145,6 +176,9 @@ impl Plugin for AntNestPlugin {
                     systems::update_disaster_progress_bars,
                     systems::update_disaster_duration_text,
                     systems::handle_disaster_control_interactions,
+                    systems::handle_disaster_control_button_interactions,
+                    systems::handle_active_disaster_glow_effects,
+                    systems::animate_cooldown_progress_bars,
                     systems::update_cooldown_progress_bars_system,
                     systems::visual_effects_toggle_system,
                 ),

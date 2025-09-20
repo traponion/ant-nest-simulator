@@ -116,7 +116,11 @@ fn calculate_resource_stats(
 
     if stats.total_ant_count > 0 {
         stats.average_ant_energy = total_energy / stats.total_ant_count as f32;
-        stats.min_ant_energy = if min_energy == f32::INFINITY { 0.0 } else { min_energy };
+        stats.min_ant_energy = if min_energy == f32::INFINITY {
+            0.0
+        } else {
+            min_energy
+        };
         stats.max_ant_energy = max_energy;
     }
 
