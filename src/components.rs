@@ -1206,349 +1206,235 @@ impl UITheme {
     }
 }
 
-// =============================================================================
-// Enhanced Time Control UI Components with Animation Support
-// =============================================================================
+/// Animation system components for smooth UI transitions
 
-/// Component for smooth color transition animations
+/// Component for managing UI element animations
 #[derive(Component)]
-pub struct ColorAnimation {
-    /// Starting color of the animation
-    pub start_color: Color,
-    /// Target color to animate towards
-    pub target_color: Color,
-    /// Current progress of the animation (0.0 to 1.0)
+pub struct UIAnimation {
+    /// Current animation progress (0.0 to 1.0)
     pub progress: f32,
-    /// Total duration of the animation in seconds
+    /// Animation duration in seconds
     pub duration: f32,
-    /// Elapsed time since animation started
+    /// Time elapsed since animation started
     pub elapsed: f32,
-    /// Whether the animation is currently active
-    pub is_active: bool,
-    /// Easing function type for the animation
+    /// Whether the animation is currently running
+    pub is_playing: bool,
+    /// Easing function to use for smooth transitions
     pub easing: EasingFunction,
+    /// Target property to animate
+    pub target: AnimationTarget,
+    /// Start value for the animation
+    pub start_value: AnimationValue,
+    /// End value for the animation
+    pub end_value: AnimationValue,
+    /// Whether to loop the animation
+    pub should_loop: bool,
 }
 
-impl Default for ColorAnimation {
-    fn default() -> Self {
+impl UIAnimation {
+    /// Create a new animation from start to end value
+    pub fn new(
+        duration: f32,
+        target: AnimationTarget,
+        start_value: AnimationValue,
+        end_value: AnimationValue,
+        easing: EasingFunction,
+    ) -> Self {
         Self {
-            start_color: Color::WHITE,
-            target_color: Color::WHITE,
             progress: 0.0,
-            duration: 0.3,
-            elapsed: 0.0,
-            is_active: false,
-            easing: EasingFunction::EaseOutCubic,
-        }
-    }
-}
-
-impl ColorAnimation {
-    /// Create a new color animation
-    pub fn new(start: Color, target: Color, duration: f32) -> Self {
-        Self {
-            start_color: start,
-            target_color: target,
             duration,
-            is_active: true,
-            ..default()
+            elapsed: 0.0,
+            is_playing: false,
+            easing,
+            target,
+            start_value,
+            end_value,
+            should_loop: false,
         }
     }
 
-    /// Start animating from current color to target color
-    pub fn animate_to(&mut self, target: Color, current: Color) {
-        self.start_color = current;
-        self.target_color = target;
-        self.progress = 0.0;
+    /// Start the animation
+    pub fn start(&mut self) {
+        self.is_playing = true;
         self.elapsed = 0.0;
-        self.is_active = true;
+        self.progress = 0.0;
     }
 
-    /// Get the current interpolated color
-    pub fn current_color(&self) -> Color {
-        if !self.is_active {
-            return self.target_color;
-        }
-
-        let eased_progress = self.easing.apply(self.progress);
-        self.start_color.mix(&self.target_color, eased_progress)
+    /// Stop the animation
+    pub fn stop(&mut self) {
+        self.is_playing = false;
     }
 
-    /// Update the animation progress
+    /// Update animation progress
     pub fn update(&mut self, delta_time: f32) {
-        if !self.is_active {
+        if !self.is_playing {
             return;
         }
 
         self.elapsed += delta_time;
-        self.progress = (self.elapsed / self.duration).min(1.0);
+        self.progress = (self.elapsed / self.duration).clamp(0.0, 1.0);
 
         if self.progress >= 1.0 {
-            self.is_active = false;
+            if self.should_loop {
+                self.elapsed = 0.0;
+                self.progress = 0.0;
+            } else {
+                self.is_playing = false;
+            }
         }
+    }
+
+    /// Get the current animated value using easing function
+    pub fn get_current_value(&self) -> AnimationValue {
+        let eased_progress = self.easing.apply(self.progress);
+        self.start_value.lerp(&self.end_value, eased_progress)
     }
 }
 
-/// Easing function types for animations
-#[derive(Clone, Copy, PartialEq)]
+/// Easing functions for smooth animations
+#[derive(Clone, Copy, Debug)]
 pub enum EasingFunction {
     Linear,
-    EaseInCubic,
-    EaseOutCubic,
-    EaseInOutCubic,
-    EaseInQuart,
-    EaseOutQuart,
-    EaseOutBounce,
+    EaseIn,
+    EaseOut,
+    EaseInOut,
+    EaseInBack,
+    EaseOutBack,
+    EaseInOutBack,
+    Bounce,
 }
 
 impl EasingFunction {
-    /// Apply the easing function to a progress value (0.0 to 1.0)
-    pub fn apply(&self, t: f32) -> f32 {
+    /// Apply easing function to progress value (0.0 to 1.0)
+    pub fn apply(self, t: f32) -> f32 {
         let t = t.clamp(0.0, 1.0);
         match self {
-            Self::Linear => t,
-            Self::EaseInCubic => t * t * t,
-            Self::EaseOutCubic => 1.0 - (1.0 - t).powi(3),
-            Self::EaseInOutCubic => {
+            EasingFunction::Linear => t,
+            EasingFunction::EaseIn => t * t,
+            EasingFunction::EaseOut => 1.0 - (1.0 - t) * (1.0 - t),
+            EasingFunction::EaseInOut => {
                 if t < 0.5 {
-                    4.0 * t * t * t
+                    2.0 * t * t
                 } else {
-                    1.0 - (-2.0 * t + 2.0).powi(3) / 2.0
+                    1.0 - 2.0 * (1.0 - t) * (1.0 - t)
                 }
             }
-            Self::EaseInQuart => t * t * t * t,
-            Self::EaseOutQuart => 1.0 - (1.0 - t).powi(4),
-            Self::EaseOutBounce => {
-                const N1: f32 = 7.5625;
-                const D1: f32 = 2.75;
-
-                if t < 1.0 / D1 {
-                    N1 * t * t
-                } else if t < 2.0 / D1 {
-                    let t = t - 1.5 / D1;
-                    N1 * t * t + 0.75
-                } else if t < 2.5 / D1 {
-                    let t = t - 2.25 / D1;
-                    N1 * t * t + 0.9375
+            EasingFunction::EaseInBack => {
+                let c1 = 1.70158;
+                let c3 = c1 + 1.0;
+                c3 * t * t * t - c1 * t * t
+            }
+            EasingFunction::EaseOutBack => {
+                let c1 = 1.70158;
+                let c3 = c1 + 1.0;
+                1.0 + c3 * (t - 1.0).powi(3) + c1 * (t - 1.0).powi(2)
+            }
+            EasingFunction::EaseInOutBack => {
+                let c1 = 1.70158;
+                let c2 = c1 * 1.525;
+                if t < 0.5 {
+                    ((2.0 * t).powi(2) * ((c2 + 1.0) * 2.0 * t - c2)) / 2.0
                 } else {
-                    let t = t - 2.625 / D1;
-                    N1 * t * t + 0.984375
+                    ((2.0 * t - 2.0).powi(2) * ((c2 + 1.0) * (t * 2.0 - 2.0) + c2) + 2.0) / 2.0
+                }
+            }
+            EasingFunction::Bounce => {
+                if t < 1.0 / 2.75 {
+                    7.5625 * t * t
+                } else if t < 2.0 / 2.75 {
+                    let t = t - 1.5 / 2.75;
+                    7.5625 * t * t + 0.75
+                } else if t < 2.5 / 2.75 {
+                    let t = t - 2.25 / 2.75;
+                    7.5625 * t * t + 0.9375
+                } else {
+                    let t = t - 2.625 / 2.75;
+                    7.5625 * t * t + 0.984375
                 }
             }
         }
     }
 }
 
-/// Component for smooth position/transform animations
-#[derive(Component)]
-pub struct TransformAnimation {
-    /// Starting position/size
-    pub start_transform: Transform,
-    /// Target position/size
-    pub target_transform: Transform,
-    /// Current progress of the animation (0.0 to 1.0)
-    pub progress: f32,
-    /// Total duration of the animation in seconds
-    pub duration: f32,
-    /// Elapsed time since animation started
-    pub elapsed: f32,
-    /// Whether the animation is currently active
-    pub is_active: bool,
-    /// Easing function type for the animation
-    pub easing: EasingFunction,
+/// Properties that can be animated
+#[derive(Clone, Copy, Debug)]
+pub enum AnimationTarget {
+    BackgroundColor,
+    BorderColor,
+    Scale,
+    Position,
+    Opacity,
+    Size,
 }
 
-impl Default for TransformAnimation {
-    fn default() -> Self {
-        Self {
-            start_transform: Transform::default(),
-            target_transform: Transform::default(),
-            progress: 0.0,
-            duration: 0.3,
-            elapsed: 0.0,
-            is_active: false,
-            easing: EasingFunction::EaseOutCubic,
-        }
-    }
+/// Values that can be animated
+#[derive(Clone, Copy, Debug)]
+pub enum AnimationValue {
+    Color(Color),
+    Float(f32),
+    Vec2(Vec2),
+    Vec3(Vec3),
 }
 
-impl TransformAnimation {
-    /// Create a new transform animation
-    pub fn new(start: Transform, target: Transform, duration: f32) -> Self {
-        Self {
-            start_transform: start,
-            target_transform: target,
-            duration,
-            is_active: true,
-            ..default()
-        }
-    }
-
-    /// Start animating from current transform to target transform
-    pub fn animate_to(&mut self, target: Transform, current: Transform) {
-        self.start_transform = current;
-        self.target_transform = target;
-        self.progress = 0.0;
-        self.elapsed = 0.0;
-        self.is_active = true;
-    }
-
-    /// Get the current interpolated transform
-    pub fn current_transform(&self) -> Transform {
-        if !self.is_active {
-            return self.target_transform;
-        }
-
-        let eased_progress = self.easing.apply(self.progress);
-
-        Transform {
-            translation: self.start_transform.translation.lerp(self.target_transform.translation, eased_progress),
-            rotation: self.start_transform.rotation.slerp(self.target_transform.rotation, eased_progress),
-            scale: self.start_transform.scale.lerp(self.target_transform.scale, eased_progress),
-        }
-    }
-
-    /// Update the animation progress
-    pub fn update(&mut self, delta_time: f32) {
-        if !self.is_active {
-            return;
-        }
-
-        self.elapsed += delta_time;
-        self.progress = (self.elapsed / self.duration).min(1.0);
-
-        if self.progress >= 1.0 {
-            self.is_active = false;
-        }
-    }
-}
-
-/// Component for animating UI element styles (position, size, etc.)
-#[derive(Component)]
-pub struct StyleAnimation {
-    /// Starting style properties
-    pub start_left: Val,
-    pub start_width: Val,
-    pub start_height: Val,
-    /// Target style properties
-    pub target_left: Val,
-    pub target_width: Val,
-    pub target_height: Val,
-    /// Animation parameters
-    pub progress: f32,
-    pub duration: f32,
-    pub elapsed: f32,
-    pub is_active: bool,
-    pub easing: EasingFunction,
-}
-
-impl Default for StyleAnimation {
-    fn default() -> Self {
-        Self {
-            start_left: Val::Px(0.0),
-            start_width: Val::Px(0.0),
-            start_height: Val::Px(0.0),
-            target_left: Val::Px(0.0),
-            target_width: Val::Px(0.0),
-            target_height: Val::Px(0.0),
-            progress: 0.0,
-            duration: 0.3,
-            elapsed: 0.0,
-            is_active: false,
-            easing: EasingFunction::EaseOutCubic,
-        }
-    }
-}
-
-impl StyleAnimation {
-    /// Animate the left position of a UI element
-    pub fn animate_left(&mut self, from: Val, to: Val, duration: f32) {
-        self.start_left = from;
-        self.target_left = to;
-        self.duration = duration;
-        self.progress = 0.0;
-        self.elapsed = 0.0;
-        self.is_active = true;
-    }
-
-    /// Get the current interpolated left position
-    pub fn current_left(&self) -> Val {
-        if !self.is_active {
-            return self.target_left;
-        }
-
-        let eased_progress = self.easing.apply(self.progress);
-        self.interpolate_val(self.start_left, self.target_left, eased_progress)
-    }
-
-    /// Update the animation progress
-    pub fn update(&mut self, delta_time: f32) {
-        if !self.is_active {
-            return;
-        }
-
-        self.elapsed += delta_time;
-        self.progress = (self.elapsed / self.duration).min(1.0);
-
-        if self.progress >= 1.0 {
-            self.is_active = false;
-        }
-    }
-
-    /// Interpolate between two Val values
-    fn interpolate_val(&self, start: Val, end: Val, t: f32) -> Val {
-        match (start, end) {
-            (Val::Px(start_px), Val::Px(end_px)) => {
-                Val::Px(start_px + (end_px - start_px) * t)
+impl AnimationValue {
+    /// Linear interpolation between two animation values
+    pub fn lerp(&self, other: &AnimationValue, t: f32) -> AnimationValue {
+        match (self, other) {
+            (AnimationValue::Color(a), AnimationValue::Color(b)) => {
+                let r = a.to_linear().red + (b.to_linear().red - a.to_linear().red) * t;
+                let g = a.to_linear().green + (b.to_linear().green - a.to_linear().green) * t;
+                let b_val = a.to_linear().blue + (b.to_linear().blue - a.to_linear().blue) * t;
+                let alpha = a.alpha() + (b.alpha() - a.alpha()) * t;
+                AnimationValue::Color(Color::LinearRgba(LinearRgba::new(r, g, b_val, alpha)))
             }
-            (Val::Percent(start_pct), Val::Percent(end_pct)) => {
-                Val::Percent(start_pct + (end_pct - start_pct) * t)
+            (AnimationValue::Float(a), AnimationValue::Float(b)) => {
+                AnimationValue::Float(a + (b - a) * t)
             }
-            // For mixed types, convert to pixels (simplified)
-            _ => end, // Fallback to end value for unsupported interpolations
+            (AnimationValue::Vec2(a), AnimationValue::Vec2(b)) => {
+                AnimationValue::Vec2(*a + (*b - *a) * t)
+            }
+            (AnimationValue::Vec3(a), AnimationValue::Vec3(b)) => {
+                AnimationValue::Vec3(*a + (*b - *a) * t)
+            }
+            _ => *self, // Fallback for mismatched types
         }
     }
 }
 
-/// Component for tooltip functionality
+/// Component for tooltip display
 #[derive(Component)]
 pub struct Tooltip {
-    /// Text content of the tooltip
-    pub content: String,
+    /// Text to display in the tooltip
+    pub text: String,
     /// Whether the tooltip is currently visible
     pub is_visible: bool,
     /// Delay before showing tooltip (in seconds)
     pub show_delay: f32,
-    /// Time since hover started
+    /// Time elapsed since hover started
     pub hover_time: f32,
-    /// Position offset from the parent element
-    pub offset_x: f32,
-    pub offset_y: f32,
-}
-
-impl Default for Tooltip {
-    fn default() -> Self {
-        Self {
-            content: String::new(),
-            is_visible: false,
-            show_delay: 0.8, // 800ms delay
-            hover_time: 0.0,
-            offset_x: 0.0,
-            offset_y: -30.0, // Above the element by default
-        }
-    }
+    /// Position offset from the target element
+    pub offset: Vec2,
+    /// Tooltip background color
+    pub background_color: Color,
+    /// Tooltip text color
+    pub text_color: Color,
 }
 
 impl Tooltip {
-    /// Create a new tooltip with content
-    pub fn new(content: &str) -> Self {
+    /// Create a new tooltip with default styling
+    pub fn new(text: String) -> Self {
         Self {
-            content: content.to_string(),
-            ..default()
+            text,
+            is_visible: false,
+            show_delay: 0.5, // Show after 500ms hover
+            hover_time: 0.0,
+            offset: Vec2::new(0.0, -30.0), // Show above element
+            background_color: Color::srgba(0.1, 0.1, 0.1, 0.9),
+            text_color: Color::srgb(0.9, 0.9, 0.9),
         }
     }
 
-    /// Update tooltip visibility based on hover state
+    /// Update tooltip state based on hover
     pub fn update(&mut self, is_hovered: bool, delta_time: f32) {
         if is_hovered {
             self.hover_time += delta_time;
@@ -1562,63 +1448,124 @@ impl Tooltip {
     }
 }
 
+/// Component for enhanced keyboard focus indicators
+#[derive(Component)]
+pub struct FocusIndicator {
+    /// Whether this element is currently focused
+    pub is_focused: bool,
+    /// Color for the focus outline
+    pub focus_color: Color,
+    /// Width of the focus outline
+    pub outline_width: f32,
+    /// Animation for focus transitions
+    pub focus_animation: Option<UIAnimation>,
+}
+
+impl FocusIndicator {
+    /// Create a new focus indicator with theme colors
+    pub fn new(theme: &UITheme) -> Self {
+        Self {
+            is_focused: false,
+            focus_color: theme.colors.border_focus,
+            outline_width: theme.borders.width_medium,
+            focus_animation: None,
+        }
+    }
+
+    /// Set focus state and start animation
+    pub fn set_focus(&mut self, focused: bool) {
+        if self.is_focused != focused {
+            self.is_focused = focused;
+
+            // Create focus animation
+            let start_opacity = if focused { 0.0 } else { 1.0 };
+            let end_opacity = if focused { 1.0 } else { 0.0 };
+
+            let mut animation = UIAnimation::new(
+                0.2, // 200ms transition
+                AnimationTarget::Opacity,
+                AnimationValue::Float(start_opacity),
+                AnimationValue::Float(end_opacity),
+                EasingFunction::EaseOut,
+            );
+            animation.start();
+            self.focus_animation = Some(animation);
+        }
+    }
+}
+
 /// Component for enhanced accessibility features
 #[derive(Component)]
-pub struct AccessibilityInfo {
-    /// Screen reader friendly label
+pub struct AccessibilityFeatures {
+    /// ARIA label for screen readers
     pub aria_label: String,
-    /// Role of the UI element (button, slider, etc.)
-    pub role: AccessibilityRole,
-    /// Current state description for screen readers
-    pub state_description: String,
-    /// Whether this element can be focused via keyboard
-    pub focusable: bool,
-    /// Tab index for keyboard navigation order
+    /// ARIA role for the element
+    pub aria_role: String,
+    /// Whether this element is keyboard focusable
+    pub is_focusable: bool,
+    /// Tab order index for keyboard navigation
     pub tab_index: i32,
+    /// High contrast mode color overrides
+    pub high_contrast_colors: Option<HighContrastColors>,
 }
 
-impl Default for AccessibilityInfo {
+/// High contrast color overrides for accessibility
+#[derive(Clone)]
+pub struct HighContrastColors {
+    pub background: Color,
+    pub text: Color,
+    pub border: Color,
+}
+
+impl AccessibilityFeatures {
+    /// Create accessibility features for a button
+    pub fn button(label: String, tab_index: i32) -> Self {
+        Self {
+            aria_label: label,
+            aria_role: "button".to_string(),
+            is_focusable: true,
+            tab_index,
+            high_contrast_colors: Some(HighContrastColors {
+                background: Color::srgb(0.0, 0.0, 0.0),
+                text: Color::srgb(1.0, 1.0, 1.0),
+                border: Color::srgb(1.0, 1.0, 1.0),
+            }),
+        }
+    }
+
+    /// Create accessibility features for a slider
+    pub fn slider(label: String, tab_index: i32) -> Self {
+        Self {
+            aria_label: label,
+            aria_role: "slider".to_string(),
+            is_focusable: true,
+            tab_index,
+            high_contrast_colors: Some(HighContrastColors {
+                background: Color::srgb(0.2, 0.2, 0.2),
+                text: Color::srgb(1.0, 1.0, 1.0),
+                border: Color::srgb(1.0, 1.0, 1.0),
+            }),
+        }
+    }
+}
+
+/// Resource for managing global animation settings
+#[derive(Resource)]
+pub struct AnimationSettings {
+    /// Whether animations are enabled globally
+    pub animations_enabled: bool,
+    /// Global animation speed multiplier (1.0 = normal, 0.5 = half speed, 2.0 = double speed)
+    pub speed_multiplier: f32,
+    /// Whether to respect user's reduced motion preferences
+    pub respect_reduced_motion: bool,
+}
+
+impl Default for AnimationSettings {
     fn default() -> Self {
         Self {
-            aria_label: String::new(),
-            role: AccessibilityRole::Generic,
-            state_description: String::new(),
-            focusable: false,
-            tab_index: 0,
+            animations_enabled: true,
+            speed_multiplier: 1.0,
+            respect_reduced_motion: true,
         }
     }
-}
-
-impl AccessibilityInfo {
-    /// Create accessibility info for a button
-    pub fn button(label: &str) -> Self {
-        Self {
-            aria_label: label.to_string(),
-            role: AccessibilityRole::Button,
-            focusable: true,
-            ..default()
-        }
-    }
-
-    /// Create accessibility info for a slider
-    pub fn slider(label: &str, current_value: &str) -> Self {
-        Self {
-            aria_label: label.to_string(),
-            role: AccessibilityRole::Slider,
-            state_description: current_value.to_string(),
-            focusable: true,
-            ..default()
-        }
-    }
-}
-
-/// Accessibility roles for UI elements
-#[derive(Clone, PartialEq, Debug)]
-pub enum AccessibilityRole {
-    Generic,
-    Button,
-    Slider,
-    Text,
-    Heading,
-    Panel,
 }
