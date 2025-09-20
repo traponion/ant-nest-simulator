@@ -1,115 +1,128 @@
-use crate::components::{ColonyStatistics, StatisticsPanel, StatisticsToggle};
+use crate::components::{ColonyStatistics, StatisticsPanel, StatisticsToggle, UITheme};
 use bevy::prelude::*;
 
-/// Setup the statistics display panel UI
-pub fn setup_statistics_panel(mut commands: Commands) {
-    // Main statistics panel container (initially hidden)
+/// Setup the statistics display panel UI with enhanced theming
+pub fn setup_statistics_panel(mut commands: Commands, theme: Res<UITheme>) {
+    // Main statistics panel container (initially hidden) with theme styling
     commands
         .spawn(NodeBundle {
             style: Style {
                 position_type: PositionType::Absolute,
-                left: Val::Px(20.0), // Bottom-left corner
-                bottom: Val::Px(20.0),
-                width: Val::Px(350.0), // Wide enough for comprehensive data
+                left: Val::Px(theme.spacing.lg),
+                bottom: Val::Px(theme.spacing.lg),
+                width: Val::Px(380.0),  // Slightly wider for better content fit
                 height: Val::Auto,
                 flex_direction: FlexDirection::Column,
-                padding: UiRect::all(Val::Px(15.0)),
-                row_gap: Val::Px(12.0),
+                padding: UiRect::all(Val::Px(theme.spacing.lg)),
+                row_gap: Val::Px(theme.spacing.md),
+                border: UiRect::all(Val::Px(theme.borders.width_medium)),
                 display: Display::None, // Start hidden
                 ..default()
             },
-            background_color: Color::srgba(0.0, 0.0, 0.0, 0.85).into(), // Semi-transparent dark background
-            border_color: Color::srgb(0.5, 0.5, 0.5).into(),
+            background_color: theme.colors.surface_primary.into(),
+            border_color: theme.colors.border_primary.into(),
+            border_radius: BorderRadius::all(Val::Px(theme.borders.radius_medium)),
             ..default()
         })
         .insert(StatisticsPanel)
         .insert(StatisticsToggle::default())
         .with_children(|parent| {
-            // Panel Title
+            // Enhanced Panel Title with theme typography
             parent.spawn(TextBundle::from_section(
                 "Colony Statistics",
                 TextStyle {
-                    font_size: 18.0,
-                    color: Color::srgb(1.0, 1.0, 1.0),
+                    font_size: theme.typography.heading_medium,
+                    color: theme.colors.text_primary,
                     ..default()
                 },
             ));
 
-            // Population Section
-            create_statistics_section(parent, "Population");
-            parent.spawn(create_stat_text("Total Ants: 0", "population_total"));
-            parent.spawn(create_stat_text("Queen: 0", "population_queen"));
-            parent.spawn(create_stat_text("Eggs: 0", "population_eggs"));
-            parent.spawn(create_stat_text(
-                "Age Distribution: No ants",
-                "population_age",
-            ));
+            // Population Section with enhanced theming
+            create_themed_statistics_section(parent, "Population", &theme);
+            parent.spawn(create_themed_stat_text("Total Ants: 0", "population_total", &theme));
+            parent.spawn(create_themed_stat_text("Queen: 0", "population_queen", &theme));
+            parent.spawn(create_themed_stat_text("Eggs: 0", "population_eggs", &theme));
+            parent.spawn(create_themed_stat_text("Age Distribution: No ants", "population_age", &theme));
 
-            // Resource Section
-            create_statistics_section(parent, "Resources");
-            parent.spawn(create_stat_text("Food Sources: 0", "resource_food"));
-            parent.spawn(create_stat_text("Avg Energy: 0%", "resource_energy"));
-            parent.spawn(create_stat_text(
-                "Foraging Efficiency: 0%",
-                "resource_efficiency",
-            ));
-            parent.spawn(create_stat_text("Carrying Food: 0", "resource_carrying"));
+            // Resource Section with enhanced theming
+            create_themed_statistics_section(parent, "Resources", &theme);
+            parent.spawn(create_themed_stat_text("Food Sources: 0", "resource_food", &theme));
+            parent.spawn(create_themed_stat_text("Avg Energy: 0%", "resource_energy", &theme));
+            parent.spawn(create_themed_stat_text("Foraging Efficiency: 0%", "resource_efficiency", &theme));
+            parent.spawn(create_themed_stat_text("Carrying Food: 0", "resource_carrying", &theme));
 
-            // Environment Section
-            create_statistics_section(parent, "Environment");
-            parent.spawn(create_stat_text(
-                "Soil Moisture: 0%",
-                "environment_moisture",
-            ));
-            parent.spawn(create_stat_text(
-                "Soil Temperature: 0°C",
-                "environment_temperature",
-            ));
-            parent.spawn(create_stat_text(
-                "Soil Nutrition: 0%",
-                "environment_nutrition",
-            ));
-            parent.spawn(create_stat_text(
-                "Active Disasters: 0",
-                "environment_disasters",
-            ));
+            // Environment Section with enhanced theming
+            create_themed_statistics_section(parent, "Environment", &theme);
+            parent.spawn(create_themed_stat_text("Soil Moisture: 0%", "environment_moisture", &theme));
+            parent.spawn(create_themed_stat_text("Soil Temperature: 0°C", "environment_temperature", &theme));
+            parent.spawn(create_themed_stat_text("Soil Nutrition: 0%", "environment_nutrition", &theme));
+            parent.spawn(create_themed_stat_text("Active Disasters: 0", "environment_disasters", &theme));
 
-            // Behavior Section
-            create_statistics_section(parent, "Behavior");
-            parent.spawn(create_stat_text("Activity: No ants", "behavior_activity"));
+            // Behavior Section with enhanced theming
+            create_themed_statistics_section(parent, "Behavior", &theme);
+            parent.spawn(create_themed_stat_text("Activity: No ants", "behavior_activity", &theme));
 
-            // Controls hint
-            parent.spawn(TextBundle::from_section(
-                "Press S to toggle",
+            // Enhanced controls hint with better styling
+            parent
+                .spawn(NodeBundle {
+                    style: Style {
+                        padding: UiRect::all(Val::Px(theme.spacing.sm)),
+                        margin: UiRect::top(Val::Px(theme.spacing.md)),
+                        border: UiRect::all(Val::Px(theme.borders.width_thin)),
+                        ..default()
+                    },
+                    background_color: theme.colors.surface_secondary.into(),
+                    border_color: theme.colors.border_secondary.into(),
+                    border_radius: BorderRadius::all(Val::Px(theme.borders.radius_small)),
+                    ..default()
+                })
+                .with_children(|hint_parent| {
+                    hint_parent.spawn(TextBundle::from_section(
+                        "💡 Press S to toggle statistics panel",
+                        TextStyle {
+                            font_size: theme.typography.caption,
+                            color: theme.colors.text_muted,
+                            ..default()
+                        },
+                    ));
+                });
+        });
+}
+
+/// Create a themed section header for the statistics panel
+fn create_themed_statistics_section(parent: &mut ChildBuilder, title: &str, theme: &UITheme) {
+    parent
+        .spawn(NodeBundle {
+            style: Style {
+                padding: UiRect::all(Val::Px(theme.spacing.sm)),
+                margin: UiRect::vertical(Val::Px(theme.spacing.sm)),
+                border: UiRect::bottom(Val::Px(theme.borders.width_thin)),
+                ..default()
+            },
+            background_color: Color::NONE.into(),
+            border_color: theme.colors.accent_blue.into(),
+            ..default()
+        })
+        .with_children(|section_parent| {
+            section_parent.spawn(TextBundle::from_section(
+                title,
                 TextStyle {
-                    font_size: 12.0,
-                    color: Color::srgb(0.7, 0.7, 0.7),
+                    font_size: theme.typography.heading_small,
+                    color: theme.colors.accent_blue,
                     ..default()
                 },
             ));
         });
 }
 
-/// Create a section header for the statistics panel
-fn create_statistics_section(parent: &mut ChildBuilder, title: &str) {
-    parent.spawn(TextBundle::from_section(
-        title,
-        TextStyle {
-            font_size: 14.0,
-            color: Color::srgb(0.8, 0.9, 1.0), // Light blue for section headers
-            ..default()
-        },
-    ));
-}
-
-/// Create a statistics text element with identifier for updates
-fn create_stat_text(initial_text: &str, identifier: &str) -> (TextBundle, Name) {
+/// Create a themed statistics text element with identifier for updates
+fn create_themed_stat_text(initial_text: &str, identifier: &str, theme: &UITheme) -> (TextBundle, Name) {
     (
         TextBundle::from_section(
             initial_text,
             TextStyle {
-                font_size: 12.0,
-                color: Color::srgb(0.9, 0.9, 0.9),
+                font_size: theme.typography.body_small,
+                color: theme.colors.text_secondary,
                 ..default()
             },
         ),
