@@ -779,7 +779,6 @@ pub struct StatisticsToggle {
     pub is_visible: bool,
 }
 
-
 /// Component for the performance monitoring panel
 #[derive(Component)]
 pub struct PerformancePanel;
@@ -925,7 +924,6 @@ pub struct SettingsPanel;
 pub struct SettingsToggle {
     pub is_visible: bool,
 }
-
 
 /// Component for settings category tabs
 #[derive(Component)]
