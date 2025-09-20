@@ -304,7 +304,7 @@ fn get_time_of_day_color(time_fraction: f32, theme: &UITheme) -> Color {
         f if f < 0.25 => theme.colors.accent_blue, // Night (00:00-06:00) - Blue
         f if f < 0.5 => theme.colors.accent_orange, // Morning (06:00-12:00) - Orange
         f if f < 0.75 => theme.colors.accent_orange, // Afternoon (12:00-18:00) - Orange
-        _ => theme.colors.accent_blue,            // Evening (18:00-24:00) - Blue
+        _ => theme.colors.accent_blue,             // Evening (18:00-24:00) - Blue
     }
 }
 
@@ -325,7 +325,7 @@ fn get_speed_color(speed: f32, theme: &UITheme) -> Color {
         s if s <= 5.0 => theme.colors.text_secondary, // Moderate speed
         s if s <= 20.0 => theme.colors.text_accent, // Fast speed
         s if s <= 50.0 => theme.colors.action_warning, // Very fast speed
-        _ => theme.colors.action_danger,           // Ultra fast speed
+        _ => theme.colors.action_danger,          // Ultra fast speed
     }
 }
 
