@@ -1,12 +1,13 @@
 use crate::components::{
     Ant, AntBehavior, AntState, DisasterState, Food, FoodSource, InvasiveSpecies, Inventory,
-    Lifecycle, Position, SpatialGrid,
+    Lifecycle, Position, Soil, SoilCell, SpatialGrid,
 };
 use bevy::prelude::*;
 use rand::prelude::*;
 
 /// System for ant movement and behavior
 pub fn ant_movement_system(
+    mut commands: Commands,
     time: Res<Time>,
     _disaster_state: Res<DisasterState>, // Keeping for future implementation
     spatial_grid: Res<SpatialGrid>,
@@ -22,6 +23,7 @@ pub fn ant_movement_system(
     >,
     food_query: Query<(&Position, &FoodSource), With<Food>>,
     invasive_query: Query<&Position, (With<InvasiveSpecies>, Without<Ant>)>,
+    mut soil_query: Query<(Entity, &Position, &mut SoilCell), (With<Soil>, Without<Ant>)>,
 ) {
     let mut rng = thread_rng();
 
@@ -174,8 +176,139 @@ pub fn ant_movement_system(
                     }
                 }
             }
-            _ => {
-                // Other states will be implemented later
+            AntState::Digging => {
+                // Realistic Camponotus japonicus digging behavior
+                if behavior.target_position.is_none() {
+                    // Find nearby soil to excavate - prefer areas near existing tunnels
+                    let mut target_soil: Option<Position> = None;
+                    let mut closest_distance = f32::INFINITY;
+
+                    // Search for soil within digging range
+                    for (_soil_entity, soil_pos, soil_cell) in soil_query.iter() {
+                        let dx = soil_pos.x - position.x;
+                        let dy = soil_pos.y - position.y;
+                        let distance = (dx * dx + dy * dy).sqrt();
+
+                        // Only dig soil within reasonable range and not too hard
+                        if distance <= 20.0 && distance < closest_distance {
+                            // Prefer easier soil (higher moisture, moderate temperature)
+                            let soil_suitability = soil_cell.moisture * 0.7
+                                + (1.0 - (soil_cell.temperature - 20.0).abs() / 20.0) * 0.3;
+
+                            if soil_suitability > 0.4 {
+                                closest_distance = distance;
+                                target_soil = Some(Position {
+                                    x: soil_pos.x,
+                                    y: soil_pos.y,
+                                });
+                            }
+                        }
+                    }
+
+                    // Set target or pick random underground position if no suitable soil found
+                    behavior.target_position = match target_soil {
+                        Some(soil_pos) => Some(soil_pos),
+                        None => Some(Position {
+                            x: position.x + rng.gen_range(-15.0..15.0),
+                            y: position.y + rng.gen_range(-10.0..-2.0), // Prefer going deeper
+                        }),
+                    };
+                }
+
+                // Move toward digging target
+                if let Some(target) = &behavior.target_position {
+                    let dx = target.x - position.x;
+                    let dy = target.y - position.y;
+                    let distance = (dx * dx + dy * dy).sqrt();
+
+                    if distance > 2.0 {
+                        // Move toward target soil
+                        let delta_time = time.delta_seconds();
+                        let digging_speed = behavior.speed * 0.6; // Slower when digging
+                        let move_distance = digging_speed * delta_time;
+                        position.x += (dx / distance) * move_distance;
+                        position.y += (dy / distance) * move_distance;
+
+                        // Update visual transform
+                        transform.translation.x = position.x;
+                        transform.translation.y = position.y;
+                    } else {
+                        // Reached target soil - attempt to excavate it
+                        let mut excavated = false;
+
+                        for (soil_entity, soil_pos, mut soil_cell) in soil_query.iter_mut() {
+                            let dx = soil_pos.x - position.x;
+                            let dy = soil_pos.y - position.y;
+                            let distance = (dx * dx + dy * dy).sqrt();
+
+                            // Excavate soil within close range
+                            if distance <= 3.0 {
+                                // Energy cost for digging - realistic ant excavation work
+                                let digging_cost = 2.0 * time.delta_seconds();
+                                lifecycle.energy -= digging_cost;
+
+                                // Soil hardness affects excavation speed
+                                let excavation_efficiency = soil_cell.moisture * 0.8 + 0.2;
+                                soil_cell.nutrition -= excavation_efficiency * time.delta_seconds();
+
+                                // Remove soil when it's sufficiently excavated
+                                if soil_cell.nutrition <= 0.1 {
+                                    commands.entity(soil_entity).despawn();
+                                    excavated = true;
+                                    info!(
+                                        "Ant excavated soil at ({:.1}, {:.1}) - tunnel expanded!",
+                                        soil_pos.x, soil_pos.y
+                                    );
+                                    break;
+                                }
+                            }
+                        }
+
+                        // Pick new target after excavating or if no more soil nearby
+                        if excavated || lifecycle.energy < 20.0 {
+                            behavior.target_position = None;
+
+                            // Switch to resting if energy is low
+                            if lifecycle.energy < 20.0 {
+                                behavior.state = AntState::Resting;
+                                info!("Ant stopped digging due to low energy, switching to rest");
+                            }
+                        }
+                    }
+                }
+            }
+            AntState::Resting => {
+                // Resting ants slowly recover energy
+                let energy_recovery = 15.0 * time.delta_seconds();
+                lifecycle.energy = (lifecycle.energy + energy_recovery).min(lifecycle.max_energy);
+
+                // Return to digging when energy is restored
+                if lifecycle.energy > 70.0 {
+                    behavior.state = AntState::Digging;
+                    behavior.target_position = None;
+                }
+            }
+            AntState::Returning => {
+                // Ants returning home (simplified for now)
+                if let Some(target) = &behavior.target_position {
+                    let dx = target.x - position.x;
+                    let dy = target.y - position.y;
+                    let distance = (dx * dx + dy * dy).sqrt();
+
+                    if distance > 2.0 {
+                        let delta_time = time.delta_seconds();
+                        let move_distance = behavior.speed * delta_time;
+                        position.x += (dx / distance) * move_distance;
+                        position.y += (dy / distance) * move_distance;
+
+                        transform.translation.x = position.x;
+                        transform.translation.y = position.y;
+                    } else {
+                        // Reached home, switch to resting
+                        behavior.state = AntState::Resting;
+                        behavior.target_position = None;
+                    }
+                }
             }
         }
     }
