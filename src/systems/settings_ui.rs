@@ -530,6 +530,7 @@ pub fn handle_settings_interactions_system(
     mut panel_query: Query<&mut Visibility, With<SettingsPanel>>,
     mut settings_toggle_query: Query<&mut SettingsToggle, Without<Button>>,
     mut user_settings: ResMut<UserSettings>,
+    ui_theme: Res<UITheme>,
 ) {
     for (interaction, mut background_color, settings_button, settings_toggle_button) in
         &mut interaction_query
@@ -582,23 +583,23 @@ pub fn handle_settings_interactions_system(
                 }
             }
             Interaction::Hovered => {
-                // Visual feedback for hover state
+                // Visual feedback for hover state using UITheme
                 if settings_button.is_some() || settings_toggle_button.is_some() {
-                    *background_color = Color::srgb(0.3, 0.3, 0.3).into();
+                    *background_color = ui_theme.states.hover_overlay.into();
                 }
             }
             Interaction::None => {
-                // Reset to default colors
+                // Reset to default colors using UITheme
                 if let Some(settings_button) = settings_button {
                     *background_color = match settings_button.action {
-                        SettingsAction::ResetToDefaults => Color::srgb(0.6, 0.3, 0.3).into(),
-                        SettingsAction::SaveSettings => Color::srgb(0.2, 0.6, 0.2).into(),
-                        SettingsAction::ApplySettings => Color::srgb(0.3, 0.5, 0.7).into(),
-                        SettingsAction::ClosePanel => Color::srgb(0.6, 0.2, 0.2).into(),
-                        _ => Color::srgb(0.2, 0.2, 0.2).into(),
+                        SettingsAction::ResetToDefaults => ui_theme.colors.action_danger.into(),
+                        SettingsAction::SaveSettings => ui_theme.colors.action_success.into(),
+                        SettingsAction::ApplySettings => ui_theme.colors.action_primary.into(),
+                        SettingsAction::ClosePanel => ui_theme.colors.action_danger.into(),
+                        _ => ui_theme.colors.surface_secondary.into(),
                     };
                 } else if settings_toggle_button.is_some() {
-                    *background_color = Color::srgba(0.2, 0.2, 0.2, 0.8).into();
+                    *background_color = ui_theme.colors.surface_secondary.into();
                 }
             }
         }
