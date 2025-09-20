@@ -20,7 +20,7 @@ pub fn ant_movement_system(
             &mut Lifecycle,
             &mut Inventory,
         ),
-        With<Ant>,
+        (With<Ant>, Without<Food>),
     >,
     food_query: Query<(&Position, &FoodSource), With<Food>>,
     invasive_query: Query<&Position, With<InvasiveSpecies>>,
