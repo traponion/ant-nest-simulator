@@ -1,5 +1,6 @@
 use crate::components::{
-    DisasterState, DisasterType, Particle, ParticleData, ParticleType, TimeControl, VisualEffectsSettings,
+    DisasterState, DisasterType, Particle, ParticleData, ParticleType, TimeControl,
+    VisualEffectsSettings,
 };
 use crate::systems::time_control::effective_delta_time;
 use bevy::prelude::*;

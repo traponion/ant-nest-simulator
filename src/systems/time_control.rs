@@ -1,6 +1,6 @@
 use crate::components::{
-    TimeControl, TimeControlPanel, PlayPauseButton, PlayPauseIcon, PlayPauseText,
-    SpeedButton, SpeedDisplay, SpeedSlider, SpeedSliderTrack, SpeedSliderHandle, SpeedSliderProgress,
+    PlayPauseButton, PlayPauseIcon, PlayPauseText, SpeedButton, SpeedDisplay, SpeedSlider,
+    SpeedSliderHandle, SpeedSliderProgress, SpeedSliderTrack, TimeControl, TimeControlPanel,
     UITheme,
 };
 use bevy::prelude::*;
@@ -106,12 +106,8 @@ pub fn setup_time_control_ui(mut commands: Commands) {
                 })
                 .with_children(|buttons_parent| {
                     // Main speed presets (compact horizontal layout)
-                    let main_speed_presets = [
-                        (1.0, "1x"),
-                        (5.0, "5x"),
-                        (20.0, "20x"),
-                        (100.0, "Max"),
-                    ];
+                    let main_speed_presets =
+                        [(1.0, "1x"), (5.0, "5x"), (20.0, "20x"), (100.0, "Max")];
 
                     for (speed, label) in main_speed_presets {
                         buttons_parent
@@ -177,7 +173,9 @@ pub fn setup_time_control_ui(mut commands: Commands) {
                             },
                         ));
                     })
-                    .insert(SpeedButton { target_speed: speed });
+                    .insert(SpeedButton {
+                        target_speed: speed,
+                    });
             }
 
             // Instructions
@@ -276,12 +274,22 @@ pub fn time_control_input_system(
 /// Handle enhanced button interactions for time control with improved hover effects
 pub fn handle_time_control_buttons(
     mut interaction_query: Query<
-        (&Interaction, &mut BackgroundColor, Option<&PlayPauseButton>, Option<&SpeedPresetButton>),
-        (Changed<Interaction>, Or<(With<PlayPauseButton>, With<SpeedPresetButton>)>),
+        (
+            &Interaction,
+            &mut BackgroundColor,
+            Option<&PlayPauseButton>,
+            Option<&SpeedPresetButton>,
+        ),
+        (
+            Changed<Interaction>,
+            Or<(With<PlayPauseButton>, With<SpeedPresetButton>)>,
+        ),
     >,
     mut time_control: ResMut<TimeControl>,
 ) {
-    for (interaction, mut background_color, play_pause_button, speed_preset_button) in &mut interaction_query {
+    for (interaction, mut background_color, play_pause_button, speed_preset_button) in
+        &mut interaction_query
+    {
         match *interaction {
             Interaction::Pressed => {
                 if play_pause_button.is_some() {
@@ -294,7 +302,10 @@ pub fn handle_time_control_buttons(
                     } else {
                         // Pressed state for playing (bright green)
                         *background_color = Color::srgba(0.2, 0.7, 0.2, 0.95).into();
-                        info!("Simulation resumed at {}x speed", time_control.speed_multiplier);
+                        info!(
+                            "Simulation resumed at {}x speed",
+                            time_control.speed_multiplier
+                        );
                     }
                 } else if let Some(SpeedPresetButton(speed)) = speed_preset_button {
                     // Set speed preset with enhanced pressed state
@@ -361,8 +372,22 @@ pub fn update_speed_display_system(
 /// Update play/pause button display with enhanced layout
 pub fn update_play_pause_button_system(
     time_control: Res<TimeControl>,
-    mut icon_query: Query<&mut Text, (With<PlayPauseIcon>, Without<PlayPauseText>, Without<SpeedDisplay>)>,
-    mut text_query: Query<&mut Text, (With<PlayPauseText>, Without<PlayPauseIcon>, Without<SpeedDisplay>)>,
+    mut icon_query: Query<
+        &mut Text,
+        (
+            With<PlayPauseIcon>,
+            Without<PlayPauseText>,
+            Without<SpeedDisplay>,
+        ),
+    >,
+    mut text_query: Query<
+        &mut Text,
+        (
+            With<PlayPauseText>,
+            Without<PlayPauseIcon>,
+            Without<SpeedDisplay>,
+        ),
+    >,
     mut button_query: Query<&mut BackgroundColor, With<PlayPauseButton>>,
 ) {
     // Update icon
@@ -396,7 +421,12 @@ pub fn update_play_pause_button_system(
 /// Handle mouse clicks on UI buttons
 pub fn button_click_system(
     mut interaction_query: Query<
-        (&Interaction, &mut BackgroundColor, Option<&SpeedButton>, Option<&PlayPauseButton>),
+        (
+            &Interaction,
+            &mut BackgroundColor,
+            Option<&SpeedButton>,
+            Option<&PlayPauseButton>,
+        ),
         (Changed<Interaction>, With<Button>),
     >,
     mut time_control: ResMut<TimeControl>,
@@ -408,14 +438,20 @@ pub fn button_click_system(
                     // Speed button clicked
                     time_control.speed_multiplier = speed_button.target_speed;
                     time_control.is_paused = false;
-                    info!("Speed set to {}x via button click", speed_button.target_speed);
+                    info!(
+                        "Speed set to {}x via button click",
+                        speed_button.target_speed
+                    );
                 } else if play_pause_button.is_some() {
                     // Play/pause button clicked
                     time_control.is_paused = !time_control.is_paused;
                     if time_control.is_paused {
                         info!("Simulation paused via button click");
                     } else {
-                        info!("Simulation resumed via button click at {}x speed", time_control.speed_multiplier);
+                        info!(
+                            "Simulation resumed via button click at {}x speed",
+                            time_control.speed_multiplier
+                        );
                     }
                 }
             }
@@ -488,8 +524,8 @@ pub fn setup_time_control_ui_with_slider(mut commands: Commands) {
                         ..default()
                     },
                     background_color: Color::srgba(0.15, 0.6, 0.15, 0.9).into(), // Enhanced green
-                    border_color: Color::srgb(0.2, 0.8, 0.2).into(), // Brighter border
-                    border_radius: BorderRadius::all(Val::Px(8.0)), // More rounded
+                    border_color: Color::srgb(0.2, 0.8, 0.2).into(),             // Brighter border
+                    border_radius: BorderRadius::all(Val::Px(8.0)),              // More rounded
                     ..default()
                 })
                 .with_children(|button_parent| {
@@ -784,11 +820,8 @@ pub fn handle_speed_slider_system(
     if let Ok(mut slider) = slider_query.get_single_mut() {
         // Handle mouse interaction with slider handle
         for interaction in &handle_query {
-            match interaction {
-                Interaction::Pressed => {
-                    slider.is_dragging = true;
-                }
-                _ => {}
+            if interaction == &Interaction::Pressed {
+                slider.is_dragging = true;
             }
         }
 
@@ -835,7 +868,7 @@ pub fn update_slider_handle_position_system(
     if let (Ok(mut slider), Ok(mut handle_style), Ok(track_node)) = (
         slider_query.get_single_mut(),
         handle_style_query.get_single_mut(),
-        track_query.get_single()
+        track_query.get_single(),
     ) {
         // Update slider value from time control when not dragging
         if !slider.is_dragging {
@@ -845,7 +878,8 @@ pub fn update_slider_handle_position_system(
             let track_width = track_node.size().x - 20.0; // Account for handle width
             let min_speed = 1.0;
             let max_speed = 100.0;
-            let percentage = ((slider.current_value - min_speed) / (max_speed - min_speed)).clamp(0.0, 1.0);
+            let percentage =
+                ((slider.current_value - min_speed) / (max_speed - min_speed)).clamp(0.0, 1.0);
             let position = percentage * track_width;
 
             handle_style.left = Val::Px(position);
@@ -1036,7 +1070,9 @@ pub fn setup_themed_time_control_ui(mut commands: Commands, theme: Res<UITheme>)
                                     },
                                     background_color: theme.colors.accent_blue.into(),
                                     border_color: theme.colors.text_primary.into(),
-                                    border_radius: BorderRadius::all(Val::Px(theme.borders.radius_round)),
+                                    border_radius: BorderRadius::all(Val::Px(
+                                        theme.borders.radius_round,
+                                    )),
                                     ..default()
                                 })
                                 .insert(SpeedSliderHandle);
@@ -1088,7 +1124,9 @@ pub fn setup_themed_time_control_ui(mut commands: Commands, theme: Res<UITheme>)
                                 },
                                 background_color: theme.colors.action_secondary.into(),
                                 border_color: theme.colors.border_primary.into(),
-                                border_radius: BorderRadius::all(Val::Px(theme.borders.radius_small)),
+                                border_radius: BorderRadius::all(Val::Px(
+                                    theme.borders.radius_small,
+                                )),
                                 ..default()
                             })
                             .with_children(|button| {
@@ -1121,13 +1159,23 @@ pub fn setup_themed_time_control_ui(mut commands: Commands, theme: Res<UITheme>)
 /// Enhanced button interaction system with theme-aware hover effects
 pub fn handle_themed_time_control_buttons(
     mut interaction_query: Query<
-        (&Interaction, &mut BackgroundColor, Option<&PlayPauseButton>, Option<&SpeedPresetButton>),
-        (Changed<Interaction>, Or<(With<PlayPauseButton>, With<SpeedPresetButton>)>),
+        (
+            &Interaction,
+            &mut BackgroundColor,
+            Option<&PlayPauseButton>,
+            Option<&SpeedPresetButton>,
+        ),
+        (
+            Changed<Interaction>,
+            Or<(With<PlayPauseButton>, With<SpeedPresetButton>)>,
+        ),
     >,
     mut time_control: ResMut<TimeControl>,
     theme: Res<UITheme>,
 ) {
-    for (interaction, mut background_color, play_pause_button, speed_preset_button) in &mut interaction_query {
+    for (interaction, mut background_color, play_pause_button, speed_preset_button) in
+        &mut interaction_query
+    {
         match *interaction {
             Interaction::Pressed => {
                 if play_pause_button.is_some() {
@@ -1136,7 +1184,10 @@ pub fn handle_themed_time_control_buttons(
                     if time_control.is_paused {
                         info!("Simulation paused");
                     } else {
-                        info!("Simulation resumed at {}x speed", time_control.speed_multiplier);
+                        info!(
+                            "Simulation resumed at {}x speed",
+                            time_control.speed_multiplier
+                        );
                     }
                 } else if let Some(SpeedPresetButton(speed)) = speed_preset_button {
                     // Set speed preset

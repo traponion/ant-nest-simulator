@@ -1,6 +1,6 @@
 use crate::components::{
-    SettingsPanel, SettingsToggle, SettingsCategory, SettingsCategoryType, SettingItem,
-    SettingType, SettingsButton, SettingsAction, UserSettings,
+    SettingItem, SettingType, SettingsAction, SettingsButton, SettingsCategory,
+    SettingsCategoryType, SettingsPanel, SettingsToggle, UserSettings,
 };
 use bevy::prelude::*;
 
@@ -176,9 +176,21 @@ pub fn setup_settings_panel(mut commands: Commands) {
                 })
                 .with_children(|buttons_parent| {
                     let buttons = [
-                        (SettingsAction::ResetToDefaults, "Reset to Defaults", Color::srgb(0.6, 0.3, 0.3)),
-                        (SettingsAction::SaveSettings, "Save Settings", Color::srgb(0.2, 0.6, 0.2)),
-                        (SettingsAction::ApplySettings, "Apply", Color::srgb(0.3, 0.5, 0.7)),
+                        (
+                            SettingsAction::ResetToDefaults,
+                            "Reset to Defaults",
+                            Color::srgb(0.6, 0.3, 0.3),
+                        ),
+                        (
+                            SettingsAction::SaveSettings,
+                            "Save Settings",
+                            Color::srgb(0.2, 0.6, 0.2),
+                        ),
+                        (
+                            SettingsAction::ApplySettings,
+                            "Apply",
+                            Color::srgb(0.3, 0.5, 0.7),
+                        ),
                     ];
 
                     for (action, label, color) in buttons {
@@ -498,14 +510,21 @@ pub fn settings_toggle_input_system(
 /// System for handling settings button interactions
 pub fn handle_settings_interactions_system(
     mut interaction_query: Query<
-        (&Interaction, &mut BackgroundColor, Option<&SettingsButton>, Option<&SettingsToggle>),
+        (
+            &Interaction,
+            &mut BackgroundColor,
+            Option<&SettingsButton>,
+            Option<&SettingsToggle>,
+        ),
         (Changed<Interaction>, With<Button>),
     >,
     mut panel_query: Query<&mut Visibility, With<SettingsPanel>>,
     mut settings_toggle_query: Query<&mut SettingsToggle, Without<Button>>,
     mut user_settings: ResMut<UserSettings>,
 ) {
-    for (interaction, mut background_color, settings_button, settings_toggle_button) in &mut interaction_query {
+    for (interaction, mut background_color, settings_button, settings_toggle_button) in
+        &mut interaction_query
+    {
         match *interaction {
             Interaction::Pressed => {
                 // Handle settings button actions

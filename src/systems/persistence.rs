@@ -1,8 +1,8 @@
 use bevy::prelude::*;
+use directories::ProjectDirs;
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::PathBuf;
-use directories::ProjectDirs;
 
 use crate::components::*;
 
@@ -84,18 +84,19 @@ pub struct PersistenceState {
 
 impl PersistenceState {
     pub fn new() -> Self {
-        let save_directory = if let Some(proj_dirs) = ProjectDirs::from("com", "traponion", "ant-nest-simulator") {
-            let save_dir = proj_dirs.data_dir().join("saves");
-            if let Err(e) = fs::create_dir_all(&save_dir) {
-                warn!("Failed to create save directory: {}", e);
-                None
+        let save_directory =
+            if let Some(proj_dirs) = ProjectDirs::from("com", "traponion", "ant-nest-simulator") {
+                let save_dir = proj_dirs.data_dir().join("saves");
+                if let Err(e) = fs::create_dir_all(&save_dir) {
+                    warn!("Failed to create save directory: {}", e);
+                    None
+                } else {
+                    Some(save_dir)
+                }
             } else {
-                Some(save_dir)
-            }
-        } else {
-            warn!("Failed to determine save directory");
-            None
-        };
+                warn!("Failed to determine save directory");
+                None
+            };
 
         Self {
             save_directory,
@@ -111,7 +112,10 @@ impl PersistenceState {
 pub fn save_game_system(
     mut persistence_state: ResMut<PersistenceState>,
     time: Res<Time>,
-    ant_query: Query<(&Position, &AntBehavior, &Lifecycle, Option<&Inventory>), (With<Ant>, Without<Queen>)>,
+    ant_query: Query<
+        (&Position, &AntBehavior, &Lifecycle, Option<&Inventory>),
+        (With<Ant>, Without<Queen>),
+    >,
     soil_query: Query<(&Position, &SoilCell), With<Soil>>,
     food_query: Query<(&Position, &FoodSource), With<Food>>,
     queen_query: Query<(&Position, &Lifecycle, &ReproductionState), With<Queen>>,
@@ -119,7 +123,8 @@ pub fn save_game_system(
     input: Res<ButtonInput<KeyCode>>,
 ) {
     // Manual save with Ctrl+S
-    let should_manual_save = input.pressed(KeyCode::ControlLeft) && input.just_pressed(KeyCode::KeyS);
+    let should_manual_save =
+        input.pressed(KeyCode::ControlLeft) && input.just_pressed(KeyCode::KeyS);
 
     // Auto-save check
     let time_since_last_save = time.elapsed_seconds() - persistence_state.last_save_time;
@@ -203,7 +208,10 @@ pub fn save_game_system(
     // Save to file
     if let Some(save_dir) = &persistence_state.save_directory {
         let filename = if should_manual_save {
-            format!("manual_save_{}.dat", chrono::Utc::now().format("%Y%m%d_%H%M%S"))
+            format!(
+                "manual_save_{}.dat",
+                chrono::Utc::now().format("%Y%m%d_%H%M%S")
+            )
         } else {
             "auto_save.dat".to_string()
         };
@@ -211,17 +219,15 @@ pub fn save_game_system(
         let save_path = save_dir.join(filename);
 
         match bincode::serialize(&save_data) {
-            Ok(encoded) => {
-                match fs::write(&save_path, encoded) {
-                    Ok(_) => {
-                        info!("Game saved successfully to {:?}", save_path);
-                        persistence_state.last_save_time = time.elapsed_seconds();
-                    }
-                    Err(e) => {
-                        error!("Failed to write save file: {}", e);
-                    }
+            Ok(encoded) => match fs::write(&save_path, encoded) {
+                Ok(_) => {
+                    info!("Game saved successfully to {:?}", save_path);
+                    persistence_state.last_save_time = time.elapsed_seconds();
                 }
-            }
+                Err(e) => {
+                    error!("Failed to write save file: {}", e);
+                }
+            },
             Err(e) => {
                 error!("Failed to serialize save data: {}", e);
             }
@@ -298,20 +304,12 @@ pub fn load_game_system(
 
                         // Restore soil
                         for soil_data in save_data.soil_cells {
-                            commands.spawn((
-                                soil_data.position,
-                                soil_data.soil_cell,
-                                Soil,
-                            ));
+                            commands.spawn((soil_data.position, soil_data.soil_cell, Soil));
                         }
 
                         // Restore food sources
                         for food_data in save_data.food_sources {
-                            commands.spawn((
-                                food_data.position,
-                                food_data.food_source,
-                                Food,
-                            ));
+                            commands.spawn((food_data.position, food_data.food_source, Food));
                         }
 
                         // Restore queen
@@ -328,8 +326,10 @@ pub fn load_game_system(
                         time_control.is_paused = save_data.game_state.is_paused;
                         time_control.speed_multiplier = save_data.game_state.speed_multiplier;
 
-                        info!("Game loaded successfully! Colony age: {:.1}s, Population: {}",
-                              save_data.metadata.colony_age, save_data.metadata.ant_population);
+                        info!(
+                            "Game loaded successfully! Colony age: {:.1}s, Population: {}",
+                            save_data.metadata.colony_age, save_data.metadata.ant_population
+                        );
                     }
                     Err(e) => {
                         error!("Failed to deserialize save data: {}", e);
@@ -346,10 +346,7 @@ pub fn load_game_system(
 }
 
 /// System to display save/load status
-pub fn persistence_status_system(
-    persistence_state: Res<PersistenceState>,
-    time: Res<Time>,
-) {
+pub fn persistence_status_system(persistence_state: Res<PersistenceState>, time: Res<Time>) {
     if persistence_state.is_saving {
         info!("Saving game...");
     }
@@ -359,8 +356,8 @@ pub fn persistence_status_system(
     }
 
     // Show auto-save countdown (optional debug info)
-    let time_until_autosave = persistence_state.auto_save_interval -
-        (time.elapsed_seconds() - persistence_state.last_save_time);
+    let time_until_autosave = persistence_state.auto_save_interval
+        - (time.elapsed_seconds() - persistence_state.last_save_time);
 
     if time_until_autosave <= 30.0 && time_until_autosave > 0.0 {
         debug!("Auto-save in {:.1} seconds", time_until_autosave);

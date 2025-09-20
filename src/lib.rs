@@ -23,6 +23,10 @@
 //!     .run();
 //! ```
 
+// Allow clippy warnings that are common in game development and don't affect functionality
+#![allow(clippy::type_complexity)]
+#![allow(clippy::too_many_arguments)]
+
 pub mod components;
 pub mod systems;
 
@@ -49,7 +53,7 @@ impl Plugin for AntNestPlugin {
             .init_resource::<components::UITheme>()
             .init_resource::<systems::ParticleConfig>()
             .insert_resource(components::SpatialGrid::new(
-                16.0, // Cell size of 16 units
+                16.0,                                        // Cell size of 16 units
                 components::Position { x: -80.0, y: -60.0 }, // World min
                 components::Position { x: 80.0, y: 60.0 },   // World max
             ))
