@@ -24,6 +24,7 @@ pub fn setup_disaster_control_panel(mut commands: Commands, ui_theme: Res<UIThem
             background_color: ui_theme.colors.surface_primary.into(),
             border_color: ui_theme.colors.border_primary.into(),
             border_radius: BorderRadius::all(Val::Px(ui_theme.borders.radius_medium)),
+            visibility: Visibility::Hidden, // Start hidden for pure observation experience
             ..default()
         })
         .insert(DisasterControlPanel)

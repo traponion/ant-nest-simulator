@@ -13,8 +13,8 @@ pub fn ant_lifecycle_system(
         // Age the ant
         lifecycle.age += delta_time;
 
-        // Decrease energy over time (simplified)
-        lifecycle.energy -= 2.0 * delta_time;
+        // Decrease energy over time (much slower for debugging)
+        lifecycle.energy -= 0.2 * delta_time;
 
         // Check if ant should die
         if lifecycle.age >= lifecycle.max_age || lifecycle.energy <= 0.0 {

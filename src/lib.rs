@@ -70,13 +70,14 @@ impl Plugin for AntNestPlugin {
                     systems::spawn_initial_chambers,
                     systems::spawn_initial_ants, // Now includes queen spawning
                     systems::spawn_food_sources,
-                    systems::setup_performance_monitoring_ui,
                     systems::initialize_spatial_grid_system,
-                    systems::setup_statistics_panel,
-                    systems::settings_ui::setup_settings_panel,
-                    systems::settings_ui::setup_settings_toggle_button,
-                    systems::setup_colony_development_ui,
-                    systems::disaster_ui::setup_disaster_control_panel,
+                    // UI panels disabled for pure observation gameplay (Issues #98, #99, #100)
+                    // systems::setup_performance_monitoring_ui,
+                    // systems::setup_statistics_panel,
+                    // systems::settings_ui::setup_settings_panel,
+                    // systems::settings_ui::setup_settings_toggle_button,
+                    // systems::setup_colony_development_ui,
+                    // systems::disaster_ui::setup_disaster_control_panel,
                 ),
             )
             // Core simulation systems
@@ -100,7 +101,8 @@ impl Plugin for AntNestPlugin {
                     systems::colony_statistics_calculation_system,
                 ),
             )
-            // UI systems (first part)
+            // UI systems (disabled for pure observation experience)
+            /* Commented out for pure observation gameplay - zero player intervention
             .add_systems(
                 Update,
                 (
@@ -117,6 +119,7 @@ impl Plugin for AntNestPlugin {
                     systems::tooltip_cleanup_system,
                 ),
             )
+            */
             // Visual effects systems
             .add_systems(
                 Update,
@@ -134,11 +137,10 @@ impl Plugin for AntNestPlugin {
                 Update,
                 (
                     systems::collect_performance_metrics,
-                    systems::update_performance_monitoring_ui,
-                    systems::toggle_performance_monitoring_system,
-                    systems::statistics_toggle_input_system,
-                    systems::update_statistics_display,
-                    systems::colony_development_ui_system,
+                    // UI update systems disabled for pure observation (Issues #98, #99, #100)
+                    // systems::update_performance_monitoring_ui,
+                    // systems::update_statistics_display,
+                    // systems::colony_development_ui_system,
                     systems::save_game_system,
                     systems::load_game_system,
                     systems::persistence_status_system,
