@@ -78,6 +78,31 @@ pub fn setup_statistics_panel(mut commands: Commands) {
             create_statistics_section(parent, "Behavior");
             parent.spawn(create_stat_text("Activity: No ants", "behavior_activity"));
 
+            // Role Distribution Section
+            create_statistics_section(parent, "Role Distribution");
+            parent.spawn(create_stat_text(
+                "General Workers: 0",
+                "role_general_workers",
+            ));
+            parent.spawn(create_stat_text("Foragers: 0", "role_foragers"));
+            parent.spawn(create_stat_text(
+                "Nest Maintainers: 0",
+                "role_nest_maintainers",
+            ));
+            parent.spawn(create_stat_text(
+                "Nursery Workers: 0",
+                "role_nursery_workers",
+            ));
+            parent.spawn(create_stat_text("Waste Managers: 0", "role_waste_managers"));
+            parent.spawn(create_stat_text(
+                "Storage Workers: 0",
+                "role_storage_workers",
+            ));
+            parent.spawn(create_stat_text(
+                "Specialization Rate: 0%",
+                "role_specialization",
+            ));
+
             // Controls hint
             parent.spawn(TextBundle::from_section(
                 "Press S to toggle",
@@ -182,6 +207,27 @@ pub fn update_statistics_display(
             }
 
             "behavior_activity" => colony_stats.behavior_distribution_text(),
+
+            "role_general_workers" => {
+                format!("General Workers: {}", colony_stats.role_general_workers)
+            }
+            "role_foragers" => format!("Foragers: {}", colony_stats.role_foragers),
+            "role_nest_maintainers" => {
+                format!("Nest Maintainers: {}", colony_stats.role_nest_maintainers)
+            }
+            "role_nursery_workers" => {
+                format!("Nursery Workers: {}", colony_stats.role_nursery_workers)
+            }
+            "role_waste_managers" => {
+                format!("Waste Managers: {}", colony_stats.role_waste_managers)
+            }
+            "role_storage_workers" => {
+                format!("Storage Workers: {}", colony_stats.role_storage_workers)
+            }
+            "role_specialization" => format!(
+                "Specialization Rate: {:.1}%",
+                colony_stats.specialization_rate()
+            ),
 
             _ => continue,
         };
