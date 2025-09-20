@@ -10,6 +10,7 @@
 pub mod colony_development;
 pub mod colony_statistics;
 pub mod color_overlay;
+pub mod disaster_ui;
 pub mod environment;
 pub mod foraging;
 pub mod invasive_species;
@@ -30,6 +31,7 @@ pub mod visual_effects_toggle;
 pub use colony_development::*;
 pub use colony_statistics::*;
 pub use color_overlay::*;
+pub use disaster_ui::*;
 pub use environment::*;
 pub use foraging::*;
 pub use invasive_species::*;

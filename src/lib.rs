@@ -51,6 +51,7 @@ impl Plugin for AntNestPlugin {
             .init_resource::<components::UserSettings>()
             .init_resource::<components::UITheme>()
             .init_resource::<components::ColonyDevelopmentPhase>()
+            .init_resource::<components::DisasterState>()
             .init_resource::<systems::colony_development::PhaseProgressTracking>()
             .init_resource::<systems::ParticleConfig>()
             .insert_resource(components::SpatialGrid::new(
@@ -75,6 +76,7 @@ impl Plugin for AntNestPlugin {
                     systems::settings_ui::setup_settings_panel,
                     systems::settings_ui::setup_settings_toggle_button,
                     systems::setup_colony_development_ui,
+                    systems::disaster_ui::setup_disaster_control_panel,
                 ),
             )
             // Core simulation systems
@@ -105,6 +107,10 @@ impl Plugin for AntNestPlugin {
                     systems::visual_effects_toggle_system,
                     systems::settings_ui::settings_toggle_input_system,
                     systems::settings_ui::handle_settings_interactions_system,
+                    // Disaster control systems
+                    systems::disaster_ui::handle_disaster_control_interactions,
+                    systems::disaster_ui::update_disaster_status_indicators,
+                    systems::disaster_ui::disaster_keyboard_input_system,
                     // Tooltip system
                     systems::tooltip_trigger_system,
                     systems::tooltip_display_system,
@@ -117,7 +123,8 @@ impl Plugin for AntNestPlugin {
                 (
                     systems::color_overlay_system,
                     systems::update_overlay_size_system,
-                    systems::particle_spawner_system,
+                    // TODO: Re-enable particle system after fixing DisasterState resource initialization order
+                    // systems::particle_spawner_system,
                     systems::particle_update_system,
                     systems::update_particle_config_system,
                 ),
