@@ -13,13 +13,15 @@ pub fn setup_disaster_control_panel(mut commands: Commands) {
                 position_type: PositionType::Absolute,
                 right: Val::Px(10.0),
                 top: Val::Px(10.0),
-                width: Val::Px(280.0),
+                width: Val::Px(300.0), // Increased width to match Time Control UI
                 flex_direction: FlexDirection::Column,
                 padding: UiRect::all(Val::Px(15.0)),
-                row_gap: Val::Px(10.0),
+                row_gap: Val::Px(12.0), // Increased spacing to match Time Control UI
+                border: UiRect::all(Val::Px(2.0)), // Added border like Time Control UI
                 ..default()
             },
-            background_color: Color::srgba(0.0, 0.0, 0.0, 0.8).into(),
+            background_color: Color::srgba(0.1, 0.1, 0.1, 0.9).into(), // Consistent with Time Control UI
+            border_color: Color::srgb(0.3, 0.3, 0.3).into(), // Consistent border color
             border_radius: BorderRadius::all(Val::Px(8.0)),
             ..default()
         })
@@ -48,14 +50,15 @@ pub fn setup_disaster_control_panel(mut commands: Commands) {
                     .spawn(ButtonBundle {
                         style: Style {
                             flex_direction: FlexDirection::Column,
-                            padding: UiRect::all(Val::Px(8.0)),
-                            row_gap: Val::Px(4.0),
-                            border: UiRect::all(Val::Px(1.0)),
+                            padding: UiRect::all(Val::Px(12.0)), // Increased padding like Time Control UI
+                            row_gap: Val::Px(8.0), // Increased spacing
+                            border: UiRect::all(Val::Px(2.0)), // 2px border like Time Control UI
+                            margin: UiRect::bottom(Val::Px(6.0)), // Added margin for better spacing
                             ..default()
                         },
-                        background_color: Color::srgba(0.2, 0.2, 0.2, 0.6).into(),
-                        border_color: Color::srgba(0.3, 0.3, 0.3, 0.4).into(),
-                        border_radius: BorderRadius::all(Val::Px(4.0)),
+                        background_color: Color::srgba(0.15, 0.15, 0.15, 0.85).into(), // Enhanced consistent color
+                        border_color: Color::srgb(0.4, 0.4, 0.4).into(), // Brighter border for better contrast
+                        border_radius: BorderRadius::all(Val::Px(8.0)), // 8px radius like Time Control UI
                         ..default()
                     })
                     .with_children(|disaster_parent| {
@@ -83,63 +86,93 @@ pub fn setup_disaster_control_panel(mut commands: Commands) {
                                         ..default()
                                     })
                                     .with_children(|name_parent| {
-                                        // Disaster icon
-                                        name_parent.spawn(TextBundle::from_section(
-                                            disaster_type.get_icon(),
-                                            TextStyle {
-                                                font_size: 20.0,
-                                                color: Color::WHITE,
+                                        // Disaster icon with enhanced styling
+                                        name_parent
+                                            .spawn(NodeBundle {
+                                                style: Style {
+                                                    width: Val::Px(32.0),
+                                                    height: Val::Px(32.0),
+                                                    justify_content: JustifyContent::Center,
+                                                    align_items: AlignItems::Center,
+                                                    ..default()
+                                                },
+                                                background_color: Color::srgba(1.0, 1.0, 1.0, 0.1).into(), // Subtle icon background
+                                                border_radius: BorderRadius::all(Val::Px(16.0)), // Circular background
                                                 ..default()
-                                            },
-                                        ));
+                                            })
+                                            .with_children(|icon_container| {
+                                                icon_container.spawn(TextBundle::from_section(
+                                                    disaster_type.get_icon(),
+                                                    TextStyle {
+                                                        font_size: 24.0, // Larger icon for better visibility
+                                                        color: Color::WHITE,
+                                                        ..default()
+                                                    },
+                                                ));
+                                            });
 
-                                        // Disaster name
+                                        // Disaster name with enhanced typography
                                         name_parent.spawn(TextBundle::from_section(
                                             disaster_type.display_name(),
                                             TextStyle {
-                                                font_size: 16.0,
+                                                font_size: 18.0, // Slightly larger for better readability
                                                 color: Color::WHITE,
                                                 ..default()
                                             },
                                         ));
                                     });
 
-                                // Key shortcut
-                                header_parent.spawn(TextBundle::from_section(
-                                    format!("Key: {}", disaster_type.shortcut_key()),
-                                    TextStyle {
-                                        font_size: 14.0,
-                                        color: Color::srgb(0.8, 0.8, 0.8),
+                                // Keyboard shortcut with enhanced styling (like Time Control UI)
+                                header_parent
+                                    .spawn(NodeBundle {
+                                        style: Style {
+                                            padding: UiRect::all(Val::Px(4.0)),
+                                            ..default()
+                                        },
+                                        background_color: Color::srgba(0.0, 0.0, 0.0, 0.3).into(), // Same as Time Control UI
+                                        border_radius: BorderRadius::all(Val::Px(4.0)),
                                         ..default()
-                                    },
-                                ));
+                                    })
+                                    .with_children(|shortcut_parent| {
+                                        shortcut_parent.spawn(TextBundle::from_section(
+                                            disaster_type.shortcut_key(),
+                                            TextStyle {
+                                                font_size: 12.0,
+                                                color: Color::srgb(0.9, 0.9, 0.9), // Slightly brighter
+                                                ..default()
+                                            },
+                                        ));
+                                    });
                             });
 
-                        // Status and timer row
+                        // Status and timer row with enhanced styling
                         disaster_parent
                             .spawn(NodeBundle {
                                 style: Style {
                                     flex_direction: FlexDirection::Row,
                                     justify_content: JustifyContent::SpaceBetween,
                                     align_items: AlignItems::Center,
-                                    padding: UiRect::all(Val::Px(4.0)),
+                                    padding: UiRect::all(Val::Px(8.0)), // Increased padding
+                                    margin: UiRect::top(Val::Px(4.0)), // Added top margin for separation
                                     ..default()
                                 },
-                                background_color: Color::srgba(0.1, 0.1, 0.1, 0.3).into(),
-                                border_radius: BorderRadius::all(Val::Px(3.0)),
+                                background_color: Color::srgba(0.05, 0.05, 0.05, 0.6).into(), // Slightly darker for better contrast
+                                border_radius: BorderRadius::all(Val::Px(6.0)), // Larger radius for consistency
                                 ..default()
                             })
                             .with_children(|status_parent| {
-                                // Visual status indicator with background
+                                // Enhanced visual status indicator with background
                                 status_parent
                                     .spawn((
                                         NodeBundle {
                                             style: Style {
-                                                padding: UiRect::all(Val::Px(6.0)),
+                                                padding: UiRect::all(Val::Px(8.0)), // Increased padding
+                                                border: UiRect::all(Val::Px(1.0)), // Added border for definition
                                                 ..default()
                                             },
-                                            background_color: Color::srgb(0.3, 1.0, 0.3).into(), // Default available color
-                                            border_radius: BorderRadius::all(Val::Px(12.0)),
+                                            background_color: Color::srgb(0.2, 0.8, 0.2).into(), // Enhanced available color
+                                            border_color: Color::srgba(1.0, 1.0, 1.0, 0.2).into(), // Subtle white border
+                                            border_radius: BorderRadius::all(Val::Px(8.0)), // Consistent with panel styling
                                             ..default()
                                         },
                                         DisasterStatusBackground {
@@ -178,22 +211,24 @@ pub fn setup_disaster_control_panel(mut commands: Commands) {
                                 ));
                             });
 
-                        // Cooldown progress bar (only visible during cooldown)
+                        // Enhanced cooldown progress bar (only visible during cooldown)
                         disaster_parent
                             .spawn(NodeBundle {
                                 style: Style {
                                     width: Val::Percent(100.0),
-                                    height: Val::Px(6.0),
-                                    margin: UiRect::top(Val::Px(4.0)),
+                                    height: Val::Px(8.0), // Slightly thicker for better visibility
+                                    margin: UiRect::top(Val::Px(8.0)), // More spacing for separation
+                                    border: UiRect::all(Val::Px(1.0)), // Added border like Time Control UI
                                     ..default()
                                 },
-                                background_color: Color::srgba(0.3, 0.3, 0.3, 0.6).into(),
-                                border_radius: BorderRadius::all(Val::Px(3.0)),
+                                background_color: Color::srgba(0.2, 0.2, 0.2, 0.8).into(), // Darker background for contrast
+                                border_color: Color::srgba(0.4, 0.4, 0.4, 0.6).into(), // Subtle border
+                                border_radius: BorderRadius::all(Val::Px(4.0)), // Consistent radius
                                 visibility: Visibility::Hidden, // Initially hidden, shown during cooldown
                                 ..default()
                             })
                             .with_children(|progress_parent| {
-                                // Progress bar fill
+                                // Enhanced progress bar fill with better styling
                                 progress_parent.spawn((
                                     NodeBundle {
                                         style: Style {
@@ -201,8 +236,8 @@ pub fn setup_disaster_control_panel(mut commands: Commands) {
                                             height: Val::Percent(100.0),
                                             ..default()
                                         },
-                                        background_color: Color::srgb(1.0, 0.6, 0.0).into(), // Orange for cooldown
-                                        border_radius: BorderRadius::all(Val::Px(3.0)),
+                                        background_color: Color::srgba(0.8, 0.5, 0.2, 0.9).into(), // Enhanced orange for cooldown
+                                        border_radius: BorderRadius::all(Val::Px(4.0)), // Consistent radius
                                         ..default()
                                     },
                                     DisasterCooldownProgressBar {
@@ -257,11 +292,11 @@ pub fn update_disaster_status_system(
         let disaster_type = status_background.disaster_type;
 
         let bg_color = if disaster_state.is_active(disaster_type) {
-            Color::srgb(1.0, 0.3, 0.3) // Red for active
+            Color::srgb(0.8, 0.2, 0.2) // Enhanced red for active (more professional)
         } else if disaster_state.is_on_cooldown(disaster_type) {
-            Color::srgb(1.0, 0.6, 0.0) // Orange for cooldown
+            Color::srgb(0.8, 0.5, 0.2) // Enhanced orange for cooldown (consistent with progress bar)
         } else {
-            Color::srgb(0.3, 1.0, 0.3) // Green for available
+            Color::srgb(0.2, 0.8, 0.2) // Enhanced green for available (consistent with new styling)
         };
 
         background_color.0 = bg_color;
@@ -367,23 +402,23 @@ pub fn handle_disaster_control_interactions(
                 *border_color = Color::srgba(0.6, 0.6, 0.6, 0.8).into();
             }
             Interaction::Hovered => {
-                // Hover effect - lighten the color based on disaster state
+                // Enhanced hover effect with better visual feedback (matching Time Control UI style)
                 if disaster_state.is_active(disaster_type) {
-                    *background_color = Color::srgba(0.3, 0.3, 0.3, 0.7).into();
-                    *border_color = Color::srgba(0.5, 0.5, 0.5, 0.7).into();
+                    *background_color = Color::srgba(0.2, 0.2, 0.2, 0.9).into(); // Slightly lighter for active
+                    *border_color = Color::srgba(0.6, 0.6, 0.6, 0.9).into(); // Brighter border
                 } else if disaster_state.is_on_cooldown(disaster_type) {
-                    *background_color = Color::srgba(0.3, 0.3, 0.3, 0.7).into();
-                    *border_color = Color::srgba(0.5, 0.5, 0.5, 0.7).into();
+                    *background_color = Color::srgba(0.2, 0.2, 0.2, 0.9).into(); // Slightly lighter for cooldown
+                    *border_color = Color::srgba(0.6, 0.6, 0.6, 0.9).into(); // Brighter border
                 } else {
-                    // Available - more prominent hover effect
-                    *background_color = Color::srgba(0.3, 0.3, 0.3, 0.8).into();
-                    *border_color = Color::srgba(0.5, 0.5, 0.5, 1.0).into();
+                    // Available - more prominent hover effect with green tint
+                    *background_color = Color::srgba(0.18, 0.22, 0.18, 0.9).into(); // Subtle green tint
+                    *border_color = Color::srgba(0.5, 0.7, 0.5, 1.0).into(); // Green-tinted border
                 }
             }
             Interaction::None => {
-                // Reset to normal color
-                *background_color = Color::srgba(0.2, 0.2, 0.2, 0.6).into();
-                *border_color = Color::srgba(0.3, 0.3, 0.3, 0.4).into();
+                // Reset to enhanced normal colors (consistent with new design)
+                *background_color = Color::srgba(0.15, 0.15, 0.15, 0.85).into(); // Match new button background
+                *border_color = Color::srgb(0.4, 0.4, 0.4).into(); // Match new border color
             }
         }
     }
