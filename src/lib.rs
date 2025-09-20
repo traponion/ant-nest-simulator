@@ -52,6 +52,7 @@ impl Plugin for AntNestPlugin {
             .init_resource::<components::UITheme>()
             .init_resource::<components::ColonyDevelopmentPhase>()
             .init_resource::<components::DisasterState>()
+            .init_resource::<systems::colony_development::PhaseProgressTracking>()
             .init_resource::<systems::ParticleConfig>()
             .insert_resource(components::SpatialGrid::new(
                 16.0,                                        // Cell size of 16 units
