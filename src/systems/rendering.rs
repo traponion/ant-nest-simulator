@@ -45,7 +45,7 @@ pub fn spawn_soil_grid(mut commands: Commands) {
                 Soil,
                 SpriteBundle {
                     sprite: Sprite {
-                        color: Color::srgb(0.6, 0.4, 0.2), // Brown soil color
+                        color: Color::srgb(0.6, 0.4, 0.2),      // Brown soil color
                         custom_size: Some(Vec2::new(4.0, 4.0)), // 4x4 pixel soil cells
                         ..default()
                     },
@@ -56,21 +56,18 @@ pub fn spawn_soil_grid(mut commands: Commands) {
         }
     }
 
-    info!(
-        "Spawned underground soil grid: {} cells",
-        50 * 20
-    );
+    info!("Spawned underground soil grid: {} cells", 50 * 20);
 }
 
 /// Spawn simple ants for MVP
 pub fn spawn_initial_ants(mut commands: Commands) {
     // MVP: Just spawn a few simple ants with basic components
     let ant_positions = [
-        Position { x: 0.0, y: 0.0 },    // Surface ant
-        Position { x: 4.0, y: 0.0 },    // Surface ant
-        Position { x: -4.0, y: 0.0 },   // Surface ant
-        Position { x: 0.0, y: -8.0 },   // Underground ant
-        Position { x: 0.0, y: -16.0 },  // Underground ant
+        Position { x: 0.0, y: 0.0 },   // Surface ant
+        Position { x: 4.0, y: 0.0 },   // Surface ant
+        Position { x: -4.0, y: 0.0 },  // Surface ant
+        Position { x: 0.0, y: -8.0 },  // Underground ant
+        Position { x: 0.0, y: -16.0 }, // Underground ant
     ];
 
     for position in ant_positions.iter() {
@@ -79,7 +76,7 @@ pub fn spawn_initial_ants(mut commands: Commands) {
             Ant, // Simple marker component
             SpriteBundle {
                 sprite: Sprite {
-                    color: Color::BLACK, // Black ants as specified in MVP
+                    color: Color::BLACK,                    // Black ants as specified in MVP
                     custom_size: Some(Vec2::new(2.0, 2.0)), // 2-pixel dots as specified
                     ..default()
                 },
