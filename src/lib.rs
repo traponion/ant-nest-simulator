@@ -47,6 +47,7 @@ impl Plugin for AntNestPlugin {
             .init_resource::<components::ColonyStatistics>()
             .init_resource::<components::UserSettings>()
             .init_resource::<components::UITheme>()
+            .init_resource::<components::AnimationSettings>()
             .init_resource::<systems::ParticleConfig>()
             .insert_resource(components::SpatialGrid::new(
                 16.0, // Cell size of 16 units
@@ -62,7 +63,7 @@ impl Plugin for AntNestPlugin {
                     systems::spawn_initial_ants,
                     systems::spawn_food_sources,
                     systems::spawn_queen_ant,
-                    systems::setup_themed_time_control_ui,
+                    systems::setup_enhanced_time_control_ui_v3,
                     systems::setup_active_disasters_panel,
                     systems::setup_disaster_control_panel,
                     systems::setup_performance_monitoring_ui,
@@ -116,6 +117,10 @@ impl Plugin for AntNestPlugin {
                     systems::visual_effects_toggle_system,
                     systems::settings_ui::settings_toggle_input_system,
                     systems::settings_ui::handle_settings_interactions_system,
+                    // Enhanced UI v3 systems
+                    systems::update_ui_animations_system,
+                    systems::tooltip_system,
+                    systems::focus_indicator_system,
                 ),
             )
             // Visual effects systems
