@@ -104,6 +104,8 @@ pub fn spawn_queen(mut commands: Commands) {
         },
         Queen {
             founding_state: FoundingState::Seeking,
+            last_egg_time: 0.0,
+            egg_laying_interval: 168.0, // 1 week in hours (simplified time scale)
         },
         Ant, // Queens are also ants, so they can use existing movement systems
         SpriteBundle {

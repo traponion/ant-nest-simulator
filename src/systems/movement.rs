@@ -1,4 +1,6 @@
-use crate::components::{Ant, FoundingState, Position, Queen, Soil, SoilCell};
+use crate::components::{
+    Ant, DevelopmentStage, Egg, FoundingState, Larva, Position, Pupa, Queen, Soil, SoilCell,
+};
 use bevy::prelude::*;
 use rand::prelude::*;
 
@@ -194,5 +196,156 @@ fn evaluate_founding_site(
         total_quality / sample_count as f32
     } else {
         0.0 // No soil nearby - poor site
+    }
+}
+
+/// Queen egg laying system for established queens
+pub fn queen_egg_laying_system(
+    mut commands: Commands,
+    time: Res<Time>,
+    mut queen_query: Query<(&mut Queen, &Position), With<Ant>>,
+) {
+    let current_time = time.elapsed_seconds();
+
+    for (mut queen, position) in queen_query.iter_mut() {
+        // Only established queens can lay eggs
+        if queen.founding_state != FoundingState::Established {
+            continue;
+        }
+
+        // Check if it's time to lay an egg
+        let time_since_last_egg = current_time - queen.last_egg_time;
+        if time_since_last_egg >= queen.egg_laying_interval {
+            // Create egg near queen position (within chamber)
+            let mut rng = thread_rng();
+            let egg_x = position.x + rng.gen_range(-4.0..4.0);
+            let egg_y = position.y + rng.gen_range(-4.0..4.0);
+
+            commands.spawn((
+                Position { x: egg_x, y: egg_y },
+                Egg {
+                    development_time: 0.0,
+                    stage: DevelopmentStage::Egg,
+                },
+                SpriteBundle {
+                    sprite: Sprite {
+                        color: Color::srgb(0.9, 0.9, 0.8),      // Off-white color for eggs
+                        custom_size: Some(Vec2::new(1.0, 1.0)), // 1x1 pixel for tiny eggs
+                        ..default()
+                    },
+                    transform: Transform::from_translation(Vec3::new(egg_x, egg_y, 5.0)),
+                    ..default()
+                },
+            ));
+
+            // Update queen's egg laying timer
+            queen.last_egg_time = current_time;
+
+            info!("Queen laid egg at position ({:.1}, {:.1})", egg_x, egg_y);
+        }
+    }
+}
+
+/// Brood development system for egg → larva → pupa → worker progression
+pub fn brood_development_system(
+    mut commands: Commands,
+    time: Res<Time>,
+    mut egg_query: Query<(Entity, &mut Egg, &Position, &mut Transform)>,
+    mut larva_query: Query<(Entity, &mut Larva, &Position, &mut Transform), Without<Egg>>,
+    mut pupa_query: Query<
+        (Entity, &mut Pupa, &Position, &mut Transform),
+        (Without<Egg>, Without<Larva>),
+    >,
+) {
+    let delta_time = time.delta_seconds();
+
+    // Process eggs
+    for (entity, mut egg, position, mut transform) in egg_query.iter_mut() {
+        egg.development_time += delta_time;
+
+        // Egg stage: 2-3 weeks (simplified as 20-30 seconds for demo)
+        if egg.development_time >= 25.0 {
+            // Remove egg component and add larva component
+            commands.entity(entity).remove::<Egg>();
+            commands.entity(entity).insert(Larva {
+                development_time: 0.0,
+                fed: true, // Assume queen feeds larva
+            });
+
+            // Update visual appearance to yellow larva
+            transform.scale = Vec3::new(1.0, 1.0, 1.0);
+            commands.entity(entity).insert(SpriteBundle {
+                sprite: Sprite {
+                    color: Color::srgb(1.0, 1.0, 0.6),      // Pale yellow for larvae
+                    custom_size: Some(Vec2::new(1.5, 1.5)), // Slightly larger than eggs
+                    ..default()
+                },
+                transform: Transform::from_translation(Vec3::new(position.x, position.y, 5.0)),
+                ..default()
+            });
+
+            info!(
+                "Egg hatched into larva at position ({:.1}, {:.1})",
+                position.x, position.y
+            );
+        }
+    }
+
+    // Process larvae
+    for (entity, mut larva, position, _transform) in larva_query.iter_mut() {
+        larva.development_time += delta_time;
+
+        // Larva stage: 3-4 weeks (simplified as 35 seconds for demo)
+        if larva.development_time >= 35.0 && larva.fed {
+            // Remove larva component and add pupa component
+            commands.entity(entity).remove::<Larva>();
+            commands.entity(entity).insert(Pupa {
+                development_time: 0.0,
+            });
+
+            // Update visual appearance to brown pupa
+            commands.entity(entity).insert(SpriteBundle {
+                sprite: Sprite {
+                    color: Color::srgb(0.6, 0.4, 0.2),      // Brown for pupae
+                    custom_size: Some(Vec2::new(1.8, 1.8)), // Larger than larvae
+                    ..default()
+                },
+                transform: Transform::from_translation(Vec3::new(position.x, position.y, 5.0)),
+                ..default()
+            });
+
+            info!(
+                "Larva pupated at position ({:.1}, {:.1})",
+                position.x, position.y
+            );
+        }
+    }
+
+    // Process pupae
+    for (entity, mut pupa, position, _transform) in pupa_query.iter_mut() {
+        pupa.development_time += delta_time;
+
+        // Pupa stage: 2-3 weeks (simplified as 25 seconds for demo)
+        if pupa.development_time >= 25.0 {
+            // Remove pupa component and add worker ant components
+            commands.entity(entity).remove::<Pupa>();
+            commands.entity(entity).insert(Ant);
+
+            // Update visual appearance to black worker ant
+            commands.entity(entity).insert(SpriteBundle {
+                sprite: Sprite {
+                    color: Color::BLACK,                    // Black worker ants
+                    custom_size: Some(Vec2::new(2.0, 2.0)), // Standard worker size
+                    ..default()
+                },
+                transform: Transform::from_translation(Vec3::new(position.x, position.y, 10.0)),
+                ..default()
+            });
+
+            info!(
+                "Pupa emerged as worker ant at position ({:.1}, {:.1})",
+                position.x, position.y
+            );
+        }
     }
 }
