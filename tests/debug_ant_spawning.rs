@@ -1,8 +1,8 @@
 //! Debug test to investigate Issue #100: No ants visible in simulation
 
-use bevy::prelude::*;
 use ant_nest_simulator::components::*;
 use ant_nest_simulator::systems;
+use bevy::prelude::*;
 
 #[test]
 fn debug_ant_spawning_issue_100() {
@@ -58,8 +58,14 @@ fn debug_ant_spawning_issue_100() {
     println!("\n=== Ant Details ===");
     for (i, (_, position, behavior, queen)) in ant_query.iter(world).enumerate() {
         let ant_type = if queen.is_some() { "Queen" } else { "Worker" };
-        println!("Ant {}: {} at ({:.1}, {:.1}) - State: {:?}",
-                i + 1, ant_type, position.x, position.y, behavior.state);
+        println!(
+            "Ant {}: {} at ({:.1}, {:.1}) - State: {:?}",
+            i + 1,
+            ant_type,
+            position.x,
+            position.y,
+            behavior.state
+        );
     }
 
     // Check if any ants have sprite components (Transform, Sprite, Visibility, etc.)
@@ -74,13 +80,26 @@ fn debug_ant_spawning_issue_100() {
     println!("Ants with Visibility: {}", ants_with_visibility);
 
     // Critical assertions for Issue #100
-    assert!(ant_count > 0, "Issue #100: No ants found! Expected at least 9 ants (1 queen + 8 workers)");
+    assert!(
+        ant_count > 0,
+        "Issue #100: No ants found! Expected at least 9 ants (1 queen + 8 workers)"
+    );
     assert_eq!(queen_count, 1, "Expected exactly 1 queen");
-    assert!(ant_count >= 9, "Expected at least 9 ants total (1 queen + 8 workers), found {}", ant_count);
+    assert!(
+        ant_count >= 9,
+        "Expected at least 9 ants total (1 queen + 8 workers), found {}",
+        ant_count
+    );
 
     // Check rendering components
-    assert_eq!(ants_with_transforms, ant_count, "All ants should have Transform components for rendering");
-    assert_eq!(ants_with_visibility, ant_count, "All ants should have Visibility components for rendering");
+    assert_eq!(
+        ants_with_transforms, ant_count,
+        "All ants should have Transform components for rendering"
+    );
+    assert_eq!(
+        ants_with_visibility, ant_count,
+        "All ants should have Visibility components for rendering"
+    );
 
     if ant_count >= 9 && ants_with_transforms == ant_count {
         println!("\n✅ SUCCESS: Ants are being spawned correctly with rendering components!");
