@@ -1,16 +1,14 @@
-use crate::components::{SoilCell, TimeControl};
-use crate::systems::time_control::effective_delta_time;
+use crate::components::SoilCell;
 use bevy::prelude::*;
 use rand::prelude::*;
 
 /// System for environmental simulation
 pub fn environmental_update_system(
     time: Res<Time>,
-    time_control: Res<TimeControl>,
     mut soil_query: Query<&mut SoilCell>,
 ) {
     let mut rng = thread_rng();
-    let delta_time = effective_delta_time(&time, &time_control);
+    let delta_time = time.delta_seconds();
 
     for mut soil in soil_query.iter_mut() {
         // Simple environmental changes over time

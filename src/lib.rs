@@ -43,9 +43,7 @@ pub struct AntNestPlugin;
 
 impl Plugin for AntNestPlugin {
     fn build(&self, app: &mut App) {
-        app.init_resource::<components::TimeControl>()
-            .init_resource::<components::SimulationTime>()
-            .init_resource::<components::DisasterState>()
+        app.init_resource::<components::SimulationTime>()
             .init_resource::<components::ColorOverlayConfig>()
             .init_resource::<components::VisualEffectsSettings>()
             .init_resource::<components::PerformanceMetrics>()
@@ -69,10 +67,7 @@ impl Plugin for AntNestPlugin {
                     systems::spawn_initial_chambers,
                     systems::spawn_initial_ants, // Now includes queen spawning
                     systems::spawn_food_sources,
-                    systems::setup_themed_time_control_ui,
                     systems::setup_simulation_time_display,
-                    systems::setup_active_disasters_panel,
-                    systems::setup_enhanced_disaster_control_ui_v3,
                     systems::setup_performance_monitoring_ui,
                     systems::initialize_spatial_grid_system,
                     systems::setup_statistics_panel,
@@ -97,33 +92,13 @@ impl Plugin for AntNestPlugin {
                     systems::colony_statistics_calculation_system,
                 ),
             )
-            .add_systems(
-                Update,
-                (
-                    // Disaster and visual effects systems
-                    systems::disaster_input_system,
-                    systems::disaster_timer_system,
-                    systems::disaster_effect_system,
-                    systems::invasive_species_spawning_system,
-                    systems::invasive_species_food_consumption_system,
-                ),
-            )
             // UI systems (first part)
             .add_systems(
                 Update,
                 (
-                    systems::time_control_input_system,
-                    systems::update_speed_display_system,
                     systems::update_simulation_time_system,
                     systems::update_time_display_system,
                     systems::initialize_simulation_time_system,
-                    systems::handle_themed_time_control_buttons,
-                    systems::update_play_pause_button_system,
-                    systems::button_click_system,
-                    systems::handle_speed_slider_system,
-                    systems::update_slider_handle_position_system,
-                    systems::update_slider_progress_system,
-                    systems::handle_speed_preset_buttons_system,
                     systems::visual_effects_toggle_system,
                     systems::settings_ui::settings_toggle_input_system,
                     systems::settings_ui::handle_settings_interactions_system,
@@ -144,21 +119,6 @@ impl Plugin for AntNestPlugin {
                     systems::update_particle_config_system,
                 ),
             )
-            // Disaster UI systems
-            .add_systems(
-                Update,
-                (
-                    systems::update_disaster_status_system,
-                    systems::update_cooldown_timers_system,
-                    systems::disaster_trigger_feedback_system,
-                    systems::update_active_disasters_display,
-                    systems::update_disaster_progress_bars,
-                    systems::update_disaster_duration_text,
-                    systems::handle_disaster_control_button_interactions,
-                    systems::update_cooldown_progress_bars_system,
-                    systems::visual_effects_toggle_system,
-                ),
-            )
             // Performance monitoring, statistics, and persistence systems
             .add_systems(
                 Update,
@@ -175,13 +135,6 @@ impl Plugin for AntNestPlugin {
             )
             .add_systems(
                 Update,
-                (
-                    // Invasive species systems
-                    systems::invasive_species_spawning_system,
-                    systems::invasive_species_behavior_system,
-                    systems::ant_defensive_behavior_system,
-                    systems::invasive_species_cleanup_system,
-                ),
             );
     }
 }

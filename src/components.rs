@@ -52,23 +52,6 @@ pub enum AntState {
     CarryingFood,
 }
 
-/// Time control resource for managing simulation speed
-#[derive(Resource)]
-pub struct TimeControl {
-    /// Current speed multiplier (1.0 = normal speed, 0.0 = paused, 100.0 = max speed)
-    pub speed_multiplier: f32,
-    /// Whether the simulation is paused
-    pub is_paused: bool,
-}
-
-impl Default for TimeControl {
-    fn default() -> Self {
-        Self {
-            speed_multiplier: 1.0,
-            is_paused: false,
-        }
-    }
-}
 
 /// Simulation time tracking resource for displaying elapsed time and day/night cycle
 #[derive(Resource, Clone)]
@@ -101,24 +84,21 @@ impl Default for SimulationTime {
 }
 
 impl SimulationTime {
-    /// Update simulation time based on delta time and time control
-    pub fn update(&mut self, delta_seconds: f32, time_control: &TimeControl) {
-        if !time_control.is_paused {
-            // Apply time scaling
-            let scaled_delta = delta_seconds as f64 * time_control.speed_multiplier as f64;
-            self.elapsed_seconds += scaled_delta;
+    /// Update simulation time at natural speed (autonomous simulation)
+    pub fn update(&mut self, delta_seconds: f32) {
+        // Fixed natural speed - no player control
+        self.elapsed_seconds += delta_seconds as f64;
 
-            // Calculate current time within the day
-            let total_seconds_in_day = self.elapsed_seconds % self.day_length_seconds;
-            let seconds_per_hour = self.day_length_seconds / 24.0;
-            let seconds_per_minute = seconds_per_hour / 60.0;
+        // Calculate current time within the day
+        let total_seconds_in_day = self.elapsed_seconds % self.day_length_seconds;
+        let seconds_per_hour = self.day_length_seconds / 24.0;
+        let seconds_per_minute = seconds_per_hour / 60.0;
 
-            // Calculate day, hour, and minute
-            self.current_day = (self.elapsed_seconds / self.day_length_seconds) as u32 + 1;
-            self.current_hour = (total_seconds_in_day / seconds_per_hour) as u8 % 24;
-            self.current_minute =
-                ((total_seconds_in_day % seconds_per_hour) / seconds_per_minute) as u8 % 60;
-        }
+        // Calculate day, hour, and minute
+        self.current_day = (self.elapsed_seconds / self.day_length_seconds) as u32 + 1;
+        self.current_hour = (total_seconds_in_day / seconds_per_hour) as u8 % 24;
+        self.current_minute =
+            ((total_seconds_in_day % seconds_per_hour) / seconds_per_minute) as u8 % 60;
     }
 
     /// Get formatted time string (e.g., "Day 3, 14:30")
@@ -901,56 +881,8 @@ pub struct EntityCountText;
 #[derive(Component)]
 pub struct SpatialStatsText;
 
-/// UI components for time control panel
-#[derive(Component)]
-pub struct TimeControlPanel;
 
-/// Component for play/pause button
-#[derive(Component)]
-pub struct PlayPauseButton;
 
-/// Component for play/pause button icon
-#[derive(Component)]
-pub struct PlayPauseIcon;
-
-/// Component for play/pause button text
-#[derive(Component)]
-pub struct PlayPauseText;
-
-/// Component for speed control buttons
-#[derive(Component)]
-pub struct SpeedButton {
-    pub target_speed: f32,
-}
-
-/// Component for speed display text
-#[derive(Component)]
-pub struct SpeedDisplay;
-
-/// Component for speed slider container
-#[derive(Component)]
-pub struct SpeedSlider {
-    /// Current value of the slider (1.0 to 100.0)
-    pub current_value: f32,
-    /// Whether the user is currently dragging the slider
-    pub is_dragging: bool,
-}
-
-/// Component for the visual track of the speed slider
-#[derive(Component)]
-pub struct SpeedSliderTrack;
-
-/// Component for the draggable handle of the speed slider
-#[derive(Component)]
-pub struct SpeedSliderHandle;
-
-/// Component for the progress fill of the speed slider
-#[derive(Component)]
-pub struct SpeedSliderProgress;
-
-/// Component for displaying the current slider value
-#[derive(Component)]
-pub struct SpeedSliderValueDisplay;
 
 /// Settings and configuration components
 /// Resource for user settings and preferences
