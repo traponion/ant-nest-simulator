@@ -15,3 +15,6 @@ Thumbs.db
 
 # Bevy
 *.pdb
+
+# Temporary files
+/tmp/
