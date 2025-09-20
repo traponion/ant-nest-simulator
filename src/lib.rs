@@ -67,7 +67,6 @@ impl Plugin for AntNestPlugin {
                     systems::spawn_initial_chambers,
                     systems::spawn_initial_ants, // Now includes queen spawning
                     systems::spawn_food_sources,
-                    systems::setup_simulation_time_display,
                     systems::setup_performance_monitoring_ui,
                     systems::initialize_spatial_grid_system,
                     systems::setup_statistics_panel,
@@ -96,9 +95,6 @@ impl Plugin for AntNestPlugin {
             .add_systems(
                 Update,
                 (
-                    systems::update_simulation_time_system,
-                    systems::update_time_display_system,
-                    systems::initialize_simulation_time_system,
                     systems::visual_effects_toggle_system,
                     systems::settings_ui::settings_toggle_input_system,
                     systems::settings_ui::handle_settings_interactions_system,
@@ -132,9 +128,6 @@ impl Plugin for AntNestPlugin {
                     systems::load_game_system,
                     systems::persistence_status_system,
                 ),
-            )
-            .add_systems(
-                Update,
             );
     }
 }

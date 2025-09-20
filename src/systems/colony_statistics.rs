@@ -1,14 +1,12 @@
 use crate::components::{
     Ant, AntBehavior, AntState, ColonyStatistics, DisasterState, Egg, FoodSource, Inventory,
-    Lifecycle, Queen, ReproductionState, SoilCell, TimeControl,
+    Lifecycle, Queen, ReproductionState, SoilCell,
 };
-use crate::systems::time_control::effective_delta_time;
 use bevy::prelude::*;
 
 /// System for calculating and updating colony statistics in real-time
 pub fn colony_statistics_calculation_system(
     time: Res<Time>,
-    time_control: Res<TimeControl>,
     mut colony_stats: ResMut<ColonyStatistics>,
     disaster_state: Res<DisasterState>,
     ant_query: Query<(&AntBehavior, &Lifecycle, &Inventory), (With<Ant>, Without<Queen>)>,
@@ -17,7 +15,7 @@ pub fn colony_statistics_calculation_system(
     food_query: Query<&FoodSource>,
     soil_query: Query<&SoilCell>,
 ) {
-    let delta_time = effective_delta_time(&time, &time_control);
+    let delta_time = time.delta_seconds();
 
     // Update last update time
     colony_stats.last_update_time += delta_time;

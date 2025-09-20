@@ -119,7 +119,6 @@ pub fn save_game_system(
     soil_query: Query<(&Position, &SoilCell), With<Soil>>,
     food_query: Query<(&Position, &FoodSource), With<Food>>,
     queen_query: Query<(&Position, &Lifecycle, &ReproductionState), With<Queen>>,
-    time_control: Res<TimeControl>,
     input: Res<ButtonInput<KeyCode>>,
 ) {
     // Manual save with Ctrl+S
@@ -182,8 +181,8 @@ pub fn save_game_system(
     // Create game state
     let game_state = GameStateData {
         simulation_time: time.elapsed_seconds(),
-        is_paused: time_control.is_paused,
-        speed_multiplier: time_control.speed_multiplier,
+        is_paused: false,      // Pure observation mode - never paused
+        speed_multiplier: 1.0, // Pure observation mode - normal speed
     };
 
     // Create metadata
@@ -246,7 +245,6 @@ pub fn load_game_system(
     existing_soil: Query<Entity, With<Soil>>,
     existing_food: Query<Entity, With<Food>>,
     existing_queen: Query<Entity, With<Queen>>,
-    mut time_control: ResMut<TimeControl>,
 ) {
     // Load with Ctrl+L
     if !(input.pressed(KeyCode::ControlLeft) && input.just_pressed(KeyCode::KeyL)) {
@@ -323,8 +321,7 @@ pub fn load_game_system(
                         }
 
                         // Restore game state
-                        time_control.is_paused = save_data.game_state.is_paused;
-                        time_control.speed_multiplier = save_data.game_state.speed_multiplier;
+                        // Pure observation mode - ignoring saved time control settings
 
                         info!(
                             "Game loaded successfully! Colony age: {:.1}s, Population: {}",

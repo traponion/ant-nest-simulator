@@ -3,10 +3,7 @@ use bevy::prelude::*;
 use rand::prelude::*;
 
 /// System for environmental simulation
-pub fn environmental_update_system(
-    time: Res<Time>,
-    mut soil_query: Query<&mut SoilCell>,
-) {
+pub fn environmental_update_system(time: Res<Time>, mut soil_query: Query<&mut SoilCell>) {
     let mut rng = thread_rng();
     let delta_time = time.delta_seconds();
 

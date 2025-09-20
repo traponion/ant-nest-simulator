@@ -1,8 +1,6 @@
 use crate::components::{
-    DisasterState, DisasterType, Particle, ParticleData, ParticleType, TimeControl,
-    VisualEffectsSettings,
+    DisasterState, DisasterType, Particle, ParticleData, ParticleType, VisualEffectsSettings,
 };
-use crate::systems::time_control::effective_delta_time;
 use bevy::prelude::*;
 use rand::Rng;
 
@@ -38,7 +36,6 @@ pub fn particle_spawner_system(
     disaster_state: Res<DisasterState>,
     mut particle_config: ResMut<ParticleConfig>,
     time: Res<Time>,
-    time_control: Res<TimeControl>,
     windows: Query<&Window>,
     visual_effects_settings: Res<VisualEffectsSettings>,
 ) {
@@ -47,7 +44,7 @@ pub fn particle_spawner_system(
         return;
     }
 
-    let delta_time = effective_delta_time(&time, &time_control);
+    let delta_time = time.delta_seconds();
 
     // Update window dimensions
     if let Ok(window) = windows.get_single() {
@@ -92,9 +89,8 @@ pub fn particle_update_system(
         With<Particle>,
     >,
     time: Res<Time>,
-    time_control: Res<TimeControl>,
 ) {
-    let delta_time = effective_delta_time(&time, &time_control);
+    let delta_time = time.delta_seconds();
     let mut particles_to_remove = Vec::new();
 
     for (entity, mut transform, mut particle_data, mut sprite) in particle_query.iter_mut() {

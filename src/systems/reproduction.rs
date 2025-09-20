@@ -1,8 +1,6 @@
 use crate::components::{
     Ant, AntBehavior, AntState, Egg, Lifecycle, Position, Queen, ReproductionState, SoilCell,
-    TimeControl,
 };
-use crate::systems::time_control::effective_delta_time;
 use bevy::prelude::*;
 use rand::prelude::*;
 
@@ -46,7 +44,6 @@ pub fn spawn_queen_ant(mut commands: Commands) {
 #[allow(clippy::type_complexity)]
 pub fn queen_reproduction_system(
     time: Res<Time>,
-    time_control: Res<TimeControl>,
     mut commands: Commands,
     mut queen_query: Query<
         (&Position, &mut ReproductionState, &Lifecycle),
@@ -55,7 +52,7 @@ pub fn queen_reproduction_system(
     ant_count: Query<&Ant>,
     soil_query: Query<&SoilCell>,
 ) {
-    let delta_time = effective_delta_time(&time, &time_control);
+    let delta_time = time.delta_seconds();
     let current_ant_population = ant_count.iter().count();
 
     // Calculate average soil nutrition for reproductive capacity
@@ -120,11 +117,10 @@ fn lay_egg(commands: &mut Commands, queen_position: &Position) {
 /// System for egg incubation and hatching
 pub fn egg_hatching_system(
     time: Res<Time>,
-    time_control: Res<TimeControl>,
     mut commands: Commands,
     mut egg_query: Query<(Entity, &Position, &mut Egg)>,
 ) {
-    let delta_time = effective_delta_time(&time, &time_control);
+    let delta_time = time.delta_seconds();
 
     for (egg_entity, position, mut egg) in egg_query.iter_mut() {
         egg.incubation_time -= delta_time;

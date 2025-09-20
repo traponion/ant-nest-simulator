@@ -52,7 +52,6 @@ pub enum AntState {
     CarryingFood,
 }
 
-
 /// Simulation time tracking resource for displaying elapsed time and day/night cycle
 #[derive(Resource, Clone)]
 pub struct SimulationTime {
@@ -880,9 +879,6 @@ pub struct EntityCountText;
 /// Component for spatial grid stats display text
 #[derive(Component)]
 pub struct SpatialStatsText;
-
-
-
 
 /// Settings and configuration components
 /// Resource for user settings and preferences

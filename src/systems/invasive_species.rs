@@ -2,7 +2,6 @@ use crate::components::{
     Ant, AntBehavior, AntState, DisasterState, DisasterType, FoodSource, InvasiveSpecies,
     Lifecycle, Position,
 };
-use crate::systems::time_control::effective_delta_time;
 use bevy::prelude::*;
 use rand::Rng;
 
@@ -11,7 +10,6 @@ pub fn invasive_species_spawning_system(
     mut commands: Commands,
     disaster_state: Res<DisasterState>,
     time: Res<Time>,
-    time_control: Res<crate::components::TimeControl>,
     query: Query<&InvasiveSpecies>, // Check existing invasive species
 ) {
     // Only spawn if invasive species disaster is active and we don't have too many
@@ -26,7 +24,7 @@ pub fn invasive_species_spawning_system(
         return;
     }
 
-    let delta_time = effective_delta_time(&time, &time_control);
+    let delta_time = time.delta_seconds();
 
     // Spawn rate: attempt to spawn every 2-3 seconds (adjusted for time acceleration)
     let spawn_probability = delta_time * 0.4; // ~40% chance per second
@@ -77,11 +75,10 @@ fn spawn_invasive_species_entity(commands: &mut Commands) {
 pub fn invasive_species_behavior_system(
     mut commands: Commands,
     time: Res<Time>,
-    time_control: Res<crate::components::TimeControl>,
     mut invasive_query: Query<(Entity, &mut Position, &mut InvasiveSpecies, &mut Transform)>,
     mut food_query: Query<(&Position, &mut FoodSource), Without<InvasiveSpecies>>,
 ) {
-    let delta_time = effective_delta_time(&time, &time_control);
+    let delta_time = time.delta_seconds();
     let mut entities_to_despawn = Vec::new();
 
     for (entity, mut position, mut invasive_species, mut transform) in invasive_query.iter_mut() {
@@ -147,9 +144,8 @@ pub fn ant_defensive_behavior_system(
     invasive_query: Query<&Position, (With<InvasiveSpecies>, Without<Ant>)>,
     mut ant_query: Query<(&Position, &mut AntBehavior, &mut Lifecycle), With<Ant>>,
     time: Res<Time>,
-    time_control: Res<crate::components::TimeControl>,
 ) {
-    let delta_time = effective_delta_time(&time, &time_control);
+    let delta_time = time.delta_seconds();
 
     // Only apply defensive behavior if invasive species are present
     if invasive_query.is_empty() {
