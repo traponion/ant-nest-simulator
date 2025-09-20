@@ -1,15 +1,13 @@
-use crate::components::{AntBehavior, Lifecycle, TimeControl};
-use crate::systems::time_control::effective_delta_time;
+use crate::components::{AntBehavior, Lifecycle};
 use bevy::prelude::*;
 
 /// System for ant aging and energy management
 pub fn ant_lifecycle_system(
     time: Res<Time>,
-    time_control: Res<TimeControl>,
     mut commands: Commands,
     mut ant_query: Query<(Entity, &mut Lifecycle), With<AntBehavior>>,
 ) {
-    let delta_time = effective_delta_time(&time, &time_control);
+    let delta_time = time.delta_seconds();
 
     for (entity, mut lifecycle) in ant_query.iter_mut() {
         // Age the ant

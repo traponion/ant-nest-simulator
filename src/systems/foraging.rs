@@ -1,8 +1,7 @@
 use crate::components::{
     Ant, AntBehavior, AntState, Food, FoodSource, InvasiveSpecies, Inventory, Lifecycle, Position,
-    SpatialGrid, TimeControl,
+    SpatialGrid,
 };
-use crate::systems::time_control::effective_delta_time;
 use bevy::prelude::*;
 
 /// System for handling food consumption and energy recovery
@@ -77,10 +76,9 @@ pub fn food_consumption_system(
 /// System for handling food regeneration over time
 pub fn food_regeneration_system(
     time: Res<Time>,
-    time_control: Res<TimeControl>,
     mut food_query: Query<&mut FoodSource, With<Food>>,
 ) {
-    let delta_time = effective_delta_time(&time, &time_control);
+    let delta_time = time.delta_seconds();
 
     for mut food_source in food_query.iter_mut() {
         if !food_source.is_available && food_source.regeneration_timer > 0.0 {

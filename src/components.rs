@@ -52,24 +52,6 @@ pub enum AntState {
     CarryingFood,
 }
 
-/// Time control resource for managing simulation speed
-#[derive(Resource)]
-pub struct TimeControl {
-    /// Current speed multiplier (1.0 = normal speed, 0.0 = paused, 100.0 = max speed)
-    pub speed_multiplier: f32,
-    /// Whether the simulation is paused
-    pub is_paused: bool,
-}
-
-impl Default for TimeControl {
-    fn default() -> Self {
-        Self {
-            speed_multiplier: 1.0,
-            is_paused: false,
-        }
-    }
-}
-
 /// Simulation time tracking resource for displaying elapsed time and day/night cycle
 #[derive(Resource, Clone)]
 pub struct SimulationTime {
@@ -101,24 +83,21 @@ impl Default for SimulationTime {
 }
 
 impl SimulationTime {
-    /// Update simulation time based on delta time and time control
-    pub fn update(&mut self, delta_seconds: f32, time_control: &TimeControl) {
-        if !time_control.is_paused {
-            // Apply time scaling
-            let scaled_delta = delta_seconds as f64 * time_control.speed_multiplier as f64;
-            self.elapsed_seconds += scaled_delta;
+    /// Update simulation time at natural speed (autonomous simulation)
+    pub fn update(&mut self, delta_seconds: f32) {
+        // Fixed natural speed - no player control
+        self.elapsed_seconds += delta_seconds as f64;
 
-            // Calculate current time within the day
-            let total_seconds_in_day = self.elapsed_seconds % self.day_length_seconds;
-            let seconds_per_hour = self.day_length_seconds / 24.0;
-            let seconds_per_minute = seconds_per_hour / 60.0;
+        // Calculate current time within the day
+        let total_seconds_in_day = self.elapsed_seconds % self.day_length_seconds;
+        let seconds_per_hour = self.day_length_seconds / 24.0;
+        let seconds_per_minute = seconds_per_hour / 60.0;
 
-            // Calculate day, hour, and minute
-            self.current_day = (self.elapsed_seconds / self.day_length_seconds) as u32 + 1;
-            self.current_hour = (total_seconds_in_day / seconds_per_hour) as u8 % 24;
-            self.current_minute =
-                ((total_seconds_in_day % seconds_per_hour) / seconds_per_minute) as u8 % 60;
-        }
+        // Calculate day, hour, and minute
+        self.current_day = (self.elapsed_seconds / self.day_length_seconds) as u32 + 1;
+        self.current_hour = (total_seconds_in_day / seconds_per_hour) as u8 % 24;
+        self.current_minute =
+            ((total_seconds_in_day % seconds_per_hour) / seconds_per_minute) as u8 % 60;
     }
 
     /// Get formatted time string (e.g., "Day 3, 14:30")
@@ -901,57 +880,6 @@ pub struct EntityCountText;
 #[derive(Component)]
 pub struct SpatialStatsText;
 
-/// UI components for time control panel
-#[derive(Component)]
-pub struct TimeControlPanel;
-
-/// Component for play/pause button
-#[derive(Component)]
-pub struct PlayPauseButton;
-
-/// Component for play/pause button icon
-#[derive(Component)]
-pub struct PlayPauseIcon;
-
-/// Component for play/pause button text
-#[derive(Component)]
-pub struct PlayPauseText;
-
-/// Component for speed control buttons
-#[derive(Component)]
-pub struct SpeedButton {
-    pub target_speed: f32,
-}
-
-/// Component for speed display text
-#[derive(Component)]
-pub struct SpeedDisplay;
-
-/// Component for speed slider container
-#[derive(Component)]
-pub struct SpeedSlider {
-    /// Current value of the slider (1.0 to 100.0)
-    pub current_value: f32,
-    /// Whether the user is currently dragging the slider
-    pub is_dragging: bool,
-}
-
-/// Component for the visual track of the speed slider
-#[derive(Component)]
-pub struct SpeedSliderTrack;
-
-/// Component for the draggable handle of the speed slider
-#[derive(Component)]
-pub struct SpeedSliderHandle;
-
-/// Component for the progress fill of the speed slider
-#[derive(Component)]
-pub struct SpeedSliderProgress;
-
-/// Component for displaying the current slider value
-#[derive(Component)]
-pub struct SpeedSliderValueDisplay;
-
 /// Settings and configuration components
 /// Resource for user settings and preferences
 #[derive(Resource, Clone)]
@@ -1501,4 +1429,285 @@ pub enum TunnelNodeType {
     ChamberEntrance,
     /// Surface exit point
     SurfaceExit,
+}
+
+// === Camponotus japonicus Colony Development System ===
+
+/// Resource for tracking the colony's current development phase
+/// Based on realistic Camponotus japonicus (Japanese carpenter ant) lifecycle
+#[derive(Resource, Clone, Serialize, Deserialize)]
+pub struct ColonyDevelopmentPhase {
+    /// Current phase of colony development
+    pub current_phase: DevelopmentPhase,
+    /// Time spent in current phase (in simulation days)
+    pub time_in_phase: f32,
+    /// Progress toward next phase (0.0 to 1.0)
+    pub phase_progress: f32,
+    /// Unique conditions and events for this colony run
+    pub colony_traits: ColonyTraits,
+    /// Phase transition conditions and thresholds
+    pub phase_conditions: PhaseConditions,
+}
+
+/// Four distinct phases of Camponotus japonicus colony development
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum DevelopmentPhase {
+    /// Phase 1: Queen's Independent Founding (Days 1-365)
+    /// - Single queen starts colony alone after nuptial flight
+    /// - Self-sufficient nest creation and first brood care
+    /// - Minimal external activity during first year
+    QueenFounding,
+
+    /// Phase 2: First Workers (Days 365-730)
+    /// - Birth of initial worker population (5-20 workers)
+    /// - Limited foraging and maintenance activities
+    /// - Colony remains mostly underground
+    FirstWorkers,
+
+    /// Phase 3: Colony Expansion (Days 730-1095)
+    /// - Explosive growth in activity and population (50-200 workers)
+    /// - Complex social behaviors emerge
+    /// - Extensive nest construction (10-30cm depth)
+    ColonyExpansion,
+
+    /// Phase 4: Mature Colony (Days 1095+)
+    /// - Age-based division of labor system (200+ workers)
+    /// - Seasonal behavioral patterns
+    /// - Sophisticated waste management
+    /// - Potential for reproductive alates
+    MatureColony,
+}
+
+/// Unique traits and characteristics for each colony simulation
+/// Provides replayability through randomization
+#[derive(Clone, Serialize, Deserialize)]
+pub struct ColonyTraits {
+    /// Queen's initial energy and reproductive capacity
+    pub queen_vigor: f32, // 0.7-1.0, affects egg laying rate
+    /// Environmental adaptation rating
+    pub environmental_adaptation: f32, // 0.6-1.0, affects survival in disasters
+    /// Worker efficiency and intelligence
+    pub worker_efficiency: f32, // 0.8-1.2, affects foraging and construction
+    /// Colony's resilience to environmental challenges
+    pub disaster_resistance: f32, // 0.5-1.0, affects disaster impact
+    /// Social organization efficiency
+    pub social_organization: f32, // 0.7-1.1, affects coordination
+    /// Nest construction skill
+    pub architectural_skill: f32, // 0.6-1.0, affects tunnel/chamber quality
+}
+
+/// Conditions and thresholds for phase transitions
+#[derive(Clone, Serialize, Deserialize)]
+pub struct PhaseConditions {
+    /// Minimum days required for current phase
+    pub min_days_in_phase: f32,
+    /// Target worker population for next phase
+    pub target_worker_count: usize,
+    /// Required nest development (tunnel/chamber count)
+    pub required_nest_complexity: usize,
+    /// Colony stability threshold (survival rate)
+    pub stability_threshold: f32,
+}
+
+impl Default for ColonyDevelopmentPhase {
+    fn default() -> Self {
+        Self {
+            current_phase: DevelopmentPhase::QueenFounding,
+            time_in_phase: 0.0,
+            phase_progress: 0.0,
+            colony_traits: ColonyTraits::generate_random(),
+            phase_conditions: PhaseConditions::for_phase(DevelopmentPhase::QueenFounding),
+        }
+    }
+}
+
+impl ColonyTraits {
+    /// Generate randomized colony traits for unique simulation experience
+    pub fn generate_random() -> Self {
+        use rand::Rng;
+        let mut rng = rand::thread_rng();
+
+        Self {
+            queen_vigor: rng.gen_range(0.7..=1.0),
+            environmental_adaptation: rng.gen_range(0.6..=1.0),
+            worker_efficiency: rng.gen_range(0.8..=1.2),
+            disaster_resistance: rng.gen_range(0.5..=1.0),
+            social_organization: rng.gen_range(0.7..=1.1),
+            architectural_skill: rng.gen_range(0.6..=1.0),
+        }
+    }
+}
+
+impl PhaseConditions {
+    /// Get appropriate conditions for a specific development phase
+    pub fn for_phase(phase: DevelopmentPhase) -> Self {
+        match phase {
+            DevelopmentPhase::QueenFounding => Self {
+                min_days_in_phase: 300.0,    // Minimum 300 simulation days
+                target_worker_count: 5,      // At least 5 workers to advance
+                required_nest_complexity: 2, // Basic queen chamber + nursery
+                stability_threshold: 0.8,    // 80% queen survival rate
+            },
+            DevelopmentPhase::FirstWorkers => Self {
+                min_days_in_phase: 200.0,    // Minimum 200 simulation days
+                target_worker_count: 25,     // At least 25 workers
+                required_nest_complexity: 5, // More chambers and tunnels
+                stability_threshold: 0.7,    // 70% worker survival rate
+            },
+            DevelopmentPhase::ColonyExpansion => Self {
+                min_days_in_phase: 365.0,     // Minimum 365 simulation days
+                target_worker_count: 100,     // At least 100 workers
+                required_nest_complexity: 10, // Complex tunnel network
+                stability_threshold: 0.8,     // 80% colony stability
+            },
+            DevelopmentPhase::MatureColony => Self {
+                min_days_in_phase: f32::INFINITY,     // Permanent final phase
+                target_worker_count: usize::MAX,      // No upper limit
+                required_nest_complexity: usize::MAX, // No upper limit
+                stability_threshold: 0.9,             // 90% mature colony stability
+            },
+        }
+    }
+}
+
+impl DevelopmentPhase {
+    /// Get the display name for this development phase
+    pub fn display_name(&self) -> &'static str {
+        match self {
+            DevelopmentPhase::QueenFounding => "Queen's Founding",
+            DevelopmentPhase::FirstWorkers => "First Workers",
+            DevelopmentPhase::ColonyExpansion => "Colony Expansion",
+            DevelopmentPhase::MatureColony => "Mature Colony",
+        }
+    }
+
+    /// Get a description of what happens in this phase
+    pub fn description(&self) -> &'static str {
+        match self {
+            DevelopmentPhase::QueenFounding => "The queen establishes her nest alone, caring for the first brood without worker assistance.",
+            DevelopmentPhase::FirstWorkers => "The first workers emerge and begin basic foraging and nest maintenance activities.",
+            DevelopmentPhase::ColonyExpansion => "Rapid population growth with complex social behaviors and extensive nest construction.",
+            DevelopmentPhase::MatureColony => "Fully developed colony with sophisticated division of labor and seasonal behaviors.",
+        }
+    }
+
+    /// Get the expected duration range for this phase
+    pub fn expected_duration_days(&self) -> (f32, f32) {
+        match self {
+            DevelopmentPhase::QueenFounding => (300.0, 400.0),
+            DevelopmentPhase::FirstWorkers => (200.0, 365.0),
+            DevelopmentPhase::ColonyExpansion => (365.0, 500.0),
+            DevelopmentPhase::MatureColony => (f32::INFINITY, f32::INFINITY),
+        }
+    }
+
+    /// Get the next phase in the development sequence
+    pub fn next_phase(&self) -> Option<DevelopmentPhase> {
+        match self {
+            DevelopmentPhase::QueenFounding => Some(DevelopmentPhase::FirstWorkers),
+            DevelopmentPhase::FirstWorkers => Some(DevelopmentPhase::ColonyExpansion),
+            DevelopmentPhase::ColonyExpansion => Some(DevelopmentPhase::MatureColony),
+            DevelopmentPhase::MatureColony => None, // Final phase
+        }
+    }
+}
+
+/// Component for ants with phase-specific behavioral modifications
+#[derive(Component, Clone, Serialize, Deserialize)]
+pub struct PhaseSpecificBehavior {
+    /// How this ant's behavior is modified by the current colony phase
+    pub behavior_modifiers: BehaviorModifiers,
+    /// Age group of this ant affecting its role
+    pub age_group: AntAgeGroup,
+    /// Specialized role within the current phase
+    pub specialized_role: SpecializedRole,
+}
+
+/// Behavioral modifiers based on colony development phase
+#[derive(Clone, Serialize, Deserialize)]
+pub struct BehaviorModifiers {
+    /// Movement speed modifier (0.5-1.5)
+    pub speed_modifier: f32,
+    /// Foraging efficiency modifier (0.5-1.5)
+    pub foraging_efficiency: f32,
+    /// Construction skill modifier (0.5-1.5)
+    pub construction_skill: f32,
+    /// Energy efficiency modifier (0.8-1.2)
+    pub energy_efficiency: f32,
+}
+
+/// Age-based categorization of ants for phase-appropriate roles
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum AntAgeGroup {
+    /// Young ants (0-30% of max age) - stay in nest, tend brood
+    Young,
+    /// Adult ants (30-70% of max age) - versatile workers
+    Adult,
+    /// Senior ants (70%+ of max age) - experienced foragers
+    Senior,
+}
+
+/// Specialized roles that emerge during different colony phases
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum SpecializedRole {
+    /// General purpose worker (all phases)
+    GeneralWorker,
+    /// Specialized forager (FirstWorkers+)
+    Forager,
+    /// Nest maintenance specialist (ColonyExpansion+)
+    NestMaintainer,
+    /// Nursery caretaker (FirstWorkers+)
+    NurseryWorker,
+    /// Waste management specialist (MatureColony)
+    WasteManager,
+    /// Food storage organizer (ColonyExpansion+)
+    StorageWorker,
+}
+
+impl Default for PhaseSpecificBehavior {
+    fn default() -> Self {
+        Self {
+            behavior_modifiers: BehaviorModifiers::default(),
+            age_group: AntAgeGroup::Adult,
+            specialized_role: SpecializedRole::GeneralWorker,
+        }
+    }
+}
+
+impl Default for BehaviorModifiers {
+    fn default() -> Self {
+        Self {
+            speed_modifier: 1.0,
+            foraging_efficiency: 1.0,
+            construction_skill: 1.0,
+            energy_efficiency: 1.0,
+        }
+    }
+}
+
+impl AntAgeGroup {
+    /// Determine age group based on ant's current age and max age
+    pub fn from_age_ratio(age_ratio: f32) -> Self {
+        if age_ratio < 0.3 {
+            AntAgeGroup::Young
+        } else if age_ratio < 0.7 {
+            AntAgeGroup::Adult
+        } else {
+            AntAgeGroup::Senior
+        }
+    }
+}
+
+impl SpecializedRole {
+    /// Get the display name for this specialized role
+    pub fn display_name(&self) -> &'static str {
+        match self {
+            SpecializedRole::GeneralWorker => "General Worker",
+            SpecializedRole::Forager => "Forager",
+            SpecializedRole::NestMaintainer => "Nest Maintainer",
+            SpecializedRole::NurseryWorker => "Nursery Worker",
+            SpecializedRole::WasteManager => "Waste Manager",
+            SpecializedRole::StorageWorker => "Storage Worker",
+        }
+    }
 }

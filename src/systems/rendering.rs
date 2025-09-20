@@ -1,6 +1,6 @@
 use crate::components::{
     Ant, AntBehavior, AntState, Chamber, ChamberType, DepthLayer, Food, FoodSource, GroundSurface,
-    Inventory, Lifecycle, Position, Queen, Soil, SoilCell, Tunnel,
+    Inventory, Lifecycle, PhaseSpecificBehavior, Position, Queen, Soil, SoilCell, Tunnel,
 };
 use bevy::prelude::*;
 use rand::prelude::*;
@@ -115,7 +115,8 @@ pub fn spawn_initial_ants(mut commands: Commands) {
             carried_food_value: 0.0,
             home_position: Position { x: 0.0, y: -48.0 }, // Queen's chamber
         },
-        Queen, // Mark as queen
+        PhaseSpecificBehavior::default(), // Add phase-specific behavior
+        Queen,                            // Mark as queen
         Ant,
         SpriteBundle {
             sprite: Sprite {
@@ -166,6 +167,7 @@ pub fn spawn_initial_ants(mut commands: Commands) {
                 },
                 home_position: Position { x: 0.0, y: -48.0 }, // Queen's chamber as home
             },
+            PhaseSpecificBehavior::default(), // Add phase-specific behavior
             Ant,
             SpriteBundle {
                 sprite: Sprite {

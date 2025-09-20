@@ -1,16 +1,14 @@
 use crate::components::{
     Ant, AntBehavior, AntState, DisasterState, Food, FoodSource, InvasiveSpecies, Inventory,
-    Lifecycle, Position, SpatialGrid, TimeControl,
+    Lifecycle, Position, SpatialGrid,
 };
-use crate::systems::{disaster::get_movement_speed_modifier, time_control::effective_delta_time};
 use bevy::prelude::*;
 use rand::prelude::*;
 
 /// System for ant movement and behavior
 pub fn ant_movement_system(
     time: Res<Time>,
-    time_control: Res<TimeControl>,
-    disaster_state: Res<DisasterState>,
+    _disaster_state: Res<DisasterState>, // Keeping for future implementation
     spatial_grid: Res<SpatialGrid>,
     mut ant_query: Query<
         (
@@ -53,7 +51,7 @@ pub fn ant_movement_system(
 
         // Apply stress effects if invasive species are nearby
         if nearest_invasive_distance < 20.0 {
-            let delta_time = effective_delta_time(&time, &time_control);
+            let delta_time = time.delta_seconds();
             let stress_factor = 1.0 - (nearest_invasive_distance / 20.0);
             lifecycle.energy -= stress_factor * 1.5 * delta_time; // Additional energy loss due to stress
         }
@@ -135,8 +133,8 @@ pub fn ant_movement_system(
                     let distance = (dx * dx + dy * dy).sqrt();
 
                     if distance > 1.0 {
-                        let delta_time = effective_delta_time(&time, &time_control);
-                        let speed_modifier = get_movement_speed_modifier(&disaster_state);
+                        let delta_time = time.delta_seconds();
+                        let speed_modifier = 1.0; // Simplified: no disaster speed modifications
                         let move_distance = behavior.speed * delta_time * speed_modifier;
                         position.x += (dx / distance) * move_distance;
                         position.y += (dy / distance) * move_distance;
@@ -158,8 +156,8 @@ pub fn ant_movement_system(
                     let distance = (dx * dx + dy * dy).sqrt();
 
                     if distance > 2.0 {
-                        let delta_time = effective_delta_time(&time, &time_control);
-                        let speed_modifier = get_movement_speed_modifier(&disaster_state);
+                        let delta_time = time.delta_seconds();
+                        let speed_modifier = 1.0; // Simplified: no disaster speed modifications
                         let move_distance = behavior.speed * delta_time * speed_modifier;
                         position.x += (dx / distance) * move_distance;
                         position.y += (dy / distance) * move_distance;
