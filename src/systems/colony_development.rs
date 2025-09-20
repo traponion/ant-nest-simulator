@@ -13,6 +13,15 @@
 use crate::components::*;
 use bevy::prelude::*;
 
+/// Individual progress tracking component for UI display
+#[derive(Component)]
+pub struct PhaseProgressTracking {
+    pub time_progress: f32,
+    pub population_progress: f32,
+    pub complexity_progress: f32,
+    pub stability_progress: f32,
+}
+
 /// System for managing colony development phase progression
 pub fn colony_development_management_system(
     time: Res<SimulationTime>,
@@ -22,6 +31,7 @@ pub fn colony_development_management_system(
     chamber_query: Query<&Chamber>,
     tunnel_query: Query<&Tunnel>,
     mut ant_behavior_query: Query<&mut PhaseSpecificBehavior, With<Ant>>,
+    mut progress_tracking: ResMut<PhaseProgressTracking>,
 ) {
     // Update time spent in current phase
     colony_phase.time_in_phase = time.current_day as f32;
@@ -36,6 +46,12 @@ pub fn colony_development_management_system(
     let population_progress = calculate_population_progress(&colony_phase, worker_count);
     let complexity_progress = calculate_complexity_progress(&colony_phase, nest_complexity);
     let stability_progress = calculate_stability_progress(&colony_phase, queen_alive, worker_count);
+
+    // Store individual progress for UI display
+    progress_tracking.time_progress = time_progress;
+    progress_tracking.population_progress = population_progress;
+    progress_tracking.complexity_progress = complexity_progress;
+    progress_tracking.stability_progress = stability_progress;
 
     // Overall progress is the minimum of all criteria (bottleneck system)
     colony_phase.phase_progress = time_progress
@@ -313,22 +329,54 @@ pub fn apply_phase_behavior_modifiers_system(
     }
 }
 
-/// System to display colony development information in UI
+/// System to display colony development information in enhanced UI
 pub fn colony_development_ui_system(
     colony_phase: Res<ColonyDevelopmentPhase>,
-    mut text_query: Query<&mut Text, With<ColonyDevelopmentDisplay>>,
+    progress_tracking: Res<PhaseProgressTracking>,
+    mut text_query: Query<(&mut Text, &Name)>,
+    mut progress_bar_query: Query<&mut Style, (With<ProgressBar>, Without<Text>)>,
+    ui_theme: Res<UITheme>,
 ) {
-    for mut text in text_query.iter_mut() {
+    // Update text displays
+    for (mut text, name) in text_query.iter_mut() {
+        let new_text = match name.as_str() {
+            "phase_name" => colony_phase.current_phase.display_name().to_string(),
+            "phase_description" => colony_phase.current_phase.description().to_string(),
+            "phase_day" => format!("Day {} in Phase", colony_phase.time_in_phase),
+            "overall_progress" => format!("Overall Progress: {:.1}%", colony_phase.phase_progress * 100.0),
+            "time_progress" => format!("Time: {:.1}%", progress_tracking.time_progress * 100.0),
+            "population_progress" => format!("Population: {:.1}%", progress_tracking.population_progress * 100.0),
+            "complexity_progress" => format!("Complexity: {:.1}%", progress_tracking.complexity_progress * 100.0),
+            "stability_progress" => format!("Stability: {:.1}%", progress_tracking.stability_progress * 100.0),
+            "next_phase" => {
+                if let Some(next_phase) = colony_phase.current_phase.next_phase() {
+                    format!("Next: {}", next_phase.display_name())
+                } else {
+                    "Final Phase".to_string()
+                }
+            },
+            _ => continue,
+        };
+
         if let Some(section) = text.sections.first_mut() {
-            section.value = format!(
-                "Colony Phase: {}\nDay {} in Phase\nProgress: {:.1}%\nTraits: Vigor {:.2}, Efficiency {:.2}",
-                colony_phase.current_phase.display_name(),
-                colony_phase.time_in_phase,
-                colony_phase.phase_progress * 100.0,
-                colony_phase.colony_traits.queen_vigor,
-                colony_phase.colony_traits.worker_efficiency,
-            );
+            section.value = new_text;
         }
+    }
+
+    // Update progress bars
+    let mut bar_index = 0;
+    for mut style in progress_bar_query.iter_mut() {
+        let progress = match bar_index {
+            0 => colony_phase.phase_progress,
+            1 => progress_tracking.time_progress,
+            2 => progress_tracking.population_progress,
+            3 => progress_tracking.complexity_progress,
+            4 => progress_tracking.stability_progress,
+            _ => 0.0,
+        };
+
+        style.width = Val::Percent(progress * 100.0);
+        bar_index += 1;
     }
 }
 
@@ -336,7 +384,15 @@ pub fn colony_development_ui_system(
 #[derive(Component)]
 pub struct ColonyDevelopmentDisplay;
 
-/// System to spawn colony development UI panel
+/// Component marker for progress bars
+#[derive(Component)]
+pub struct ProgressBar;
+
+/// Component marker for phase timeline elements
+#[derive(Component)]
+pub struct PhaseTimelineElement;
+
+/// System to spawn enhanced colony development UI panel
 pub fn setup_colony_development_ui(mut commands: Commands, ui_theme: Res<UITheme>) {
     commands
         .spawn(NodeBundle {
@@ -344,8 +400,8 @@ pub fn setup_colony_development_ui(mut commands: Commands, ui_theme: Res<UITheme
                 position_type: PositionType::Absolute,
                 top: Val::Px(10.0),
                 right: Val::Px(10.0),
-                width: Val::Px(280.0),
-                height: Val::Px(120.0),
+                width: Val::Px(350.0),
+                height: Val::Px(400.0),
                 flex_direction: FlexDirection::Column,
                 padding: UiRect::all(Val::Px(ui_theme.spacing.md)),
                 border: UiRect::all(Val::Px(ui_theme.borders.width_medium)),
@@ -356,16 +412,294 @@ pub fn setup_colony_development_ui(mut commands: Commands, ui_theme: Res<UITheme
             ..default()
         })
         .with_children(|parent| {
+            // Header Section
+            create_section_header(parent, "Colony Development", &ui_theme);
+
+            // Current Phase Info
+            create_phase_info_section(parent, &ui_theme);
+
+            // Overall Progress Bar
+            create_overall_progress_section(parent, &ui_theme);
+
+            // Individual Progress Bars
+            create_individual_progress_section(parent, &ui_theme);
+
+            // Phase Timeline
+            create_phase_timeline_section(parent, &ui_theme);
+
+            // Next Phase Preview
+            create_next_phase_section(parent, &ui_theme);
+        });
+}
+
+/// Create section header
+fn create_section_header(parent: &mut ChildBuilder, title: &str, ui_theme: &UITheme) {
+    parent.spawn(TextBundle::from_section(
+        title,
+        TextStyle {
+            font_size: ui_theme.typography.heading_medium,
+            color: ui_theme.colors.text_primary,
+            ..default()
+        },
+    ));
+
+    // Spacing
+    parent.spawn(NodeBundle {
+        style: Style {
+            height: Val::Px(ui_theme.spacing.sm),
+            ..default()
+        },
+        ..default()
+    });
+}
+
+/// Create current phase information section
+fn create_phase_info_section(parent: &mut ChildBuilder, ui_theme: &UITheme) {
+    parent.spawn((
+        TextBundle::from_section(
+            "Loading...",
+            TextStyle {
+                font_size: ui_theme.typography.body_large,
+                color: ui_theme.colors.text_primary,
+                ..default()
+            },
+        ),
+        Name::new("phase_name".to_string()),
+    ));
+
+    parent.spawn((
+        TextBundle::from_section(
+            "Loading phase information...",
+            TextStyle {
+                font_size: ui_theme.typography.body_small,
+                color: ui_theme.colors.text_secondary,
+                ..default()
+            },
+        ),
+        Name::new("phase_description".to_string()),
+    ));
+
+    parent.spawn((
+        TextBundle::from_section(
+            "Day 0 in Phase",
+            TextStyle {
+                font_size: ui_theme.typography.body_small,
+                color: ui_theme.colors.text_secondary,
+                ..default()
+            },
+        ),
+        Name::new("phase_day".to_string()),
+    ));
+
+    // Spacing
+    parent.spawn(NodeBundle {
+        style: Style {
+            height: Val::Px(ui_theme.spacing.md),
+            ..default()
+        },
+        ..default()
+    });
+}
+
+/// Create overall progress section with main progress bar
+fn create_overall_progress_section(parent: &mut ChildBuilder, ui_theme: &UITheme) {
+    parent.spawn((
+        TextBundle::from_section(
+            "Overall Progress: 0%",
+            TextStyle {
+                font_size: ui_theme.typography.body_medium,
+                color: ui_theme.colors.text_primary,
+                ..default()
+            },
+        ),
+        Name::new("overall_progress".to_string()),
+    ));
+
+    // Progress bar container
+    parent.spawn(NodeBundle {
+        style: Style {
+            width: Val::Percent(100.0),
+            height: Val::Px(20.0),
+            margin: UiRect::vertical(Val::Px(ui_theme.spacing.xs)),
+            border: UiRect::all(Val::Px(1.0)),
+            ..default()
+        },
+        background_color: ui_theme.colors.surface_secondary.into(),
+        border_color: ui_theme.colors.border_primary.into(),
+        ..default()
+    }).with_children(|parent| {
+        // Progress bar fill
+        parent.spawn((
+            NodeBundle {
+                style: Style {
+                    width: Val::Percent(0.0),
+                    height: Val::Percent(100.0),
+                    ..default()
+                },
+                background_color: Color::srgb(0.2, 0.8, 0.2).into(), // Green
+                ..default()
+            },
+            ProgressBar,
+        ));
+    });
+
+    // Spacing
+    parent.spawn(NodeBundle {
+        style: Style {
+            height: Val::Px(ui_theme.spacing.md),
+            ..default()
+        },
+        ..default()
+    });
+}
+
+/// Create individual progress indicators section
+fn create_individual_progress_section(parent: &mut ChildBuilder, ui_theme: &UITheme) {
+    let progress_items = [
+        ("Time", "time_progress", Color::srgb(0.2, 0.6, 0.8)),
+        ("Population", "population_progress", Color::srgb(0.8, 0.6, 0.2)),
+        ("Complexity", "complexity_progress", Color::srgb(0.6, 0.2, 0.8)),
+        ("Stability", "stability_progress", Color::srgb(0.8, 0.2, 0.4)),
+    ];
+
+    for (label, name_id, color) in progress_items.iter() {
+        // Progress label
+        parent.spawn((
+            TextBundle::from_section(
+                format!("{}: 0%", label),
+                TextStyle {
+                    font_size: ui_theme.typography.body_small,
+                    color: ui_theme.colors.text_primary,
+                    ..default()
+                },
+            ),
+            Name::new(name_id.to_string()),
+        ));
+
+        // Mini progress bar container
+        parent.spawn(NodeBundle {
+            style: Style {
+                width: Val::Percent(100.0),
+                height: Val::Px(8.0),
+                margin: UiRect {
+                    top: Val::Px(2.0),
+                    bottom: Val::Px(ui_theme.spacing.xs),
+                    ..default()
+                },
+                border: UiRect::all(Val::Px(1.0)),
+                ..default()
+            },
+            background_color: ui_theme.colors.surface_secondary.into(),
+            border_color: ui_theme.colors.border_secondary.into(),
+            ..default()
+        }).with_children(|parent| {
+            // Mini progress bar fill
             parent.spawn((
-                TextBundle::from_section(
-                    "Colony Development Loading...",
+                NodeBundle {
+                    style: Style {
+                        width: Val::Percent(0.0),
+                        height: Val::Percent(100.0),
+                        ..default()
+                    },
+                    background_color: (*color).into(),
+                    ..default()
+                },
+                ProgressBar,
+            ));
+        });
+    }
+
+    // Spacing
+    parent.spawn(NodeBundle {
+        style: Style {
+            height: Val::Px(ui_theme.spacing.md),
+            ..default()
+        },
+        ..default()
+    });
+}
+
+/// Create phase timeline section
+fn create_phase_timeline_section(parent: &mut ChildBuilder, ui_theme: &UITheme) {
+    parent.spawn(TextBundle::from_section(
+        "Phase Timeline",
+        TextStyle {
+            font_size: ui_theme.typography.body_medium,
+            color: ui_theme.colors.text_primary,
+            ..default()
+        },
+    ));
+
+    // Timeline container
+    parent.spawn(NodeBundle {
+        style: Style {
+            width: Val::Percent(100.0),
+            height: Val::Px(30.0),
+            margin: UiRect::vertical(Val::Px(ui_theme.spacing.xs)),
+            flex_direction: FlexDirection::Row,
+            justify_content: JustifyContent::SpaceBetween,
+            align_items: AlignItems::Center,
+            ..default()
+        },
+        ..default()
+    }).with_children(|parent| {
+        let phases = [
+            ("Q", "Queen's Founding"),
+            ("F", "First Workers"),
+            ("E", "Colony Expansion"),
+            ("M", "Mature Colony"),
+        ];
+
+        for (short_name, _full_name) in phases.iter() {
+            parent.spawn((
+                NodeBundle {
+                    style: Style {
+                        width: Val::Px(25.0),
+                        height: Val::Px(25.0),
+                        border: UiRect::all(Val::Px(2.0)),
+                        justify_content: JustifyContent::Center,
+                        align_items: AlignItems::Center,
+                        ..default()
+                    },
+                    background_color: ui_theme.colors.surface_secondary.into(),
+                    border_color: ui_theme.colors.border_primary.into(),
+                    ..default()
+                },
+                PhaseTimelineElement,
+            )).with_children(|parent| {
+                parent.spawn(TextBundle::from_section(
+                    *short_name,
                     TextStyle {
-                        font_size: ui_theme.typography.body_medium,
+                        font_size: ui_theme.typography.body_small,
                         color: ui_theme.colors.text_primary,
                         ..default()
                     },
-                ),
-                ColonyDevelopmentDisplay,
-            ));
-        });
+                ));
+            });
+        }
+    });
+
+    // Spacing
+    parent.spawn(NodeBundle {
+        style: Style {
+            height: Val::Px(ui_theme.spacing.md),
+            ..default()
+        },
+        ..default()
+    });
+}
+
+/// Create next phase preview section
+fn create_next_phase_section(parent: &mut ChildBuilder, ui_theme: &UITheme) {
+    parent.spawn((
+        TextBundle::from_section(
+            "Next: Loading...",
+            TextStyle {
+                font_size: ui_theme.typography.body_medium,
+                color: ui_theme.colors.text_secondary,
+                ..default()
+            },
+        ),
+        Name::new("next_phase".to_string()),
+    ));
 }
