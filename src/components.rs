@@ -1348,3 +1348,157 @@ impl UITheme {
         }
     }
 }
+
+// === Cross-Section Ant Farm Components ===
+
+/// Marker component for ground surface boundary line
+#[derive(Component, Serialize, Deserialize)]
+pub struct GroundSurface;
+
+/// Component for tunnel entities in the cross-section view
+#[derive(Component, Clone, Serialize, Deserialize)]
+pub struct Tunnel {
+    /// Width of the tunnel for pathfinding
+    pub width: f32,
+    /// Connected tunnel/chamber positions for pathfinding network
+    pub connections: Vec<Position>,
+    /// Whether this tunnel is currently being excavated by ants
+    pub under_construction: bool,
+}
+
+/// Component for chamber entities with specialized functions
+#[derive(Component, Clone, Serialize, Deserialize)]
+pub struct Chamber {
+    /// Type and purpose of this chamber
+    pub chamber_type: ChamberType,
+    /// Radius/size of the chamber
+    pub radius: f32,
+    /// Connected tunnel entry/exit points
+    pub tunnel_connections: Vec<Position>,
+    /// Current capacity usage (0.0 = empty, 1.0 = full)
+    pub capacity_usage: f32,
+    /// Maximum capacity for this chamber type
+    pub max_capacity: f32,
+}
+
+/// Types of chambers in the ant colony cross-section
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum ChamberType {
+    /// Central queen's chamber for reproduction
+    Queen,
+    /// Nursery chambers for eggs and larvae
+    Nursery,
+    /// Food storage chambers
+    FoodStorage,
+    /// Worker rest areas and general activity
+    Worker,
+    /// Waste disposal chambers
+    Waste,
+}
+
+impl ChamberType {
+    /// Get the display name for this chamber type
+    pub fn display_name(&self) -> &'static str {
+        match self {
+            ChamberType::Queen => "Queen Chamber",
+            ChamberType::Nursery => "Nursery",
+            ChamberType::FoodStorage => "Food Storage",
+            ChamberType::Worker => "Worker Area",
+            ChamberType::Waste => "Waste Disposal",
+        }
+    }
+
+    /// Get the typical size for this chamber type
+    pub fn default_radius(&self) -> f32 {
+        match self {
+            ChamberType::Queen => 20.0,       // Large central chamber
+            ChamberType::Nursery => 15.0,     // Medium nursery chambers
+            ChamberType::FoodStorage => 12.0, // Medium storage chambers
+            ChamberType::Worker => 8.0,       // Small worker areas
+            ChamberType::Waste => 10.0,       // Medium waste chambers
+        }
+    }
+
+    /// Get the maximum capacity for this chamber type
+    pub fn default_capacity(&self) -> f32 {
+        match self {
+            ChamberType::Queen => 1.0,         // One queen
+            ChamberType::Nursery => 50.0,      // 50 eggs/larvae
+            ChamberType::FoodStorage => 100.0, // 100 food units
+            ChamberType::Worker => 20.0,       // 20 resting workers
+            ChamberType::Waste => 30.0,        // 30 waste units
+        }
+    }
+
+    /// Get the visual color for this chamber type
+    pub fn get_color(&self) -> Color {
+        match self {
+            ChamberType::Queen => Color::srgb(0.8, 0.6, 1.0), // Purple for queen
+            ChamberType::Nursery => Color::srgb(1.0, 0.9, 0.7), // Light yellow for nursery
+            ChamberType::FoodStorage => Color::srgb(0.6, 0.8, 0.4), // Green for food storage
+            ChamberType::Worker => Color::srgb(0.7, 0.7, 0.7), // Gray for worker areas
+            ChamberType::Waste => Color::srgb(0.6, 0.4, 0.2), // Brown for waste
+        }
+    }
+}
+
+/// Component for depth-based soil layers in cross-section view
+#[derive(Component, Clone, Serialize, Deserialize)]
+pub struct DepthLayer {
+    /// Depth level (0 = surface, higher = deeper)
+    pub depth: u32,
+    /// Soil hardness affecting digging difficulty
+    pub hardness: f32,
+    /// Visual color variation based on depth
+    pub color_variation: f32,
+}
+
+impl DepthLayer {
+    /// Create a depth layer with properties based on depth
+    pub fn new(depth: u32) -> Self {
+        let hardness = match depth {
+            0..=2 => 0.2, // Easy to dig near surface
+            3..=5 => 0.5, // Medium difficulty
+            6..=8 => 0.8, // Hard deeper soil
+            _ => 1.0,     // Very hard clay/rock
+        };
+
+        let color_variation = (depth as f32 * 0.1).min(0.5); // Darker with depth
+
+        Self {
+            depth,
+            hardness,
+            color_variation,
+        }
+    }
+
+    /// Get the soil color for this depth layer
+    pub fn get_soil_color(&self) -> Color {
+        let base_brown = 0.6 - (self.depth as f32 * 0.05).min(0.3);
+        Color::srgb(base_brown, base_brown * 0.7, base_brown * 0.3)
+    }
+}
+
+/// Marker component for tunnel path nodes used in pathfinding
+#[derive(Component, Clone, Serialize, Deserialize)]
+pub struct TunnelNode {
+    /// Position of this node in the tunnel network
+    pub position: Position,
+    /// Connected neighboring nodes for pathfinding
+    pub neighbors: Vec<Position>,
+    /// Node type for different pathfinding behaviors
+    pub node_type: TunnelNodeType,
+}
+
+/// Types of tunnel nodes for pathfinding behavior
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum TunnelNodeType {
+    /// Standard tunnel pathway
+    Pathway,
+    /// Junction where multiple tunnels meet
+    Junction,
+    /// Chamber entrance/exit point
+    ChamberEntrance,
+    /// Surface exit point
+    SurfaceExit,
+}
