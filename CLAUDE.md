@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-A realistic ant colony simulation inspired by SimEarth, featuring simple dot-based graphics and complex emergent behavior. Players observe ant colonies developing naturally with minimal intervention.
+A realistic ant colony simulation inspired by SimEarth, featuring simple dot-based graphics and complex emergent behavior. Pure observation experience watching ant colonies develop naturally without any player intervention.
 
 ## Confirmed Requirements
 
@@ -10,15 +10,20 @@ A realistic ant colony simulation inspired by SimEarth, featuring simple dot-bas
 - **Ant farm observation kit simulation** - side cross-section view
 - **Ultra-simple pixel art**: brown dots for soil, black 2-pixel dots for ants
 - **SimEarth-inspired realism** - complex environmental simulation
-- **Idle game mechanics** - minimal player intervention, "watch and wait"
+- **Pure observation game** - zero player intervention, "watch and wait" only
 
 ### Game Mechanics
 - **Autonomous ant behavior**: ants automatically forage, build, reproduce
 - **Realistic lifecycle**: birth, aging, death, generational turnover
 - **Environmental simulation**: soil moisture, nutrition, temperature per pixel
-- **Player interactions limited to**:
-  - Time acceleration (1x to 100x speed)
-  - Natural disaster summoning (rain, drought, cold snaps, invasive species)
+- **NO player interactions** - completely autonomous simulation
+- **Based on Camponotus japonicus (クロオオアリ) ecology**:
+  - Single queen independent nest founding
+  - Year 1: minimal activity, underground development
+  - Year 2+: active foraging, complex social behaviors
+  - Age-based division of labor (senior workers forage, junior workers tend nest)
+  - Seasonal depth migration (shallow in summer, deep in winter)
+  - Waste management system with designated dump sites
 
 ### Technical Stack
 - **Language**: Rust
@@ -29,7 +34,8 @@ A realistic ant colony simulation inspired by SimEarth, featuring simple dot-bas
 
 ### Development Philosophy
 - **Complexity through emergence**: Simple rules creating complex behaviors
-- **Scientific accuracy**: Realistic ant colony dynamics
-- **Observation focus**: Beauty of natural processes without excessive intervention
+- **Scientific accuracy**: Realistic Camponotus japonicus colony dynamics
+- **Pure observation focus**: Beauty of natural processes with zero intervention
 - **Performance priority**: Handle thousands of individual ants and soil pixels
+- **Therapeutic experience**: Calming, meditative ant watching simulation
 
