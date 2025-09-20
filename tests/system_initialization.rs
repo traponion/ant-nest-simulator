@@ -23,8 +23,7 @@ fn test_all_systems_initialization() {
     app.add_plugins(MinimalPlugins);
 
     // Initialize core resources manually to avoid UI/Window dependencies
-    app.init_resource::<ant_nest_simulator::components::TimeControl>()
-        .init_resource::<ant_nest_simulator::components::SimulationTime>()
+    app.init_resource::<ant_nest_simulator::components::SimulationTime>()
         .init_resource::<ant_nest_simulator::components::DisasterState>()
         .init_resource::<ant_nest_simulator::components::ColorOverlayConfig>()
         .init_resource::<ant_nest_simulator::components::VisualEffectsSettings>()
@@ -72,8 +71,7 @@ fn test_systems_multi_update_cycle() {
     app.add_plugins(MinimalPlugins);
 
     // Initialize core resources manually to avoid UI/Window dependencies
-    app.init_resource::<ant_nest_simulator::components::TimeControl>()
-        .init_resource::<ant_nest_simulator::components::SimulationTime>()
+    app.init_resource::<ant_nest_simulator::components::SimulationTime>()
         .init_resource::<ant_nest_simulator::components::DisasterState>()
         .init_resource::<ant_nest_simulator::components::PerformanceMetrics>()
         .insert_resource(ant_nest_simulator::components::SpatialGrid::new(
@@ -121,8 +119,7 @@ fn test_systems_with_entities() {
     app.add_plugins(MinimalPlugins);
 
     // Initialize core resources manually to avoid UI/Window dependencies
-    app.init_resource::<ant_nest_simulator::components::TimeControl>()
-        .init_resource::<ant_nest_simulator::components::DisasterState>()
+    app.init_resource::<ant_nest_simulator::components::DisasterState>()
         .insert_resource(ant_nest_simulator::components::SpatialGrid::new(
             16.0,
             ant_nest_simulator::components::Position { x: -80.0, y: -60.0 },
@@ -181,7 +178,6 @@ fn test_known_problematic_system_combinations() {
     // Initialize input resources and manually add only the systems that have previously caused conflicts
     // This allows us to test specific combinations more precisely
     app.init_resource::<bevy::input::ButtonInput<bevy::input::keyboard::KeyCode>>()
-        .init_resource::<ant_nest_simulator::components::TimeControl>()
         .init_resource::<ant_nest_simulator::components::DisasterState>()
         .init_resource::<ant_nest_simulator::components::SpatialGrid>()
         .add_systems(
@@ -214,8 +210,7 @@ fn test_system_initialization_performance() {
     app.add_plugins(MinimalPlugins);
 
     // Initialize minimal resources for performance testing
-    app.init_resource::<ant_nest_simulator::components::TimeControl>()
-        .init_resource::<ant_nest_simulator::components::DisasterState>();
+    app.init_resource::<ant_nest_simulator::components::DisasterState>();
 
     // Initialize input resources required by systems
     app.init_resource::<bevy::input::ButtonInput<bevy::input::keyboard::KeyCode>>();
