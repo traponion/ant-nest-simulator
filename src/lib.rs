@@ -120,6 +120,13 @@ impl Plugin for AntNestPlugin {
                     systems::tooltip_trigger_system,
                     systems::tooltip_display_system,
                     systems::tooltip_cleanup_system,
+                    // Animation system
+                    systems::ui_animation_system,
+                    systems::ui_animation_update_system,
+                    systems::glow_effect_system,
+                    systems::fade_animation_system,
+                    systems::focus_indicator_system,
+                    systems::accessibility_system,
                 ),
             )
             // Visual effects systems
@@ -145,6 +152,8 @@ impl Plugin for AntNestPlugin {
                     systems::update_disaster_duration_text,
                     systems::handle_disaster_control_interactions,
                     systems::handle_disaster_control_button_interactions,
+                    systems::handle_active_disaster_glow_effects,
+                    systems::animate_cooldown_progress_bars,
                     systems::update_cooldown_progress_bars_system,
                     systems::visual_effects_toggle_system,
                 ),

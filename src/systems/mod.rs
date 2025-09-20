@@ -10,6 +10,7 @@
 //! - Active Disasters UI: Real-time display of active disaster status
 
 pub mod active_disasters_ui;
+pub mod animation;
 pub mod colony_statistics;
 pub mod color_overlay;
 pub mod disaster;
@@ -33,6 +34,7 @@ pub mod visual_effects_toggle;
 
 // Re-export all system functions for easy importing
 pub use active_disasters_ui::*;
+pub use animation::*;
 pub use colony_statistics::*;
 pub use color_overlay::*;
 pub use disaster::*;

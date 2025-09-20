@@ -1,7 +1,7 @@
 use crate::components::{
     CooldownTimer, DisasterControlButton, DisasterControlPanel, DisasterState, DisasterStatusIndicator,
     DisasterStatusBackground, DisasterTriggerFeedback, DisasterType, DisasterCooldownProgressBar, UITheme,
-    Tooltip, TooltipTrigger, TooltipPosition,
+    Tooltip, TooltipTrigger, TooltipPosition, UIAnimation, GlowEffect, FadeAnimation, FocusIndicator, AccessibilityFeatures,
 };
 use bevy::prelude::*;
 
@@ -496,6 +496,59 @@ pub fn handle_disaster_control_button_interactions(
     }
 }
 
+/// System to handle glow effects for active disasters
+pub fn handle_active_disaster_glow_effects(
+    mut glow_query: Query<(&mut GlowEffect, &DisasterControlButton)>,
+    disaster_state: Res<DisasterState>,
+    theme: Res<UITheme>,
+) {
+    for (mut glow, button) in &mut glow_query {
+        let is_active = disaster_state.active_disasters.iter()
+            .any(|active| active.disaster_type == button.disaster_type);
+
+        if is_active && !glow.is_active {
+            // Activate glow effect for active disaster
+            glow.is_active = true;
+            glow.intensity = 0.15;
+            glow.color = get_disaster_glow_color(button.disaster_type, &theme);
+            glow.pulse_speed = 1.5;
+        } else if !is_active && glow.is_active {
+            // Deactivate glow effect when disaster ends
+            glow.is_active = false;
+            glow.intensity = 0.0;
+        }
+    }
+}
+
+/// Get appropriate glow color for each disaster type
+fn get_disaster_glow_color(disaster_type: DisasterType, theme: &UITheme) -> Color {
+    match disaster_type {
+        DisasterType::Rain => Color::rgb(0.2, 0.6, 1.0), // Blue glow
+        DisasterType::Drought => Color::rgb(1.0, 0.6, 0.2), // Orange glow
+        DisasterType::ColdSnap => Color::rgb(0.7, 0.9, 1.0), // Light blue glow
+        DisasterType::InvasiveSpecies => Color::rgb(0.9, 0.2, 0.2), // Red glow
+    }
+}
+
+/// System to handle smooth progress bar animations during cooldowns
+pub fn animate_cooldown_progress_bars(
+    mut progress_query: Query<(&mut Style, &DisasterCooldownProgressBar)>,
+    cooldown_query: Query<&CooldownTimer>,
+) {
+    for (mut style, progress_bar) in &mut progress_query {
+        if let Ok(cooldown) = cooldown_query.get(progress_bar.disaster_entity) {
+            let progress = if cooldown.max_duration > 0.0 {
+                1.0 - (cooldown.remaining / cooldown.max_duration)
+            } else {
+                1.0
+            };
+
+            // Smooth width animation based on cooldown progress
+            style.width = Val::Percent(progress * 100.0);
+        }
+    }
+}
+
 /// Setup enhanced disaster control panel UI with UITheme integration (Phase 1)
 pub fn setup_enhanced_disaster_control_ui_v3(mut commands: Commands, theme: Res<UITheme>) {
     // Main disaster control panel container with UITheme
@@ -748,7 +801,20 @@ pub fn setup_enhanced_disaster_control_ui_v3(mut commands: Commands, theme: Res<
                         shortcut: Some(disaster_type.shortcut_key().to_string()),
                         position: TooltipPosition::Left,
                     })
-                    .insert(TooltipTrigger::default());
+                    .insert(TooltipTrigger::default())
+                    .insert(UIAnimation {
+                        hover_scale: 1.02,
+                        press_scale: 0.98,
+                        transition_duration: 0.15,
+                        ..default()
+                    })
+                    .insert(GlowEffect::default())
+                    .insert(FocusIndicator::default())
+                    .insert(AccessibilityFeatures {
+                        aria_label: format!("{} disaster control", disaster_type.display_name()),
+                        role: "button".to_string(),
+                        tab_index: 0,
+                    });
             }
 
             // Instructions with UITheme typography
