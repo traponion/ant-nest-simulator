@@ -21,14 +21,13 @@ fn test_core_ant_systems_compatibility() {
     app.add_plugins(MinimalPlugins);
 
     // Initialize only the core resources needed for ant simulation
-    app.init_resource::<TimeControl>()
-        .init_resource::<DisasterState>()
-        .init_resource::<SpatialGrid>()
-        .insert_resource(SpatialGrid::new(
-            16.0,
-            Position { x: -80.0, y: -60.0 },
-            Position { x: 80.0, y: 60.0 },
-        ));
+    app.init_resource::<DisasterState>();
+    app.init_resource::<SpatialGrid>();
+    app.insert_resource(SpatialGrid::new(
+        16.0,
+        Position { x: -80.0, y: -60.0 },
+        Position { x: 80.0, y: 60.0 },
+    ));
 
     // Add core ant simulation systems that have previously caused conflicts
     app.add_systems(
@@ -79,14 +78,13 @@ fn test_environmental_systems_compatibility() {
     app.add_plugins(MinimalPlugins);
 
     // Initialize environmental resources
-    app.init_resource::<TimeControl>()
-        .init_resource::<DisasterState>()
-        .init_resource::<SpatialGrid>()
-        .insert_resource(SpatialGrid::new(
-            16.0,
-            Position { x: -80.0, y: -60.0 },
-            Position { x: 80.0, y: 60.0 },
-        ));
+    app.init_resource::<DisasterState>();
+    app.init_resource::<SpatialGrid>();
+    app.insert_resource(SpatialGrid::new(
+        16.0,
+        Position { x: -80.0, y: -60.0 },
+        Position { x: 80.0, y: 60.0 },
+    ));
 
     // Add environmental systems
     app.add_systems(
@@ -148,14 +146,13 @@ fn test_invasive_species_systems_compatibility() {
     app.add_plugins(MinimalPlugins);
 
     // Initialize required resources
-    app.init_resource::<TimeControl>()
-        .init_resource::<DisasterState>()
-        .init_resource::<SpatialGrid>()
-        .insert_resource(SpatialGrid::new(
-            16.0,
-            Position { x: -80.0, y: -60.0 },
-            Position { x: 80.0, y: 60.0 },
-        ));
+    app.init_resource::<DisasterState>();
+    app.init_resource::<SpatialGrid>();
+    app.insert_resource(SpatialGrid::new(
+        16.0,
+        Position { x: -80.0, y: -60.0 },
+        Position { x: 80.0, y: 60.0 },
+    ));
 
     // Add invasive species systems that previously caused conflicts
     app.add_systems(
@@ -221,8 +218,7 @@ fn test_reproduction_systems_compatibility() {
     app.add_plugins(MinimalPlugins);
 
     // Initialize resources
-    app.init_resource::<TimeControl>()
-        .init_resource::<DisasterState>();
+    app.init_resource::<DisasterState>();
 
     // Add reproduction and lifecycle systems
     app.add_systems(
@@ -288,14 +284,13 @@ fn test_gradual_system_addition() {
     app.add_plugins(MinimalPlugins);
 
     // Initialize all required resources first
-    app.init_resource::<TimeControl>()
-        .init_resource::<SpatialGrid>()
-        .init_resource::<DisasterState>()
-        .insert_resource(SpatialGrid::new(
-            16.0,
-            Position { x: -80.0, y: -60.0 },
-            Position { x: 80.0, y: 60.0 },
-        ));
+    app.init_resource::<SpatialGrid>();
+    app.init_resource::<DisasterState>();
+    app.insert_resource(SpatialGrid::new(
+        16.0,
+        Position { x: -80.0, y: -60.0 },
+        Position { x: 80.0, y: 60.0 },
+    ));
 
     // Test 1: Add basic ant systems
     app.add_systems(
