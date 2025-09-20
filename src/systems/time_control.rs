@@ -1,6 +1,7 @@
 use crate::components::{
-    TimeControl, TimeControlPanel, PlayPauseButton, SpeedButton, SpeedDisplay,
-    SpeedSlider, SpeedSliderTrack, SpeedSliderHandle,
+    TimeControl, TimeControlPanel, PlayPauseButton, PlayPauseIcon, PlayPauseText,
+    SpeedButton, SpeedDisplay, SpeedSlider, SpeedSliderTrack, SpeedSliderHandle, SpeedSliderProgress,
+    UITheme,
 };
 use bevy::prelude::*;
 
@@ -272,7 +273,7 @@ pub fn time_control_input_system(
     }
 }
 
-/// Handle button clicks for time control
+/// Handle enhanced button interactions for time control with improved hover effects
 pub fn handle_time_control_buttons(
     mut interaction_query: Query<
         (&Interaction, &mut BackgroundColor, Option<&PlayPauseButton>, Option<&SpeedPresetButton>),
@@ -284,34 +285,53 @@ pub fn handle_time_control_buttons(
         match *interaction {
             Interaction::Pressed => {
                 if play_pause_button.is_some() {
-                    // Toggle play/pause
+                    // Toggle play/pause with enhanced pressed state
                     time_control.is_paused = !time_control.is_paused;
                     if time_control.is_paused {
+                        // Pressed state for paused (amber)
+                        *background_color = Color::srgba(0.7, 0.5, 0.2, 0.95).into();
                         info!("Simulation paused");
                     } else {
+                        // Pressed state for playing (bright green)
+                        *background_color = Color::srgba(0.2, 0.7, 0.2, 0.95).into();
                         info!("Simulation resumed at {}x speed", time_control.speed_multiplier);
                     }
                 } else if let Some(SpeedPresetButton(speed)) = speed_preset_button {
-                    // Set speed preset
+                    // Set speed preset with enhanced pressed state
+                    *background_color = Color::srgba(0.5, 0.5, 0.8, 0.95).into();
                     time_control.speed_multiplier = *speed;
                     time_control.is_paused = false;
                     info!("Speed set to {}x", speed);
                 }
             }
             Interaction::Hovered => {
-                // Hover effect - lighten the color
+                // Enhanced hover effects with better visual feedback
                 if play_pause_button.is_some() {
-                    *background_color = Color::srgb(0.3, 0.7, 0.3).into();
+                    if time_control.is_paused {
+                        // Hover state for paused button (bright amber)
+                        *background_color = Color::srgba(0.7, 0.5, 0.2, 0.95).into();
+                    } else {
+                        // Hover state for playing button (bright green)
+                        *background_color = Color::srgba(0.2, 0.7, 0.2, 0.95).into();
+                    }
                 } else if speed_preset_button.is_some() {
-                    *background_color = Color::srgb(0.4, 0.4, 0.7).into();
+                    // Enhanced hover for speed preset buttons
+                    *background_color = Color::srgba(0.4, 0.4, 0.8, 0.9).into();
                 }
             }
             Interaction::None => {
-                // Reset to normal color
+                // Reset to enhanced normal colors
                 if play_pause_button.is_some() {
-                    *background_color = Color::srgb(0.2, 0.6, 0.2).into();
+                    if time_control.is_paused {
+                        // Normal state for paused button (amber)
+                        *background_color = Color::srgba(0.6, 0.4, 0.15, 0.9).into();
+                    } else {
+                        // Normal state for playing button (green)
+                        *background_color = Color::srgba(0.15, 0.6, 0.15, 0.9).into();
+                    }
                 } else if speed_preset_button.is_some() {
-                    *background_color = Color::srgb(0.3, 0.3, 0.6).into();
+                    // Normal state for speed preset buttons
+                    *background_color = Color::srgba(0.3, 0.3, 0.6, 0.8).into();
                 }
             }
         }
@@ -338,21 +358,37 @@ pub fn update_speed_display_system(
     }
 }
 
-/// Update play/pause button display
+/// Update play/pause button display with enhanced layout
 pub fn update_play_pause_button_system(
     time_control: Res<TimeControl>,
-    mut button_query: Query<&mut Text, (With<Node>, Without<SpeedDisplay>)>,
-    play_pause_query: Query<&Children, With<PlayPauseButton>>,
+    mut icon_query: Query<&mut Text, (With<PlayPauseIcon>, Without<PlayPauseText>, Without<SpeedDisplay>)>,
+    mut text_query: Query<&mut Text, (With<PlayPauseText>, Without<PlayPauseIcon>, Without<SpeedDisplay>)>,
+    mut button_query: Query<&mut BackgroundColor, With<PlayPauseButton>>,
 ) {
-    if let Ok(children) = play_pause_query.get_single() {
-        for &child in children.iter() {
-            if let Ok(mut text) = button_query.get_mut(child) {
-                if time_control.is_paused {
-                    text.sections[0].value = "▶ Paused (SPACE to play)".to_string();
-                } else {
-                    text.sections[0].value = "⏸ Playing (SPACE to pause)".to_string();
-                }
-            }
+    // Update icon
+    if let Ok(mut icon_text) = icon_query.get_single_mut() {
+        if time_control.is_paused {
+            icon_text.sections[0].value = "▶".to_string();
+        } else {
+            icon_text.sections[0].value = "⏸".to_string();
+        }
+    }
+
+    // Update text
+    if let Ok(mut button_text) = text_query.get_single_mut() {
+        if time_control.is_paused {
+            button_text.sections[0].value = "Paused".to_string();
+        } else {
+            button_text.sections[0].value = "Playing".to_string();
+        }
+    }
+
+    // Update button background color based on state
+    if let Ok(mut background_color) = button_query.get_single_mut() {
+        if time_control.is_paused {
+            *background_color = Color::srgba(0.6, 0.4, 0.15, 0.9).into(); // Amber for paused
+        } else {
+            *background_color = Color::srgba(0.15, 0.6, 0.15, 0.9).into(); // Green for playing
         }
     }
 }
@@ -437,32 +473,88 @@ pub fn setup_time_control_ui_with_slider(mut commands: Commands) {
                 },
             ));
 
-            // Play/Pause button with icons
+            // Enhanced Play/Pause button with improved visual design
             parent
                 .spawn(ButtonBundle {
                     style: Style {
                         width: Val::Percent(100.0),
-                        height: Val::Px(45.0),
+                        height: Val::Px(50.0), // Slightly taller for better proportions
                         justify_content: JustifyContent::Center,
                         align_items: AlignItems::Center,
                         border: UiRect::all(Val::Px(2.0)),
-                        margin: UiRect::bottom(Val::Px(5.0)),
+                        margin: UiRect::bottom(Val::Px(8.0)), // More spacing
+                        flex_direction: FlexDirection::Row,
+                        column_gap: Val::Px(10.0),
                         ..default()
                     },
-                    background_color: Color::srgba(0.2, 0.6, 0.2, 0.8).into(),
-                    border_color: Color::srgb(0.3, 0.7, 0.3).into(),
-                    border_radius: BorderRadius::all(Val::Px(6.0)),
+                    background_color: Color::srgba(0.15, 0.6, 0.15, 0.9).into(), // Enhanced green
+                    border_color: Color::srgb(0.2, 0.8, 0.2).into(), // Brighter border
+                    border_radius: BorderRadius::all(Val::Px(8.0)), // More rounded
                     ..default()
                 })
                 .with_children(|button_parent| {
-                    button_parent.spawn(TextBundle::from_section(
-                        "▶ Playing (SPACE)",
-                        TextStyle {
-                            font_size: 18.0,
-                            color: Color::WHITE,
+                    // Icon section with enhanced styling
+                    button_parent
+                        .spawn(NodeBundle {
+                            style: Style {
+                                width: Val::Px(24.0),
+                                height: Val::Px(24.0),
+                                justify_content: JustifyContent::Center,
+                                align_items: AlignItems::Center,
+                                ..default()
+                            },
+                            background_color: Color::srgba(1.0, 1.0, 1.0, 0.15).into(), // Subtle icon background
+                            border_radius: BorderRadius::all(Val::Px(12.0)),
                             ..default()
-                        },
+                        })
+                        .with_children(|icon_parent| {
+                            icon_parent.spawn((
+                                TextBundle::from_section(
+                                    "▶", // Will be updated dynamically
+                                    TextStyle {
+                                        font_size: 20.0,
+                                        color: Color::WHITE,
+                                        ..default()
+                                    },
+                                ),
+                                PlayPauseIcon,
+                            ));
+                        });
+
+                    // Text section with better typography
+                    button_parent.spawn((
+                        TextBundle::from_section(
+                            "Playing",
+                            TextStyle {
+                                font_size: 16.0,
+                                color: Color::WHITE,
+                                ..default()
+                            },
+                        ),
+                        PlayPauseText,
                     ));
+
+                    // Keyboard shortcut hint with subtle styling
+                    button_parent
+                        .spawn(NodeBundle {
+                            style: Style {
+                                padding: UiRect::all(Val::Px(4.0)),
+                                ..default()
+                            },
+                            background_color: Color::srgba(0.0, 0.0, 0.0, 0.3).into(),
+                            border_radius: BorderRadius::all(Val::Px(4.0)),
+                            ..default()
+                        })
+                        .with_children(|shortcut_parent| {
+                            shortcut_parent.spawn(TextBundle::from_section(
+                                "SPACE",
+                                TextStyle {
+                                    font_size: 12.0,
+                                    color: Color::srgb(0.9, 0.9, 0.9),
+                                    ..default()
+                                },
+                            ));
+                        });
                 })
                 .insert(PlayPauseButton);
 
@@ -489,48 +581,119 @@ pub fn setup_time_control_ui_with_slider(mut commands: Commands) {
                 SpeedDisplay,
             ));
 
-            // Speed slider container
+            // Enhanced speed slider container
             parent
                 .spawn(NodeBundle {
                     style: Style {
                         width: Val::Percent(100.0),
-                        height: Val::Px(40.0),
-                        flex_direction: FlexDirection::Row,
-                        align_items: AlignItems::Center,
-                        padding: UiRect::horizontal(Val::Px(5.0)),
+                        height: Val::Px(50.0), // More height for better touch targets
+                        flex_direction: FlexDirection::Column,
+                        justify_content: JustifyContent::Center,
+                        padding: UiRect::horizontal(Val::Px(8.0)),
+                        margin: UiRect::vertical(Val::Px(4.0)),
                         ..default()
                     },
                     ..default()
                 })
                 .with_children(|slider_container| {
-                    // Slider track
+                    // Speed zone indicators (visual markers)
                     slider_container
                         .spawn(NodeBundle {
                             style: Style {
                                 width: Val::Percent(100.0),
-                                height: Val::Px(6.0),
-                                position_type: PositionType::Relative,
+                                height: Val::Px(12.0),
+                                flex_direction: FlexDirection::Row,
+                                justify_content: JustifyContent::SpaceBetween,
+                                margin: UiRect::bottom(Val::Px(6.0)),
                                 ..default()
                             },
-                            background_color: Color::srgb(0.3, 0.3, 0.3).into(),
-                            border_radius: BorderRadius::all(Val::Px(3.0)),
+                            ..default()
+                        })
+                        .with_children(|markers_parent| {
+                            let speed_markers = [
+                                ("1x", Color::srgb(0.5, 0.8, 0.5)),   // Slow - Green
+                                ("5x", Color::srgb(0.8, 0.8, 0.5)),   // Normal - Yellow
+                                ("20x", Color::srgb(0.8, 0.6, 0.4)),  // Fast - Orange
+                                ("100x", Color::srgb(0.8, 0.4, 0.4)), // Ultra - Red
+                            ];
+
+                            for (label, color) in speed_markers {
+                                markers_parent.spawn(TextBundle::from_section(
+                                    label,
+                                    TextStyle {
+                                        font_size: 10.0,
+                                        color,
+                                        ..default()
+                                    },
+                                ));
+                            }
+                        });
+
+                    // Enhanced slider track with gradient effect
+                    slider_container
+                        .spawn(NodeBundle {
+                            style: Style {
+                                width: Val::Percent(100.0),
+                                height: Val::Px(10.0), // Thicker track
+                                position_type: PositionType::Relative,
+                                border: UiRect::all(Val::Px(1.0)),
+                                ..default()
+                            },
+                            background_color: Color::srgba(0.2, 0.2, 0.2, 0.9).into(), // Darker background
+                            border_color: Color::srgba(0.4, 0.4, 0.4, 0.8).into(),
+                            border_radius: BorderRadius::all(Val::Px(5.0)),
                             ..default()
                         })
                         .with_children(|track_parent| {
-                            // Slider handle
+                            // Gradient progress fill (visual indicator of current speed zone)
                             track_parent
                                 .spawn(NodeBundle {
                                     style: Style {
-                                        width: Val::Px(20.0),
-                                        height: Val::Px(20.0),
+                                        width: Val::Percent(0.0), // Will be updated based on current speed
+                                        height: Val::Percent(100.0),
+                                        position_type: PositionType::Absolute,
+                                        left: Val::Px(0.0),
+                                        top: Val::Px(0.0),
+                                        ..default()
+                                    },
+                                    background_color: Color::srgba(0.2, 0.6, 0.8, 0.6).into(), // Blue progress
+                                    border_radius: BorderRadius::all(Val::Px(5.0)),
+                                    ..default()
+                                })
+                                .insert(SpeedSliderProgress);
+
+                            // Enhanced slider handle with better visual design
+                            track_parent
+                                .spawn(NodeBundle {
+                                    style: Style {
+                                        width: Val::Px(24.0), // Larger handle
+                                        height: Val::Px(24.0),
                                         position_type: PositionType::Absolute,
                                         left: Val::Px(0.0), // Will be updated based on value
                                         top: Val::Px(-7.0), // Center on track
+                                        border: UiRect::all(Val::Px(2.0)),
                                         ..default()
                                     },
-                                    background_color: Color::srgb(0.8, 0.8, 1.0).into(),
-                                    border_radius: BorderRadius::all(Val::Px(10.0)),
+                                    background_color: Color::srgb(0.9, 0.9, 1.0).into(), // Brighter handle
+                                    border_color: Color::srgb(0.6, 0.6, 0.8).into(),
+                                    border_radius: BorderRadius::all(Val::Px(12.0)),
                                     ..default()
+                                })
+                                .with_children(|handle_parent| {
+                                    // Inner handle dot for better visibility
+                                    handle_parent.spawn(NodeBundle {
+                                        style: Style {
+                                            width: Val::Px(8.0),
+                                            height: Val::Px(8.0),
+                                            position_type: PositionType::Absolute,
+                                            left: Val::Px(6.0), // Center in handle
+                                            top: Val::Px(6.0),
+                                            ..default()
+                                        },
+                                        background_color: Color::srgb(0.3, 0.5, 0.8).into(),
+                                        border_radius: BorderRadius::all(Val::Px(4.0)),
+                                        ..default()
+                                    });
                                 })
                                 .insert(SpeedSliderHandle);
                         })
@@ -690,6 +853,36 @@ pub fn update_slider_handle_position_system(
     }
 }
 
+/// Update slider progress bar based on current speed
+pub fn update_slider_progress_system(
+    time_control: Res<TimeControl>,
+    mut progress_query: Query<(&mut Style, &mut BackgroundColor), With<SpeedSliderProgress>>,
+) {
+    if let Ok((mut style, mut background_color)) = progress_query.get_single_mut() {
+        // Calculate percentage (1.0 to 100.0 maps to 0% to 100%)
+        let min_speed = 1.0;
+        let max_speed = 100.0;
+        let current_speed = time_control.speed_multiplier.clamp(min_speed, max_speed);
+        let percentage = ((current_speed - min_speed) / (max_speed - min_speed)) * 100.0;
+
+        // Update progress bar width
+        style.width = Val::Percent(percentage);
+
+        // Update color based on speed zone
+        let color = if current_speed <= 2.0 {
+            Color::srgba(0.2, 0.6, 0.8, 0.8) // Blue for slow speeds
+        } else if current_speed <= 10.0 {
+            Color::srgba(0.2, 0.8, 0.6, 0.8) // Green for normal speeds
+        } else if current_speed <= 50.0 {
+            Color::srgba(0.8, 0.6, 0.2, 0.8) // Orange for fast speeds
+        } else {
+            Color::srgba(0.8, 0.2, 0.2, 0.8) // Red for ultra speeds
+        };
+
+        *background_color = color.into();
+    }
+}
+
 /// Handle speed preset button clicks for slider UI
 pub fn handle_speed_preset_buttons_system(
     mut interaction_query: Query<
@@ -719,6 +912,254 @@ pub fn handle_speed_preset_buttons_system(
             }
             Interaction::None => {
                 *background_color = Color::srgb(0.3, 0.3, 0.6).into();
+            }
+        }
+    }
+}
+
+/// Setup enhanced time control UI panel using the unified design system
+pub fn setup_themed_time_control_ui(mut commands: Commands, theme: Res<UITheme>) {
+    commands
+        .spawn(NodeBundle {
+            style: theme.create_panel_style(Val::Px(320.0), Val::Auto),
+            background_color: theme.colors.surface_primary.into(),
+            border_color: theme.colors.border_primary.into(),
+            border_radius: BorderRadius::all(Val::Px(theme.borders.radius_medium)),
+            ..default()
+        })
+        .with_children(|parent| {
+            // Panel title with improved typography
+            parent.spawn(TextBundle::from_section(
+                "Time Control",
+                TextStyle {
+                    font_size: theme.typography.heading_medium,
+                    color: theme.colors.text_primary,
+                    ..default()
+                },
+            ));
+
+            // Speed display with accent color
+            parent.spawn((
+                TextBundle::from_section(
+                    "Speed: 1.0x",
+                    TextStyle {
+                        font_size: theme.typography.body_large,
+                        color: theme.colors.text_accent,
+                        ..default()
+                    },
+                ),
+                SpeedDisplay,
+            ));
+
+            // Enhanced Play/Pause button
+            parent
+                .spawn(ButtonBundle {
+                    style: Style {
+                        width: Val::Percent(100.0),
+                        height: Val::Px(48.0),
+                        justify_content: JustifyContent::Center,
+                        align_items: AlignItems::Center,
+                        border: UiRect::all(Val::Px(theme.borders.width_medium)),
+                        margin: UiRect::vertical(Val::Px(theme.spacing.sm)),
+                        ..default()
+                    },
+                    background_color: theme.colors.action_primary.into(),
+                    border_color: theme.get_hover_color(theme.colors.action_primary).into(),
+                    border_radius: BorderRadius::all(Val::Px(theme.borders.radius_medium)),
+                    ..default()
+                })
+                .with_children(|button_parent| {
+                    button_parent.spawn(TextBundle::from_section(
+                        "▶ Playing (SPACE)",
+                        TextStyle {
+                            font_size: theme.typography.body_large,
+                            color: theme.colors.text_primary,
+                            ..default()
+                        },
+                    ));
+                })
+                .insert(PlayPauseButton);
+
+            // Speed control section with better spacing
+            parent.spawn(TextBundle::from_section(
+                "Speed Control:",
+                TextStyle {
+                    font_size: theme.typography.body_medium,
+                    color: theme.colors.text_secondary,
+                    ..default()
+                },
+            ));
+
+            // Enhanced speed slider container
+            parent
+                .spawn(NodeBundle {
+                    style: Style {
+                        width: Val::Percent(100.0),
+                        height: Val::Px(50.0),
+                        flex_direction: FlexDirection::Row,
+                        align_items: AlignItems::Center,
+                        padding: UiRect::all(Val::Px(theme.spacing.sm)),
+                        margin: UiRect::vertical(Val::Px(theme.spacing.sm)),
+                        ..default()
+                    },
+                    background_color: theme.colors.surface_secondary.into(),
+                    border_radius: BorderRadius::all(Val::Px(theme.borders.radius_small)),
+                    ..default()
+                })
+                .with_children(|slider_container| {
+                    // Enhanced slider track
+                    slider_container
+                        .spawn(NodeBundle {
+                            style: Style {
+                                width: Val::Percent(100.0),
+                                height: Val::Px(8.0),
+                                position_type: PositionType::Relative,
+                                margin: UiRect::horizontal(Val::Px(theme.spacing.sm)),
+                                ..default()
+                            },
+                            background_color: theme.colors.border_secondary.into(),
+                            border_radius: BorderRadius::all(Val::Px(theme.borders.radius_small)),
+                            ..default()
+                        })
+                        .with_children(|track_parent| {
+                            // Enhanced slider handle
+                            track_parent
+                                .spawn(NodeBundle {
+                                    style: Style {
+                                        width: Val::Px(24.0),
+                                        height: Val::Px(24.0),
+                                        position_type: PositionType::Absolute,
+                                        left: Val::Px(0.0),
+                                        top: Val::Px(-8.0),
+                                        border: UiRect::all(Val::Px(theme.borders.width_medium)),
+                                        ..default()
+                                    },
+                                    background_color: theme.colors.accent_blue.into(),
+                                    border_color: theme.colors.text_primary.into(),
+                                    border_radius: BorderRadius::all(Val::Px(theme.borders.radius_round)),
+                                    ..default()
+                                })
+                                .insert(SpeedSliderHandle);
+                        })
+                        .insert(SpeedSliderTrack);
+                })
+                .insert(SpeedSlider {
+                    current_value: 1.0,
+                    is_dragging: false,
+                });
+
+            // Enhanced quick speed presets section
+            parent.spawn(TextBundle::from_section(
+                "Quick Presets:",
+                TextStyle {
+                    font_size: theme.typography.body_small,
+                    color: theme.colors.text_secondary,
+                    ..default()
+                },
+            ));
+
+            // Enhanced preset buttons with better layout
+            parent
+                .spawn(NodeBundle {
+                    style: Style {
+                        flex_direction: FlexDirection::Row,
+                        column_gap: Val::Px(theme.spacing.sm),
+                        align_items: AlignItems::Center,
+                        flex_wrap: FlexWrap::Wrap,
+                        row_gap: Val::Px(theme.spacing.sm),
+                        margin: UiRect::vertical(Val::Px(theme.spacing.sm)),
+                        ..default()
+                    },
+                    ..default()
+                })
+                .with_children(|buttons_parent| {
+                    let speed_presets = [(1.0, "1×"), (5.0, "5×"), (20.0, "20×"), (100.0, "Max")];
+
+                    for (speed, label) in speed_presets {
+                        buttons_parent
+                            .spawn(ButtonBundle {
+                                style: Style {
+                                    width: Val::Px(65.0),
+                                    height: Val::Px(36.0),
+                                    justify_content: JustifyContent::Center,
+                                    align_items: AlignItems::Center,
+                                    border: UiRect::all(Val::Px(theme.borders.width_thin)),
+                                    ..default()
+                                },
+                                background_color: theme.colors.action_secondary.into(),
+                                border_color: theme.colors.border_primary.into(),
+                                border_radius: BorderRadius::all(Val::Px(theme.borders.radius_small)),
+                                ..default()
+                            })
+                            .with_children(|button| {
+                                button.spawn(TextBundle::from_section(
+                                    label,
+                                    TextStyle {
+                                        font_size: theme.typography.body_small,
+                                        color: theme.colors.text_primary,
+                                        ..default()
+                                    },
+                                ));
+                            })
+                            .insert(SpeedPresetButton(speed));
+                    }
+                });
+
+            // Enhanced instructions with better typography
+            parent.spawn(TextBundle::from_section(
+                "Drag slider or use presets • SPACE=Pause • 1-9=Speed shortcuts",
+                TextStyle {
+                    font_size: theme.typography.caption,
+                    color: theme.colors.text_muted,
+                    ..default()
+                },
+            ));
+        })
+        .insert(TimeControlPanel);
+}
+
+/// Enhanced button interaction system with theme-aware hover effects
+pub fn handle_themed_time_control_buttons(
+    mut interaction_query: Query<
+        (&Interaction, &mut BackgroundColor, Option<&PlayPauseButton>, Option<&SpeedPresetButton>),
+        (Changed<Interaction>, Or<(With<PlayPauseButton>, With<SpeedPresetButton>)>),
+    >,
+    mut time_control: ResMut<TimeControl>,
+    theme: Res<UITheme>,
+) {
+    for (interaction, mut background_color, play_pause_button, speed_preset_button) in &mut interaction_query {
+        match *interaction {
+            Interaction::Pressed => {
+                if play_pause_button.is_some() {
+                    // Toggle play/pause
+                    time_control.is_paused = !time_control.is_paused;
+                    if time_control.is_paused {
+                        info!("Simulation paused");
+                    } else {
+                        info!("Simulation resumed at {}x speed", time_control.speed_multiplier);
+                    }
+                } else if let Some(SpeedPresetButton(speed)) = speed_preset_button {
+                    // Set speed preset
+                    time_control.speed_multiplier = *speed;
+                    time_control.is_paused = false;
+                    info!("Speed set to {}x", speed);
+                }
+            }
+            Interaction::Hovered => {
+                // Enhanced hover effect using theme colors
+                if play_pause_button.is_some() {
+                    *background_color = theme.get_hover_color(theme.colors.action_primary).into();
+                } else if speed_preset_button.is_some() {
+                    *background_color = theme.get_hover_color(theme.colors.action_secondary).into();
+                }
+            }
+            Interaction::None => {
+                // Reset to normal theme colors
+                if play_pause_button.is_some() {
+                    *background_color = theme.colors.action_primary.into();
+                } else if speed_preset_button.is_some() {
+                    *background_color = theme.colors.action_secondary.into();
+                }
             }
         }
     }
