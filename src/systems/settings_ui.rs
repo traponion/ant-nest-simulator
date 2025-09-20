@@ -1,11 +1,11 @@
 use crate::components::{
     SettingItem, SettingType, SettingsAction, SettingsButton, SettingsCategory,
-    SettingsCategoryType, SettingsPanel, SettingsToggle, UserSettings,
+    SettingsCategoryType, SettingsPanel, SettingsToggle, UITheme, UserSettings,
 };
 use bevy::prelude::*;
 
 /// Setup settings panel UI with tabbed interface
-pub fn setup_settings_panel(mut commands: Commands) {
+pub fn setup_settings_panel(mut commands: Commands, ui_theme: Res<UITheme>) {
     // Main settings panel container - initially hidden
     commands
         .spawn(NodeBundle {
@@ -16,13 +16,13 @@ pub fn setup_settings_panel(mut commands: Commands) {
                 width: Val::Px(400.0),
                 max_height: Val::Px(600.0),
                 flex_direction: FlexDirection::Column,
-                padding: UiRect::all(Val::Px(20.0)),
-                row_gap: Val::Px(15.0),
+                padding: UiRect::all(Val::Px(ui_theme.spacing.lg)),
+                row_gap: Val::Px(ui_theme.spacing.md),
                 border: UiRect::all(Val::Px(2.0)),
                 ..default()
             },
-            background_color: Color::srgba(0.1, 0.1, 0.1, 0.95).into(),
-            border_color: Color::srgb(0.4, 0.4, 0.4).into(),
+            background_color: ui_theme.colors.surface_primary.into(),
+            border_color: ui_theme.colors.border_primary.into(),
             border_radius: BorderRadius::all(Val::Px(10.0)),
             visibility: Visibility::Hidden, // Start hidden
             ..default()
@@ -36,7 +36,7 @@ pub fn setup_settings_panel(mut commands: Commands) {
                         justify_content: JustifyContent::SpaceBetween,
                         align_items: AlignItems::Center,
                         width: Val::Percent(100.0),
-                        margin: UiRect::bottom(Val::Px(10.0)),
+                        margin: UiRect::bottom(Val::Px(ui_theme.spacing.sm)),
                         ..default()
                     },
                     ..default()
@@ -46,8 +46,8 @@ pub fn setup_settings_panel(mut commands: Commands) {
                     header_parent.spawn(TextBundle::from_section(
                         "Settings",
                         TextStyle {
-                            font_size: 24.0,
-                            color: Color::WHITE,
+                            font_size: ui_theme.typography.heading_small,
+                            color: ui_theme.colors.text_primary,
                             ..default()
                         },
                     ));
@@ -63,8 +63,8 @@ pub fn setup_settings_panel(mut commands: Commands) {
                                 border: UiRect::all(Val::Px(1.0)),
                                 ..default()
                             },
-                            background_color: Color::srgb(0.6, 0.2, 0.2).into(),
-                            border_color: Color::srgb(0.8, 0.4, 0.4).into(),
+                            background_color: ui_theme.colors.action_danger.into(),
+                            border_color: ui_theme.colors.border_focus.into(),
                             border_radius: BorderRadius::all(Val::Px(4.0)),
                             ..default()
                         })
@@ -72,8 +72,8 @@ pub fn setup_settings_panel(mut commands: Commands) {
                             button_parent.spawn(TextBundle::from_section(
                                 "×",
                                 TextStyle {
-                                    font_size: 18.0,
-                                    color: Color::WHITE,
+                                    font_size: ui_theme.typography.body_medium,
+                                    color: ui_theme.colors.text_primary,
                                     ..default()
                                 },
                             ));
@@ -89,8 +89,8 @@ pub fn setup_settings_panel(mut commands: Commands) {
                     style: Style {
                         flex_direction: FlexDirection::Row,
                         width: Val::Percent(100.0),
-                        column_gap: Val::Px(5.0),
-                        margin: UiRect::bottom(Val::Px(15.0)),
+                        column_gap: Val::Px(ui_theme.spacing.xs),
+                        margin: UiRect::bottom(Val::Px(ui_theme.spacing.md)),
                         ..default()
                     },
                     ..default()
@@ -104,9 +104,9 @@ pub fn setup_settings_panel(mut commands: Commands) {
 
                     for (category_type, label, is_active) in categories {
                         let bg_color = if is_active {
-                            Color::srgb(0.3, 0.5, 0.7)
+                            ui_theme.colors.action_primary
                         } else {
-                            Color::srgb(0.2, 0.2, 0.2)
+                            ui_theme.colors.surface_secondary
                         };
 
                         tabs_parent
@@ -120,7 +120,7 @@ pub fn setup_settings_panel(mut commands: Commands) {
                                     ..default()
                                 },
                                 background_color: bg_color.into(),
-                                border_color: Color::srgb(0.4, 0.4, 0.4).into(),
+                                border_color: ui_theme.colors.border_primary.into(),
                                 border_radius: BorderRadius::all(Val::Px(4.0)),
                                 ..default()
                             })
@@ -128,8 +128,8 @@ pub fn setup_settings_panel(mut commands: Commands) {
                                 tab_parent.spawn(TextBundle::from_section(
                                     label,
                                     TextStyle {
-                                        font_size: 14.0,
-                                        color: Color::WHITE,
+                                        font_size: ui_theme.typography.body_small,
+                                        color: ui_theme.colors.text_primary,
                                         ..default()
                                     },
                                 ));
@@ -148,17 +148,17 @@ pub fn setup_settings_panel(mut commands: Commands) {
                         flex_direction: FlexDirection::Column,
                         width: Val::Percent(100.0),
                         flex_grow: 1.0,
-                        row_gap: Val::Px(12.0),
-                        padding: UiRect::all(Val::Px(10.0)),
+                        row_gap: Val::Px(ui_theme.spacing.sm),
+                        padding: UiRect::all(Val::Px(ui_theme.spacing.sm)),
                         overflow: Overflow::clip_y(),
                         ..default()
                     },
-                    background_color: Color::srgba(0.05, 0.05, 0.05, 0.8).into(),
+                    background_color: ui_theme.colors.surface_elevated.into(),
                     border_radius: BorderRadius::all(Val::Px(6.0)),
                     ..default()
                 })
                 .with_children(|content_parent| {
-                    setup_visual_settings_content(content_parent);
+                    setup_visual_settings_content(content_parent, &ui_theme);
                 });
 
             // Action buttons at bottom
@@ -168,8 +168,8 @@ pub fn setup_settings_panel(mut commands: Commands) {
                         flex_direction: FlexDirection::Row,
                         justify_content: JustifyContent::SpaceBetween,
                         width: Val::Percent(100.0),
-                        column_gap: Val::Px(10.0),
-                        margin: UiRect::top(Val::Px(15.0)),
+                        column_gap: Val::Px(ui_theme.spacing.sm),
+                        margin: UiRect::top(Val::Px(ui_theme.spacing.md)),
                         ..default()
                     },
                     ..default()
@@ -179,17 +179,17 @@ pub fn setup_settings_panel(mut commands: Commands) {
                         (
                             SettingsAction::ResetToDefaults,
                             "Reset to Defaults",
-                            Color::srgb(0.6, 0.3, 0.3),
+                            ui_theme.colors.action_danger,
                         ),
                         (
                             SettingsAction::SaveSettings,
                             "Save Settings",
-                            Color::srgb(0.2, 0.6, 0.2),
+                            ui_theme.colors.action_success,
                         ),
                         (
                             SettingsAction::ApplySettings,
                             "Apply",
-                            Color::srgb(0.3, 0.5, 0.7),
+                            ui_theme.colors.action_primary,
                         ),
                     ];
 
@@ -205,7 +205,7 @@ pub fn setup_settings_panel(mut commands: Commands) {
                                     ..default()
                                 },
                                 background_color: color.into(),
-                                border_color: Color::srgb(0.5, 0.5, 0.5).into(),
+                                border_color: ui_theme.colors.border_focus.into(),
                                 border_radius: BorderRadius::all(Val::Px(4.0)),
                                 ..default()
                             })
@@ -213,8 +213,8 @@ pub fn setup_settings_panel(mut commands: Commands) {
                                 button_parent.spawn(TextBundle::from_section(
                                     label,
                                     TextStyle {
-                                        font_size: 12.0,
-                                        color: Color::WHITE,
+                                        font_size: ui_theme.typography.body_small,
+                                        color: ui_theme.colors.text_primary,
                                         ..default()
                                     },
                                 ));
@@ -227,13 +227,14 @@ pub fn setup_settings_panel(mut commands: Commands) {
 }
 
 /// Setup visual settings content (default tab)
-fn setup_visual_settings_content(parent: &mut ChildBuilder) {
+fn setup_visual_settings_content(parent: &mut ChildBuilder, ui_theme: &UITheme) {
     // Visual Effects Toggle
     setup_setting_item(
         parent,
         "Visual Effects",
         "Enable particle effects and visual overlays",
         SettingType::VisualEffectsToggle,
+        ui_theme,
     );
 
     // UI Scale Slider
@@ -242,6 +243,7 @@ fn setup_visual_settings_content(parent: &mut ChildBuilder) {
         "UI Scale",
         "Adjust the size of interface elements",
         SettingType::UIScale,
+        ui_theme,
     );
 
     // Color Theme Selection
@@ -250,6 +252,7 @@ fn setup_visual_settings_content(parent: &mut ChildBuilder) {
         "Color Theme",
         "Choose interface color scheme",
         SettingType::ColorTheme,
+        ui_theme,
     );
 
     // Performance Mode Toggle
@@ -258,6 +261,7 @@ fn setup_visual_settings_content(parent: &mut ChildBuilder) {
         "Performance Mode",
         "Reduce visual effects for better performance",
         SettingType::PerformanceMode,
+        ui_theme,
     );
 }
 
@@ -267,19 +271,20 @@ fn setup_setting_item(
     label: &str,
     description: &str,
     setting_type: SettingType,
+    ui_theme: &UITheme,
 ) {
     parent
         .spawn(NodeBundle {
             style: Style {
                 flex_direction: FlexDirection::Column,
                 width: Val::Percent(100.0),
-                padding: UiRect::all(Val::Px(8.0)),
-                row_gap: Val::Px(5.0),
+                padding: UiRect::all(Val::Px(ui_theme.spacing.xs)),
+                row_gap: Val::Px(ui_theme.spacing.xs),
                 border: UiRect::all(Val::Px(1.0)),
                 ..default()
             },
-            background_color: Color::srgba(0.1, 0.1, 0.1, 0.5).into(),
-            border_color: Color::srgb(0.3, 0.3, 0.3).into(),
+            background_color: ui_theme.colors.surface_secondary.into(),
+            border_color: ui_theme.colors.border_secondary.into(),
             border_radius: BorderRadius::all(Val::Px(4.0)),
             ..default()
         })
@@ -288,8 +293,8 @@ fn setup_setting_item(
             item_parent.spawn(TextBundle::from_section(
                 label,
                 TextStyle {
-                    font_size: 16.0,
-                    color: Color::WHITE,
+                    font_size: ui_theme.typography.body_medium,
+                    color: ui_theme.colors.text_primary,
                     ..default()
                 },
             ));
@@ -298,8 +303,8 @@ fn setup_setting_item(
             item_parent.spawn(TextBundle::from_section(
                 description,
                 TextStyle {
-                    font_size: 12.0,
-                    color: Color::srgb(0.8, 0.8, 0.8),
+                    font_size: ui_theme.typography.body_small,
+                    color: ui_theme.colors.text_secondary,
                     ..default()
                 },
             ));
@@ -307,17 +312,17 @@ fn setup_setting_item(
             // Setting control (will be customized based on setting type)
             match setting_type {
                 SettingType::VisualEffectsToggle | SettingType::PerformanceMode => {
-                    setup_toggle_control(item_parent, setting_type.clone());
+                    setup_toggle_control(item_parent, setting_type.clone(), ui_theme);
                 }
                 SettingType::UIScale => {
-                    setup_slider_control(item_parent, setting_type.clone());
+                    setup_slider_control(item_parent, setting_type.clone(), ui_theme);
                 }
                 SettingType::ColorTheme => {
-                    setup_dropdown_control(item_parent, setting_type.clone());
+                    setup_dropdown_control(item_parent, setting_type.clone(), ui_theme);
                 }
                 _ => {
                     // Default control for other types
-                    setup_toggle_control(item_parent, setting_type.clone());
+                    setup_toggle_control(item_parent, setting_type.clone(), ui_theme);
                 }
             }
         })
@@ -325,7 +330,7 @@ fn setup_setting_item(
 }
 
 /// Setup toggle control for boolean settings
-fn setup_toggle_control(parent: &mut ChildBuilder, setting_type: SettingType) {
+fn setup_toggle_control(parent: &mut ChildBuilder, setting_type: SettingType, ui_theme: &UITheme) {
     parent
         .spawn(ButtonBundle {
             style: Style {
@@ -334,11 +339,11 @@ fn setup_toggle_control(parent: &mut ChildBuilder, setting_type: SettingType) {
                 justify_content: JustifyContent::Center,
                 align_items: AlignItems::Center,
                 border: UiRect::all(Val::Px(1.0)),
-                margin: UiRect::top(Val::Px(5.0)),
+                margin: UiRect::top(Val::Px(ui_theme.spacing.xs)),
                 ..default()
             },
-            background_color: Color::srgb(0.2, 0.6, 0.2).into(), // Default: ON
-            border_color: Color::srgb(0.4, 0.8, 0.4).into(),
+            background_color: ui_theme.colors.action_success.into(), // Default: ON
+            border_color: ui_theme.colors.border_focus.into(),
             border_radius: BorderRadius::all(Val::Px(15.0)),
             ..default()
         })
@@ -346,8 +351,8 @@ fn setup_toggle_control(parent: &mut ChildBuilder, setting_type: SettingType) {
             toggle_parent.spawn(TextBundle::from_section(
                 "ON",
                 TextStyle {
-                    font_size: 12.0,
-                    color: Color::WHITE,
+                    font_size: ui_theme.typography.body_small,
+                    color: ui_theme.colors.text_primary,
                     ..default()
                 },
             ));
@@ -356,15 +361,15 @@ fn setup_toggle_control(parent: &mut ChildBuilder, setting_type: SettingType) {
 }
 
 /// Setup slider control for numeric settings
-fn setup_slider_control(parent: &mut ChildBuilder, setting_type: SettingType) {
+fn setup_slider_control(parent: &mut ChildBuilder, setting_type: SettingType, ui_theme: &UITheme) {
     parent
         .spawn(NodeBundle {
             style: Style {
                 flex_direction: FlexDirection::Row,
                 align_items: AlignItems::Center,
                 width: Val::Percent(100.0),
-                column_gap: Val::Px(10.0),
-                margin: UiRect::top(Val::Px(5.0)),
+                column_gap: Val::Px(ui_theme.spacing.sm),
+                margin: UiRect::top(Val::Px(ui_theme.spacing.xs)),
                 ..default()
             },
             ..default()
@@ -378,7 +383,7 @@ fn setup_slider_control(parent: &mut ChildBuilder, setting_type: SettingType) {
                         height: Val::Px(6.0),
                         ..default()
                     },
-                    background_color: Color::srgb(0.3, 0.3, 0.3).into(),
+                    background_color: ui_theme.colors.surface_elevated.into(),
                     border_radius: BorderRadius::all(Val::Px(3.0)),
                     ..default()
                 })
@@ -393,7 +398,7 @@ fn setup_slider_control(parent: &mut ChildBuilder, setting_type: SettingType) {
                             top: Val::Px(-5.0),
                             ..default()
                         },
-                        background_color: Color::srgb(0.8, 0.8, 1.0).into(),
+                        background_color: ui_theme.colors.action_primary.into(),
                         border_radius: BorderRadius::all(Val::Px(8.0)),
                         ..default()
                     });
@@ -403,8 +408,8 @@ fn setup_slider_control(parent: &mut ChildBuilder, setting_type: SettingType) {
             slider_parent.spawn(TextBundle::from_section(
                 "100%",
                 TextStyle {
-                    font_size: 12.0,
-                    color: Color::srgb(0.9, 0.9, 0.9),
+                    font_size: ui_theme.typography.body_small,
+                    color: ui_theme.colors.text_secondary,
                     ..default()
                 },
             ));
@@ -413,7 +418,11 @@ fn setup_slider_control(parent: &mut ChildBuilder, setting_type: SettingType) {
 }
 
 /// Setup dropdown control for selection settings
-fn setup_dropdown_control(parent: &mut ChildBuilder, setting_type: SettingType) {
+fn setup_dropdown_control(
+    parent: &mut ChildBuilder,
+    setting_type: SettingType,
+    ui_theme: &UITheme,
+) {
     parent
         .spawn(ButtonBundle {
             style: Style {
@@ -421,13 +430,13 @@ fn setup_dropdown_control(parent: &mut ChildBuilder, setting_type: SettingType) 
                 height: Val::Px(30.0),
                 justify_content: JustifyContent::SpaceBetween,
                 align_items: AlignItems::Center,
-                padding: UiRect::horizontal(Val::Px(10.0)),
+                padding: UiRect::horizontal(Val::Px(ui_theme.spacing.sm)),
                 border: UiRect::all(Val::Px(1.0)),
-                margin: UiRect::top(Val::Px(5.0)),
+                margin: UiRect::top(Val::Px(ui_theme.spacing.xs)),
                 ..default()
             },
-            background_color: Color::srgb(0.2, 0.2, 0.2).into(),
-            border_color: Color::srgb(0.4, 0.4, 0.4).into(),
+            background_color: ui_theme.colors.surface_secondary.into(),
+            border_color: ui_theme.colors.border_primary.into(),
             border_radius: BorderRadius::all(Val::Px(4.0)),
             ..default()
         })
@@ -435,8 +444,8 @@ fn setup_dropdown_control(parent: &mut ChildBuilder, setting_type: SettingType) 
             dropdown_parent.spawn(TextBundle::from_section(
                 "Default Theme",
                 TextStyle {
-                    font_size: 12.0,
-                    color: Color::WHITE,
+                    font_size: ui_theme.typography.body_small,
+                    color: ui_theme.colors.text_primary,
                     ..default()
                 },
             ));
@@ -444,8 +453,8 @@ fn setup_dropdown_control(parent: &mut ChildBuilder, setting_type: SettingType) 
             dropdown_parent.spawn(TextBundle::from_section(
                 "▼",
                 TextStyle {
-                    font_size: 10.0,
-                    color: Color::srgb(0.8, 0.8, 0.8),
+                    font_size: ui_theme.typography.body_small,
+                    color: ui_theme.colors.text_secondary,
                     ..default()
                 },
             ));
@@ -454,7 +463,7 @@ fn setup_dropdown_control(parent: &mut ChildBuilder, setting_type: SettingType) 
 }
 
 /// Setup settings toggle button in main UI
-pub fn setup_settings_toggle_button(mut commands: Commands) {
+pub fn setup_settings_toggle_button(mut commands: Commands, ui_theme: Res<UITheme>) {
     commands
         .spawn(ButtonBundle {
             style: Style {
@@ -468,8 +477,8 @@ pub fn setup_settings_toggle_button(mut commands: Commands) {
                 border: UiRect::all(Val::Px(2.0)),
                 ..default()
             },
-            background_color: Color::srgba(0.2, 0.2, 0.2, 0.8).into(),
-            border_color: Color::srgb(0.4, 0.4, 0.4).into(),
+            background_color: ui_theme.colors.surface_secondary.into(),
+            border_color: ui_theme.colors.border_primary.into(),
             border_radius: BorderRadius::all(Val::Px(6.0)),
             ..default()
         })
@@ -477,8 +486,8 @@ pub fn setup_settings_toggle_button(mut commands: Commands) {
             parent.spawn(TextBundle::from_section(
                 "⚙️",
                 TextStyle {
-                    font_size: 20.0,
-                    color: Color::WHITE,
+                    font_size: ui_theme.typography.body_large,
+                    color: ui_theme.colors.text_primary,
                     ..default()
                 },
             ));
