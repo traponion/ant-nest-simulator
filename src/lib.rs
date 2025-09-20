@@ -64,7 +64,7 @@ impl Plugin for AntNestPlugin {
                     systems::spawn_queen_ant,
                     systems::setup_themed_time_control_ui,
                     systems::setup_active_disasters_panel,
-                    systems::setup_disaster_control_panel,
+                    systems::setup_enhanced_disaster_control_ui_v3,
                     systems::setup_performance_monitoring_ui,
                     systems::initialize_spatial_grid_system,
                     systems::setup_statistics_panel,

@@ -1,6 +1,6 @@
 use crate::components::{
     CooldownTimer, DisasterControlButton, DisasterControlPanel, DisasterState, DisasterStatusIndicator,
-    DisasterStatusBackground, DisasterTriggerFeedback, DisasterType, DisasterCooldownProgressBar,
+    DisasterStatusBackground, DisasterTriggerFeedback, DisasterType, DisasterCooldownProgressBar, UITheme,
 };
 use bevy::prelude::*;
 
@@ -460,4 +460,266 @@ fn get_disaster_cooldown_duration(disaster_type: DisasterType) -> f32 {
         DisasterType::ColdSnap => 12.0,
         DisasterType::InvasiveSpecies => 20.0,
     }
+}
+
+/// Setup enhanced disaster control panel UI with UITheme integration (Phase 1)
+pub fn setup_enhanced_disaster_control_ui_v3(mut commands: Commands, theme: Res<UITheme>) {
+    // Main disaster control panel container with UITheme
+    commands
+        .spawn(NodeBundle {
+            style: Style {
+                position_type: PositionType::Absolute,
+                right: Val::Px(theme.spacing.md),
+                top: Val::Px(theme.spacing.md),
+                width: Val::Px(320.0), // Slightly wider for better layout
+                flex_direction: FlexDirection::Column,
+                padding: UiRect::all(Val::Px(theme.spacing.lg)),
+                row_gap: Val::Px(theme.spacing.md),
+                border: UiRect::all(Val::Px(theme.borders.width_medium)),
+                ..default()
+            },
+            background_color: theme.colors.surface_primary.into(),
+            border_color: theme.colors.border_primary.into(),
+            border_radius: BorderRadius::all(Val::Px(theme.borders.radius_medium)),
+            ..default()
+        })
+        .with_children(|parent| {
+            // Panel title with UITheme typography
+            parent.spawn(TextBundle::from_section(
+                "Disaster Controls",
+                TextStyle {
+                    font_size: theme.typography.heading_medium,
+                    color: theme.colors.text_primary,
+                    ..default()
+                },
+            ));
+
+            // Create controls for each disaster type
+            let disasters = [
+                DisasterType::Rain,
+                DisasterType::Drought,
+                DisasterType::ColdSnap,
+                DisasterType::InvasiveSpecies,
+            ];
+
+            for disaster_type in disasters.iter() {
+                // Container for each disaster control (interactive button)
+                parent
+                    .spawn(ButtonBundle {
+                        style: Style {
+                            flex_direction: FlexDirection::Column,
+                            padding: UiRect::all(Val::Px(theme.spacing.md)),
+                            row_gap: Val::Px(theme.spacing.sm),
+                            border: UiRect::all(Val::Px(theme.borders.width_medium)),
+                            margin: UiRect::bottom(Val::Px(theme.spacing.sm)),
+                            min_height: Val::Px(48.0), // Touch-friendly minimum height
+                            ..default()
+                        },
+                        background_color: theme.colors.surface_elevated.into(),
+                        border_color: theme.colors.border_secondary.into(),
+                        border_radius: BorderRadius::all(Val::Px(theme.borders.radius_medium)),
+                        ..default()
+                    })
+                    .with_children(|disaster_parent| {
+                        // Disaster name and key header
+                        disaster_parent
+                            .spawn(NodeBundle {
+                                style: Style {
+                                    flex_direction: FlexDirection::Row,
+                                    justify_content: JustifyContent::SpaceBetween,
+                                    align_items: AlignItems::Center,
+                                    ..default()
+                                },
+                                ..default()
+                            })
+                            .with_children(|header_parent| {
+                                // Icon and disaster name container
+                                header_parent
+                                    .spawn(NodeBundle {
+                                        style: Style {
+                                            flex_direction: FlexDirection::Row,
+                                            align_items: AlignItems::Center,
+                                            column_gap: Val::Px(theme.spacing.sm),
+                                            ..default()
+                                        },
+                                        ..default()
+                                    })
+                                    .with_children(|name_parent| {
+                                        // Disaster icon with UITheme styling
+                                        name_parent
+                                            .spawn(NodeBundle {
+                                                style: Style {
+                                                    width: Val::Px(theme.spacing.xxl),
+                                                    height: Val::Px(theme.spacing.xxl),
+                                                    justify_content: JustifyContent::Center,
+                                                    align_items: AlignItems::Center,
+                                                    ..default()
+                                                },
+                                                background_color: theme.colors.surface_secondary.into(),
+                                                border_radius: BorderRadius::all(Val::Px(theme.borders.radius_round)),
+                                                ..default()
+                                            })
+                                            .with_children(|icon_container| {
+                                                icon_container.spawn(TextBundle::from_section(
+                                                    disaster_type.get_icon(),
+                                                    TextStyle {
+                                                        font_size: theme.typography.heading_small,
+                                                        color: theme.colors.text_primary,
+                                                        ..default()
+                                                    },
+                                                ));
+                                            });
+
+                                        // Disaster name with UITheme typography
+                                        name_parent.spawn(TextBundle::from_section(
+                                            disaster_type.display_name(),
+                                            TextStyle {
+                                                font_size: theme.typography.body_large,
+                                                color: theme.colors.text_primary,
+                                                ..default()
+                                            },
+                                        ));
+                                    });
+
+                                // Keyboard shortcut with UITheme styling
+                                header_parent
+                                    .spawn(NodeBundle {
+                                        style: Style {
+                                            padding: UiRect::all(Val::Px(theme.spacing.xs)),
+                                            ..default()
+                                        },
+                                        background_color: theme.colors.surface_secondary.into(),
+                                        border_radius: BorderRadius::all(Val::Px(theme.borders.radius_small)),
+                                        ..default()
+                                    })
+                                    .with_children(|shortcut_parent| {
+                                        shortcut_parent.spawn(TextBundle::from_section(
+                                            disaster_type.shortcut_key(),
+                                            TextStyle {
+                                                font_size: theme.typography.body_small,
+                                                color: theme.colors.text_secondary,
+                                                ..default()
+                                            },
+                                        ));
+                                    });
+                            });
+
+                        // Status and timer row with UITheme styling
+                        disaster_parent
+                            .spawn(NodeBundle {
+                                style: Style {
+                                    flex_direction: FlexDirection::Row,
+                                    justify_content: JustifyContent::SpaceBetween,
+                                    align_items: AlignItems::Center,
+                                    padding: UiRect::all(Val::Px(theme.spacing.sm)),
+                                    margin: UiRect::top(Val::Px(theme.spacing.xs)),
+                                    ..default()
+                                },
+                                background_color: theme.colors.surface_secondary.into(),
+                                border_radius: BorderRadius::all(Val::Px(theme.borders.radius_small)),
+                                ..default()
+                            })
+                            .with_children(|status_parent| {
+                                // Status indicator with UITheme colors
+                                status_parent
+                                    .spawn((
+                                        NodeBundle {
+                                            style: Style {
+                                                padding: UiRect::all(Val::Px(theme.spacing.sm)),
+                                                border: UiRect::all(Val::Px(theme.borders.width_thin)),
+                                                ..default()
+                                            },
+                                            background_color: theme.colors.accent_green.into(), // Default: Available
+                                            border_color: theme.colors.border_secondary.into(),
+                                            border_radius: BorderRadius::all(Val::Px(theme.borders.radius_medium)),
+                                            ..default()
+                                        },
+                                        DisasterStatusBackground {
+                                            disaster_type: *disaster_type,
+                                        },
+                                    ))
+                                    .with_children(|indicator_parent| {
+                                        indicator_parent.spawn((
+                                            TextBundle::from_section(
+                                                "Available",
+                                                TextStyle {
+                                                    font_size: theme.typography.body_small,
+                                                    color: theme.colors.text_primary,
+                                                    ..default()
+                                                },
+                                            ),
+                                            DisasterStatusIndicator {
+                                                disaster_type: *disaster_type,
+                                            },
+                                        ));
+                                    });
+
+                                // Cooldown timer with UITheme typography
+                                status_parent.spawn((
+                                    TextBundle::from_section(
+                                        "",
+                                        TextStyle {
+                                            font_size: theme.typography.body_small,
+                                            color: theme.colors.accent_orange,
+                                            ..default()
+                                        },
+                                    ),
+                                    CooldownTimer {
+                                        disaster_type: *disaster_type,
+                                    },
+                                ));
+                            });
+
+                        // Cooldown progress bar with UITheme styling
+                        disaster_parent
+                            .spawn(NodeBundle {
+                                style: Style {
+                                    width: Val::Percent(100.0),
+                                    height: Val::Px(theme.spacing.sm),
+                                    margin: UiRect::top(Val::Px(theme.spacing.sm)),
+                                    border: UiRect::all(Val::Px(theme.borders.width_thin)),
+                                    ..default()
+                                },
+                                background_color: theme.colors.surface_secondary.into(),
+                                border_color: theme.colors.border_secondary.into(),
+                                border_radius: BorderRadius::all(Val::Px(theme.borders.radius_small)),
+                                visibility: Visibility::Hidden, // Initially hidden, shown during cooldown
+                                ..default()
+                            })
+                            .with_children(|progress_parent| {
+                                // Progress bar fill with UITheme accent color
+                                progress_parent.spawn((
+                                    NodeBundle {
+                                        style: Style {
+                                            width: Val::Percent(0.0), // Will be updated dynamically
+                                            height: Val::Percent(100.0),
+                                            ..default()
+                                        },
+                                        background_color: theme.colors.accent_orange.into(),
+                                        border_radius: BorderRadius::all(Val::Px(theme.borders.radius_small)),
+                                        ..default()
+                                    },
+                                    DisasterCooldownProgressBar {
+                                        disaster_type: *disaster_type,
+                                        max_cooldown: get_disaster_cooldown_duration(*disaster_type),
+                                    },
+                                ));
+                            });
+                    })
+                    .insert(DisasterControlButton {
+                        disaster_type: *disaster_type,
+                    });
+            }
+
+            // Instructions with UITheme typography
+            parent.spawn(TextBundle::from_section(
+                "🎮 Press the keys to trigger disasters\n🟢 Available  🟠 Cooldown  🔴 Active\n\n🌧️ Rain (R)  ☀️ Drought (D)\n❄️ Cold Snap (C)  🐛 Invasive Species (I)",
+                TextStyle {
+                    font_size: theme.typography.caption,
+                    color: theme.colors.text_muted,
+                    ..default()
+                },
+            ));
+        })
+        .insert(DisasterControlPanel);
 }
