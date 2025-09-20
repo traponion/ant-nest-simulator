@@ -1121,6 +1121,111 @@ impl Default for TooltipTrigger {
     }
 }
 
+/// Animation system components for smooth UI interactions
+/// Component for UI element animations
+#[derive(Component, Clone)]
+pub struct UIAnimation {
+    pub hover_scale: f32,
+    pub press_scale: f32,
+    pub transition_duration: f32,
+    pub current_scale: f32,
+    pub target_scale: f32,
+    pub is_animating: bool,
+}
+
+impl Default for UIAnimation {
+    fn default() -> Self {
+        Self {
+            hover_scale: 1.05,
+            press_scale: 0.95,
+            transition_duration: 0.15,
+            current_scale: 1.0,
+            target_scale: 1.0,
+            is_animating: false,
+        }
+    }
+}
+
+/// Component for glow effects on UI elements
+#[derive(Component, Clone)]
+pub struct GlowEffect {
+    pub intensity: f32,
+    pub color: Color,
+    pub pulse_speed: f32,
+    pub is_active: bool,
+}
+
+impl Default for GlowEffect {
+    fn default() -> Self {
+        Self {
+            intensity: 0.0,
+            color: Color::WHITE,
+            pulse_speed: 2.0,
+            is_active: false,
+        }
+    }
+}
+
+/// Component for fade in/out animations
+#[derive(Component, Clone)]
+pub struct FadeAnimation {
+    pub start_alpha: f32,
+    pub target_alpha: f32,
+    pub current_alpha: f32,
+    pub duration: f32,
+    pub elapsed: f32,
+    pub is_playing: bool,
+}
+
+impl Default for FadeAnimation {
+    fn default() -> Self {
+        Self {
+            start_alpha: 0.0,
+            target_alpha: 1.0,
+            current_alpha: 0.0,
+            duration: 0.3,
+            elapsed: 0.0,
+            is_playing: false,
+        }
+    }
+}
+
+/// Accessibility components for keyboard navigation and screen readers
+/// Component for focus indicators
+#[derive(Component, Clone)]
+pub struct FocusIndicator {
+    pub is_focused: bool,
+    pub focus_color: Color,
+    pub focus_width: f32,
+}
+
+impl Default for FocusIndicator {
+    fn default() -> Self {
+        Self {
+            is_focused: false,
+            focus_color: Color::srgb(0.3, 0.6, 1.0), // Blue focus color
+            focus_width: 2.0,
+        }
+    }
+}
+
+/// Component for accessibility features
+#[derive(Component, Clone)]
+pub struct AccessibilityFeatures {
+    pub aria_label: String,
+    pub role: String,
+    pub tab_index: i32,
+}
+
+impl Default for AccessibilityFeatures {
+    fn default() -> Self {
+        Self {
+            aria_label: String::new(),
+            role: "button".to_string(),
+            tab_index: 0,
+        }
+    }
+}
 /// Resource for unified UI theme and design system
 #[derive(Resource, Clone)]
 pub struct UITheme {
@@ -1348,3 +1453,4 @@ impl UITheme {
         }
     }
 }
+

@@ -1,7 +1,8 @@
 use crate::components::{
-    CooldownTimer, DisasterControlButton, DisasterControlPanel, DisasterCooldownProgressBar,
-    DisasterState, DisasterStatusBackground, DisasterStatusIndicator, DisasterTriggerFeedback,
-    DisasterType, Tooltip, TooltipPosition, TooltipTrigger, UITheme,
+    AccessibilityFeatures, CooldownTimer, DisasterControlButton, DisasterControlPanel,
+    DisasterCooldownProgressBar, DisasterState, DisasterStatusBackground, DisasterStatusIndicator,
+    DisasterTriggerFeedback, DisasterType, FocusIndicator, GlowEffect, Tooltip, TooltipPosition,
+    TooltipTrigger, UIAnimation, UITheme,
 };
 use bevy::prelude::*;
 
@@ -123,6 +124,51 @@ pub fn disaster_trigger_feedback_system(
     }
 }
 
+/// Handle hover effects for disaster control buttons
+pub fn handle_disaster_control_interactions(
+    mut interaction_query: Query<
+        (
+            &Interaction,
+            &mut BackgroundColor,
+            &mut BorderColor,
+            &DisasterControlButton,
+        ),
+        Changed<Interaction>,
+    >,
+    disaster_state: Res<DisasterState>,
+) {
+    for (interaction, mut background_color, mut border_color, button) in &mut interaction_query {
+        let disaster_type = button.disaster_type;
+
+        match *interaction {
+            Interaction::Pressed => {
+                // Trigger disaster (this will be handled by existing keyboard input system)
+                // Just provide visual feedback for the press
+                *background_color = Color::srgba(0.4, 0.4, 0.4, 0.8).into();
+                *border_color = Color::srgba(0.6, 0.6, 0.6, 0.8).into();
+            }
+            Interaction::Hovered => {
+                // Enhanced hover effect with better visual feedback (matching Time Control UI style)
+                if disaster_state.is_active(disaster_type) {
+                    *background_color = Color::srgba(0.2, 0.2, 0.2, 0.9).into(); // Slightly lighter for active
+                    *border_color = Color::srgba(0.6, 0.6, 0.6, 0.9).into(); // Brighter border
+                } else if disaster_state.is_on_cooldown(disaster_type) {
+                    *background_color = Color::srgba(0.2, 0.2, 0.2, 0.9).into(); // Slightly lighter for cooldown
+                    *border_color = Color::srgba(0.6, 0.6, 0.6, 0.9).into(); // Brighter border
+                } else {
+                    // Available - more prominent hover effect with green tint
+                    *background_color = Color::srgba(0.18, 0.22, 0.18, 0.9).into(); // Subtle green tint
+                    *border_color = Color::srgba(0.5, 0.7, 0.5, 1.0).into(); // Green-tinted border
+                }
+            }
+            Interaction::None => {
+                // Reset to enhanced normal colors (consistent with new design)
+                *background_color = Color::srgba(0.15, 0.15, 0.15, 0.85).into(); // Match new button background
+                *border_color = Color::srgb(0.4, 0.4, 0.4).into(); // Match new border color
+            }
+        }
+    }
+}
 /// Update cooldown progress bars based on current cooldown timers
 pub fn update_cooldown_progress_bars_system(
     disaster_state: Res<DisasterState>,
@@ -194,6 +240,62 @@ pub fn handle_disaster_control_button_interactions(
     }
 }
 
+/// System to handle glow effects for active disasters
+pub fn handle_active_disaster_glow_effects(
+    mut glow_query: Query<(&mut GlowEffect, &DisasterControlButton)>,
+    disaster_state: Res<DisasterState>,
+) {
+    for (mut glow, button) in &mut glow_query {
+        let is_active = disaster_state
+            .active_disasters
+            .iter()
+            .any(|active| *active.0 == button.disaster_type);
+
+        if is_active && !glow.is_active {
+            // Activate glow effect for active disaster
+            glow.is_active = true;
+            glow.intensity = 0.15;
+            glow.color = get_disaster_glow_color(button.disaster_type);
+            glow.pulse_speed = 1.5;
+        } else if !is_active && glow.is_active {
+            // Deactivate glow effect when disaster ends
+            glow.is_active = false;
+            glow.intensity = 0.0;
+        }
+    }
+}
+
+/// Get appropriate glow color for each disaster type
+fn get_disaster_glow_color(disaster_type: DisasterType) -> Color {
+    match disaster_type {
+        DisasterType::Rain => Color::srgb(0.2, 0.6, 1.0), // Blue glow
+        DisasterType::Drought => Color::srgb(1.0, 0.6, 0.2), // Orange glow
+        DisasterType::ColdSnap => Color::srgb(0.7, 0.9, 1.0), // Light blue glow
+        DisasterType::InvasiveSpecies => Color::srgb(0.9, 0.2, 0.2), // Red glow
+    }
+}
+
+/// System to handle smooth progress bar animations during cooldowns
+pub fn animate_cooldown_progress_bars(
+    mut progress_query: Query<(&mut Style, &DisasterCooldownProgressBar)>,
+    disaster_state: Res<DisasterState>,
+) {
+    for (mut style, progress_bar) in &mut progress_query {
+        if let Some(remaining) = disaster_state
+            .cooldown_timers
+            .get(&progress_bar.disaster_type)
+        {
+            let progress = if progress_bar.max_cooldown > 0.0 {
+                1.0 - (remaining / progress_bar.max_cooldown)
+            } else {
+                1.0
+            };
+
+            // Smooth width animation based on cooldown progress
+            style.width = Val::Percent(progress * 100.0);
+        }
+    }
+}
 /// Setup enhanced disaster control panel UI with UITheme integration (Phase 1)
 pub fn setup_enhanced_disaster_control_ui_v3(mut commands: Commands, theme: Res<UITheme>) {
     // Main disaster control panel container with UITheme
@@ -446,7 +548,20 @@ pub fn setup_enhanced_disaster_control_ui_v3(mut commands: Commands, theme: Res<
                         shortcut: Some(disaster_type.shortcut_key().to_string()),
                         position: TooltipPosition::Left,
                     })
-                    .insert(TooltipTrigger::default());
+                    .insert(TooltipTrigger::default())
+                    .insert(UIAnimation {
+                        hover_scale: 1.02,
+                        press_scale: 0.98,
+                        transition_duration: 0.15,
+                        ..default()
+                    })
+                    .insert(GlowEffect::default())
+                    .insert(FocusIndicator::default())
+                    .insert(AccessibilityFeatures {
+                        aria_label: format!("{} disaster control", disaster_type.display_name()),
+                        role: "button".to_string(),
+                        tab_index: 0,
+                    });
             }
 
             // Instructions with UITheme typography
