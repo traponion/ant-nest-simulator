@@ -1,9 +1,14 @@
-use crate::components::{UIAnimation, GlowEffect, FadeAnimation, FocusIndicator, AccessibilityFeatures};
+use crate::components::{
+    AccessibilityFeatures, FadeAnimation, FocusIndicator, GlowEffect, UIAnimation,
+};
 use bevy::prelude::*;
 
 /// System to handle UI animation transitions
 pub fn ui_animation_system(
-    mut query: Query<(&Interaction, &mut UIAnimation, &mut Transform), (Changed<Interaction>, With<Button>)>,
+    mut query: Query<
+        (&Interaction, &mut UIAnimation, &mut Transform),
+        (Changed<Interaction>, With<Button>),
+    >,
     time: Res<Time>,
 ) {
     for (interaction, mut animation, mut transform) in &mut query {
@@ -24,10 +29,9 @@ pub fn ui_animation_system(
             let delta = time.delta_seconds();
             let speed = 1.0 / animation.transition_duration;
 
-            animation.current_scale = animation.current_scale.lerp(
-                animation.target_scale,
-                speed * delta
-            );
+            animation.current_scale = animation
+                .current_scale
+                .lerp(animation.target_scale, speed * delta);
 
             // Update transform scale
             transform.scale = Vec3::splat(animation.current_scale);
@@ -52,10 +56,9 @@ pub fn ui_animation_update_system(
             let delta = time.delta_seconds();
             let speed = 1.0 / animation.transition_duration;
 
-            animation.current_scale = animation.current_scale.lerp(
-                animation.target_scale,
-                speed * delta
-            );
+            animation.current_scale = animation
+                .current_scale
+                .lerp(animation.target_scale, speed * delta);
 
             transform.scale = Vec3::splat(animation.current_scale);
 
@@ -73,7 +76,7 @@ pub fn glow_effect_system(
     mut query: Query<(&mut GlowEffect, &mut BackgroundColor)>,
     time: Res<Time>,
 ) {
-    for (mut glow, mut background_color) in &mut query {
+    for (glow, mut background_color) in &mut query {
         if glow.is_active {
             let time_factor = time.elapsed_seconds() * glow.pulse_speed;
             let pulse = (time_factor.sin() * 0.5 + 0.5) * glow.intensity;
@@ -119,46 +122,49 @@ pub fn fade_animation_system(
 
 /// System to handle keyboard focus indicators
 pub fn focus_indicator_system(
-    mut query: Query<(&mut FocusIndicator, &mut BorderColor), With<Button>>,
+    mut query: Query<(Entity, &mut FocusIndicator, &mut BorderColor), With<Button>>,
     keyboard_input: Res<ButtonInput<KeyCode>>,
 ) {
     // Simple keyboard navigation (Tab key)
     if keyboard_input.just_pressed(KeyCode::Tab) {
-        // Cycle through focusable elements
-        let mut found_focused = false;
-        let mut first_element = None;
+        // Collect all entities first
+        let entities: Vec<Entity> = query.iter().map(|(entity, _, _)| entity).collect();
+        if entities.is_empty() {
+            return;
+        }
 
-        for (mut focus, mut border_color) in &mut query {
-            if first_element.is_none() {
-                first_element = Some((focus.as_mut(), border_color.as_mut()));
-            }
-
-            if focus.is_focused {
-                focus.is_focused = false;
-                border_color.0 = Color::NONE;
-                found_focused = true;
-            } else if found_focused {
-                focus.is_focused = true;
-                border_color.0 = focus.focus_color;
-                found_focused = false;
-                break;
+        // Find currently focused element
+        let mut current_focused_index = None;
+        for (i, entity) in entities.iter().enumerate() {
+            if let Ok((_, focus, _)) = query.get(*entity) {
+                if focus.is_focused {
+                    current_focused_index = Some(i);
+                    break;
+                }
             }
         }
 
-        // If no next element found, focus first element
-        if found_focused {
-            if let Some((focus, border_color)) = first_element {
-                focus.is_focused = true;
-                border_color.0 = focus.focus_color;
-            }
+        // Clear all focus
+        for (_, mut focus, mut border_color) in &mut query {
+            focus.is_focused = false;
+            border_color.0 = Color::NONE;
+        }
+
+        // Set focus on next element (or first if none was focused)
+        let next_index = match current_focused_index {
+            Some(i) => (i + 1) % entities.len(),
+            None => 0,
+        };
+
+        if let Ok((_, mut focus, mut border_color)) = query.get_mut(entities[next_index]) {
+            focus.is_focused = true;
+            border_color.0 = focus.focus_color;
         }
     }
 }
 
 /// System to handle accessibility features and ARIA labels
-pub fn accessibility_system(
-    query: Query<&AccessibilityFeatures, With<Button>>,
-) {
+pub fn accessibility_system(query: Query<&AccessibilityFeatures, With<Button>>) {
     // This system would typically integrate with platform-specific accessibility APIs
     // For now, it serves as a placeholder for future accessibility enhancements
     for _accessibility in &query {

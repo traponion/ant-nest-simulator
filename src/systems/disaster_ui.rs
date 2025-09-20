@@ -1,8 +1,8 @@
 use crate::components::{
     AccessibilityFeatures, CooldownTimer, DisasterControlButton, DisasterControlPanel,
     DisasterCooldownProgressBar, DisasterState, DisasterStatusBackground, DisasterStatusIndicator,
-    DisasterTriggerFeedback, DisasterType, FocusIndicator, GlowEffect, Tooltip,
-    TooltipPosition, TooltipTrigger, UIAnimation, UITheme,
+    DisasterTriggerFeedback, DisasterType, FocusIndicator, GlowEffect, Tooltip, TooltipPosition,
+    TooltipTrigger, UIAnimation, UITheme,
 };
 use bevy::prelude::*;
 
@@ -506,17 +506,18 @@ pub fn handle_disaster_control_button_interactions(
 pub fn handle_active_disaster_glow_effects(
     mut glow_query: Query<(&mut GlowEffect, &DisasterControlButton)>,
     disaster_state: Res<DisasterState>,
-    theme: Res<UITheme>,
 ) {
     for (mut glow, button) in &mut glow_query {
-        let is_active = disaster_state.active_disasters.iter()
-            .any(|active| active.disaster_type == button.disaster_type);
+        let is_active = disaster_state
+            .active_disasters
+            .iter()
+            .any(|active| *active.0 == button.disaster_type);
 
         if is_active && !glow.is_active {
             // Activate glow effect for active disaster
             glow.is_active = true;
             glow.intensity = 0.15;
-            glow.color = get_disaster_glow_color(button.disaster_type, &theme);
+            glow.color = get_disaster_glow_color(button.disaster_type);
             glow.pulse_speed = 1.5;
         } else if !is_active && glow.is_active {
             // Deactivate glow effect when disaster ends
@@ -527,7 +528,7 @@ pub fn handle_active_disaster_glow_effects(
 }
 
 /// Get appropriate glow color for each disaster type
-fn get_disaster_glow_color(disaster_type: DisasterType, theme: &UITheme) -> Color {
+fn get_disaster_glow_color(disaster_type: DisasterType) -> Color {
     match disaster_type {
         DisasterType::Rain => Color::srgb(0.2, 0.6, 1.0), // Blue glow
         DisasterType::Drought => Color::srgb(1.0, 0.6, 0.2), // Orange glow
@@ -539,12 +540,15 @@ fn get_disaster_glow_color(disaster_type: DisasterType, theme: &UITheme) -> Colo
 /// System to handle smooth progress bar animations during cooldowns
 pub fn animate_cooldown_progress_bars(
     mut progress_query: Query<(&mut Style, &DisasterCooldownProgressBar)>,
-    cooldown_query: Query<&CooldownTimer>,
+    disaster_state: Res<DisasterState>,
 ) {
     for (mut style, progress_bar) in &mut progress_query {
-        if let Ok(cooldown) = cooldown_query.get(progress_bar.disaster_entity) {
-            let progress = if cooldown.max_duration > 0.0 {
-                1.0 - (cooldown.remaining / cooldown.max_duration)
+        if let Some(remaining) = disaster_state
+            .cooldown_timers
+            .get(&progress_bar.disaster_type)
+        {
+            let progress = if progress_bar.max_cooldown > 0.0 {
+                1.0 - (remaining / progress_bar.max_cooldown)
             } else {
                 1.0
             };

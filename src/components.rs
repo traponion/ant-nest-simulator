@@ -1020,7 +1020,6 @@ impl Default for TooltipTrigger {
 }
 
 /// Animation system components for smooth UI interactions
-
 /// Component for UI element animations
 #[derive(Component, Clone)]
 pub struct UIAnimation {
@@ -1090,7 +1089,6 @@ impl Default for FadeAnimation {
 }
 
 /// Accessibility components for keyboard navigation and screen readers
-
 /// Component for focus indicators
 #[derive(Component, Clone)]
 pub struct FocusIndicator {
