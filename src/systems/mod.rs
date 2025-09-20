@@ -28,6 +28,7 @@ pub mod settings_ui;
 pub mod spatial_grid;
 pub mod statistics_ui;
 pub mod time_control;
+pub mod time_ui;
 pub mod tooltip;
 pub mod visual_effects_toggle;
 
@@ -51,5 +52,6 @@ pub use settings_ui::*;
 pub use spatial_grid::*;
 pub use statistics_ui::*;
 pub use time_control::*;
+pub use time_ui::*;
 pub use tooltip::*;
 pub use visual_effects_toggle::*;

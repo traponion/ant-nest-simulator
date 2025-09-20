@@ -70,6 +70,108 @@ impl Default for TimeControl {
     }
 }
 
+/// Simulation time tracking resource for displaying elapsed time and day/night cycle
+#[derive(Resource, Clone)]
+pub struct SimulationTime {
+    /// Total elapsed simulation time in seconds (affected by time scale)
+    pub elapsed_seconds: f64,
+    /// Current simulation day (starts at 1)
+    pub current_day: u32,
+    /// Current hour of the day (0-23)
+    pub current_hour: u8,
+    /// Current minute of the hour (0-59)
+    pub current_minute: u8,
+    /// Length of a simulated day in real seconds (at 1x speed)
+    pub day_length_seconds: f64,
+    /// When the simulation was started (for real-time tracking)
+    pub start_time: f64,
+}
+
+impl Default for SimulationTime {
+    fn default() -> Self {
+        Self {
+            elapsed_seconds: 0.0,
+            current_day: 1,
+            current_hour: 6, // Start at dawn (6:00 AM)
+            current_minute: 0,
+            day_length_seconds: 300.0, // 5 minutes = 1 simulated day at 1x speed
+            start_time: 0.0,
+        }
+    }
+}
+
+impl SimulationTime {
+    /// Update simulation time based on delta time and time control
+    pub fn update(&mut self, delta_seconds: f32, time_control: &TimeControl) {
+        if !time_control.is_paused {
+            // Apply time scaling
+            let scaled_delta = delta_seconds as f64 * time_control.speed_multiplier as f64;
+            self.elapsed_seconds += scaled_delta;
+
+            // Calculate current time within the day
+            let total_seconds_in_day = self.elapsed_seconds % self.day_length_seconds;
+            let seconds_per_hour = self.day_length_seconds / 24.0;
+            let seconds_per_minute = seconds_per_hour / 60.0;
+
+            // Calculate day, hour, and minute
+            self.current_day = (self.elapsed_seconds / self.day_length_seconds) as u32 + 1;
+            self.current_hour = (total_seconds_in_day / seconds_per_hour) as u8 % 24;
+            self.current_minute =
+                ((total_seconds_in_day % seconds_per_hour) / seconds_per_minute) as u8 % 60;
+        }
+    }
+
+    /// Get formatted time string (e.g., "Day 3, 14:30")
+    pub fn format_time(&self) -> String {
+        format!(
+            "Day {}, {:02}:{:02}",
+            self.current_day, self.current_hour, self.current_minute
+        )
+    }
+
+    /// Get formatted elapsed time string (e.g., "2h 15m")
+    pub fn format_elapsed_time(&self) -> String {
+        let total_minutes = (self.elapsed_seconds / 60.0) as u32;
+        let hours = total_minutes / 60;
+        let minutes = total_minutes % 60;
+
+        if hours > 0 {
+            format!("{}h {}m", hours, minutes)
+        } else {
+            format!("{}m", minutes)
+        }
+    }
+
+    /// Get time of day as a fraction (0.0 = midnight, 0.5 = noon)
+    pub fn get_time_of_day_fraction(&self) -> f32 {
+        (self.current_hour as f32 + self.current_minute as f32 / 60.0) / 24.0
+    }
+}
+
+/// Component marker for simulation time display UI elements
+#[derive(Component)]
+pub struct SimulationTimeDisplay;
+
+/// Component for different time display formats
+#[derive(Component, Clone)]
+pub struct TimeDisplayFormat {
+    pub show_day: bool,
+    pub show_time_of_day: bool,
+    pub show_elapsed_time: bool,
+    pub show_speed_indicator: bool,
+}
+
+impl Default for TimeDisplayFormat {
+    fn default() -> Self {
+        Self {
+            show_day: true,
+            show_time_of_day: true,
+            show_elapsed_time: false,
+            show_speed_indicator: true,
+        }
+    }
+}
+
 /// Marker component for queen ant entities
 #[derive(Component, Serialize, Deserialize)]
 pub struct Queen;

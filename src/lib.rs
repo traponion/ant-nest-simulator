@@ -44,6 +44,7 @@ pub struct AntNestPlugin;
 impl Plugin for AntNestPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<components::TimeControl>()
+            .init_resource::<components::SimulationTime>()
             .init_resource::<components::DisasterState>()
             .init_resource::<components::ColorOverlayConfig>()
             .init_resource::<components::VisualEffectsSettings>()
@@ -67,6 +68,7 @@ impl Plugin for AntNestPlugin {
                     systems::spawn_food_sources,
                     systems::spawn_queen_ant,
                     systems::setup_themed_time_control_ui,
+                    systems::setup_simulation_time_display,
                     systems::setup_active_disasters_panel,
                     systems::setup_enhanced_disaster_control_ui_v3,
                     systems::setup_performance_monitoring_ui,
@@ -110,6 +112,9 @@ impl Plugin for AntNestPlugin {
                 (
                     systems::time_control_input_system,
                     systems::update_speed_display_system,
+                    systems::update_simulation_time_system,
+                    systems::update_time_display_system,
+                    systems::initialize_simulation_time_system,
                     systems::handle_themed_time_control_buttons,
                     systems::update_play_pause_button_system,
                     systems::button_click_system,
