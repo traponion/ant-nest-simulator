@@ -105,28 +105,33 @@ pub fn setup_statistics_panel(mut commands: Commands, ui_theme: Res<UITheme>) {
             ));
 
             // Role Distribution Section
-            create_statistics_section(parent, "Role Distribution");
+            create_statistics_section(parent, "Role Distribution", &ui_theme);
             parent.spawn(create_stat_text(
                 "General Workers: 0",
                 "role_general_workers",
+                &ui_theme,
             ));
-            parent.spawn(create_stat_text("Foragers: 0", "role_foragers"));
+            parent.spawn(create_stat_text("Foragers: 0", "role_foragers", &ui_theme));
             parent.spawn(create_stat_text(
                 "Nest Maintainers: 0",
                 "role_nest_maintainers",
+                &ui_theme,
             ));
             parent.spawn(create_stat_text(
                 "Nursery Workers: 0",
                 "role_nursery_workers",
+                &ui_theme,
             ));
-            parent.spawn(create_stat_text("Waste Managers: 0", "role_waste_managers"));
+            parent.spawn(create_stat_text("Waste Managers: 0", "role_waste_managers", &ui_theme));
             parent.spawn(create_stat_text(
                 "Storage Workers: 0",
                 "role_storage_workers",
+                &ui_theme,
             ));
             parent.spawn(create_stat_text(
                 "Specialization Rate: 0%",
                 "role_specialization",
+                &ui_theme,
             ));
 
             // Controls hint
