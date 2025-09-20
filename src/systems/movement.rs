@@ -23,7 +23,7 @@ pub fn ant_movement_system(
         (With<Ant>, Without<Food>),
     >,
     food_query: Query<(&Position, &FoodSource), With<Food>>,
-    invasive_query: Query<&Position, With<InvasiveSpecies>>,
+    invasive_query: Query<&Position, (With<InvasiveSpecies>, Without<Ant>)>,
 ) {
     let mut rng = thread_rng();
 
