@@ -14,7 +14,7 @@ use crate::components::*;
 use bevy::prelude::*;
 
 /// Individual progress tracking component for UI display
-#[derive(Component)]
+#[derive(Component, Resource, Default)]
 pub struct PhaseProgressTracking {
     pub time_progress: f32,
     pub population_progress: f32,
@@ -335,7 +335,7 @@ pub fn colony_development_ui_system(
     progress_tracking: Res<PhaseProgressTracking>,
     mut text_query: Query<(&mut Text, &Name)>,
     mut progress_bar_query: Query<&mut Style, (With<ProgressBar>, Without<Text>)>,
-    ui_theme: Res<UITheme>,
+    _ui_theme: Res<UITheme>,
 ) {
     // Update text displays
     for (mut text, name) in text_query.iter_mut() {
@@ -343,18 +343,30 @@ pub fn colony_development_ui_system(
             "phase_name" => colony_phase.current_phase.display_name().to_string(),
             "phase_description" => colony_phase.current_phase.description().to_string(),
             "phase_day" => format!("Day {} in Phase", colony_phase.time_in_phase),
-            "overall_progress" => format!("Overall Progress: {:.1}%", colony_phase.phase_progress * 100.0),
+            "overall_progress" => format!(
+                "Overall Progress: {:.1}%",
+                colony_phase.phase_progress * 100.0
+            ),
             "time_progress" => format!("Time: {:.1}%", progress_tracking.time_progress * 100.0),
-            "population_progress" => format!("Population: {:.1}%", progress_tracking.population_progress * 100.0),
-            "complexity_progress" => format!("Complexity: {:.1}%", progress_tracking.complexity_progress * 100.0),
-            "stability_progress" => format!("Stability: {:.1}%", progress_tracking.stability_progress * 100.0),
+            "population_progress" => format!(
+                "Population: {:.1}%",
+                progress_tracking.population_progress * 100.0
+            ),
+            "complexity_progress" => format!(
+                "Complexity: {:.1}%",
+                progress_tracking.complexity_progress * 100.0
+            ),
+            "stability_progress" => format!(
+                "Stability: {:.1}%",
+                progress_tracking.stability_progress * 100.0
+            ),
             "next_phase" => {
                 if let Some(next_phase) = colony_phase.current_phase.next_phase() {
                     format!("Next: {}", next_phase.display_name())
                 } else {
                     "Final Phase".to_string()
                 }
-            },
+            }
             _ => continue,
         };
 
@@ -364,8 +376,7 @@ pub fn colony_development_ui_system(
     }
 
     // Update progress bars
-    let mut bar_index = 0;
-    for mut style in progress_bar_query.iter_mut() {
+    for (bar_index, mut style) in progress_bar_query.iter_mut().enumerate() {
         let progress = match bar_index {
             0 => colony_phase.phase_progress,
             1 => progress_tracking.time_progress,
@@ -376,7 +387,6 @@ pub fn colony_development_ui_system(
         };
 
         style.width = Val::Percent(progress * 100.0);
-        bar_index += 1;
     }
 }
 
@@ -516,32 +526,34 @@ fn create_overall_progress_section(parent: &mut ChildBuilder, ui_theme: &UITheme
     ));
 
     // Progress bar container
-    parent.spawn(NodeBundle {
-        style: Style {
-            width: Val::Percent(100.0),
-            height: Val::Px(20.0),
-            margin: UiRect::vertical(Val::Px(ui_theme.spacing.xs)),
-            border: UiRect::all(Val::Px(1.0)),
-            ..default()
-        },
-        background_color: ui_theme.colors.surface_secondary.into(),
-        border_color: ui_theme.colors.border_primary.into(),
-        ..default()
-    }).with_children(|parent| {
-        // Progress bar fill
-        parent.spawn((
-            NodeBundle {
-                style: Style {
-                    width: Val::Percent(0.0),
-                    height: Val::Percent(100.0),
-                    ..default()
-                },
-                background_color: Color::srgb(0.2, 0.8, 0.2).into(), // Green
+    parent
+        .spawn(NodeBundle {
+            style: Style {
+                width: Val::Percent(100.0),
+                height: Val::Px(20.0),
+                margin: UiRect::vertical(Val::Px(ui_theme.spacing.xs)),
+                border: UiRect::all(Val::Px(1.0)),
                 ..default()
             },
-            ProgressBar,
-        ));
-    });
+            background_color: ui_theme.colors.surface_secondary.into(),
+            border_color: ui_theme.colors.border_primary.into(),
+            ..default()
+        })
+        .with_children(|parent| {
+            // Progress bar fill
+            parent.spawn((
+                NodeBundle {
+                    style: Style {
+                        width: Val::Percent(0.0),
+                        height: Val::Percent(100.0),
+                        ..default()
+                    },
+                    background_color: Color::srgb(0.2, 0.8, 0.2).into(), // Green
+                    ..default()
+                },
+                ProgressBar,
+            ));
+        });
 
     // Spacing
     parent.spawn(NodeBundle {
@@ -557,9 +569,21 @@ fn create_overall_progress_section(parent: &mut ChildBuilder, ui_theme: &UITheme
 fn create_individual_progress_section(parent: &mut ChildBuilder, ui_theme: &UITheme) {
     let progress_items = [
         ("Time", "time_progress", Color::srgb(0.2, 0.6, 0.8)),
-        ("Population", "population_progress", Color::srgb(0.8, 0.6, 0.2)),
-        ("Complexity", "complexity_progress", Color::srgb(0.6, 0.2, 0.8)),
-        ("Stability", "stability_progress", Color::srgb(0.8, 0.2, 0.4)),
+        (
+            "Population",
+            "population_progress",
+            Color::srgb(0.8, 0.6, 0.2),
+        ),
+        (
+            "Complexity",
+            "complexity_progress",
+            Color::srgb(0.6, 0.2, 0.8),
+        ),
+        (
+            "Stability",
+            "stability_progress",
+            Color::srgb(0.8, 0.2, 0.4),
+        ),
     ];
 
     for (label, name_id, color) in progress_items.iter() {
@@ -577,36 +601,38 @@ fn create_individual_progress_section(parent: &mut ChildBuilder, ui_theme: &UITh
         ));
 
         // Mini progress bar container
-        parent.spawn(NodeBundle {
-            style: Style {
-                width: Val::Percent(100.0),
-                height: Val::Px(8.0),
-                margin: UiRect {
-                    top: Val::Px(2.0),
-                    bottom: Val::Px(ui_theme.spacing.xs),
-                    ..default()
-                },
-                border: UiRect::all(Val::Px(1.0)),
-                ..default()
-            },
-            background_color: ui_theme.colors.surface_secondary.into(),
-            border_color: ui_theme.colors.border_secondary.into(),
-            ..default()
-        }).with_children(|parent| {
-            // Mini progress bar fill
-            parent.spawn((
-                NodeBundle {
-                    style: Style {
-                        width: Val::Percent(0.0),
-                        height: Val::Percent(100.0),
+        parent
+            .spawn(NodeBundle {
+                style: Style {
+                    width: Val::Percent(100.0),
+                    height: Val::Px(8.0),
+                    margin: UiRect {
+                        top: Val::Px(2.0),
+                        bottom: Val::Px(ui_theme.spacing.xs),
                         ..default()
                     },
-                    background_color: (*color).into(),
+                    border: UiRect::all(Val::Px(1.0)),
                     ..default()
                 },
-                ProgressBar,
-            ));
-        });
+                background_color: ui_theme.colors.surface_secondary.into(),
+                border_color: ui_theme.colors.border_secondary.into(),
+                ..default()
+            })
+            .with_children(|parent| {
+                // Mini progress bar fill
+                parent.spawn((
+                    NodeBundle {
+                        style: Style {
+                            width: Val::Percent(0.0),
+                            height: Val::Percent(100.0),
+                            ..default()
+                        },
+                        background_color: (*color).into(),
+                        ..default()
+                    },
+                    ProgressBar,
+                ));
+            });
     }
 
     // Spacing
@@ -631,53 +657,57 @@ fn create_phase_timeline_section(parent: &mut ChildBuilder, ui_theme: &UITheme) 
     ));
 
     // Timeline container
-    parent.spawn(NodeBundle {
-        style: Style {
-            width: Val::Percent(100.0),
-            height: Val::Px(30.0),
-            margin: UiRect::vertical(Val::Px(ui_theme.spacing.xs)),
-            flex_direction: FlexDirection::Row,
-            justify_content: JustifyContent::SpaceBetween,
-            align_items: AlignItems::Center,
+    parent
+        .spawn(NodeBundle {
+            style: Style {
+                width: Val::Percent(100.0),
+                height: Val::Px(30.0),
+                margin: UiRect::vertical(Val::Px(ui_theme.spacing.xs)),
+                flex_direction: FlexDirection::Row,
+                justify_content: JustifyContent::SpaceBetween,
+                align_items: AlignItems::Center,
+                ..default()
+            },
             ..default()
-        },
-        ..default()
-    }).with_children(|parent| {
-        let phases = [
-            ("Q", "Queen's Founding"),
-            ("F", "First Workers"),
-            ("E", "Colony Expansion"),
-            ("M", "Mature Colony"),
-        ];
+        })
+        .with_children(|parent| {
+            let phases = [
+                ("Q", "Queen's Founding"),
+                ("F", "First Workers"),
+                ("E", "Colony Expansion"),
+                ("M", "Mature Colony"),
+            ];
 
-        for (short_name, _full_name) in phases.iter() {
-            parent.spawn((
-                NodeBundle {
-                    style: Style {
-                        width: Val::Px(25.0),
-                        height: Val::Px(25.0),
-                        border: UiRect::all(Val::Px(2.0)),
-                        justify_content: JustifyContent::Center,
-                        align_items: AlignItems::Center,
-                        ..default()
-                    },
-                    background_color: ui_theme.colors.surface_secondary.into(),
-                    border_color: ui_theme.colors.border_primary.into(),
-                    ..default()
-                },
-                PhaseTimelineElement,
-            )).with_children(|parent| {
-                parent.spawn(TextBundle::from_section(
-                    *short_name,
-                    TextStyle {
-                        font_size: ui_theme.typography.body_small,
-                        color: ui_theme.colors.text_primary,
-                        ..default()
-                    },
-                ));
-            });
-        }
-    });
+            for (short_name, _full_name) in phases.iter() {
+                parent
+                    .spawn((
+                        NodeBundle {
+                            style: Style {
+                                width: Val::Px(25.0),
+                                height: Val::Px(25.0),
+                                border: UiRect::all(Val::Px(2.0)),
+                                justify_content: JustifyContent::Center,
+                                align_items: AlignItems::Center,
+                                ..default()
+                            },
+                            background_color: ui_theme.colors.surface_secondary.into(),
+                            border_color: ui_theme.colors.border_primary.into(),
+                            ..default()
+                        },
+                        PhaseTimelineElement,
+                    ))
+                    .with_children(|parent| {
+                        parent.spawn(TextBundle::from_section(
+                            *short_name,
+                            TextStyle {
+                                font_size: ui_theme.typography.body_small,
+                                color: ui_theme.colors.text_primary,
+                                ..default()
+                            },
+                        ));
+                    });
+            }
+        });
 
     // Spacing
     parent.spawn(NodeBundle {
