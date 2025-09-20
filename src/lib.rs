@@ -152,7 +152,6 @@ impl Plugin for AntNestPlugin {
                     systems::update_active_disasters_display,
                     systems::update_disaster_progress_bars,
                     systems::update_disaster_duration_text,
-                    systems::handle_disaster_control_interactions,
                     systems::handle_disaster_control_button_interactions,
                     systems::update_cooldown_progress_bars_system,
                     systems::visual_effects_toggle_system,
