@@ -61,6 +61,8 @@ impl Plugin for AntNestPlugin {
                 (
                     systems::ant_movement_system,
                     systems::queen_founding_system,
+                    systems::queen_egg_laying_system,
+                    systems::brood_development_system,
                     systems::environmental_update_system,
                 ),
             );

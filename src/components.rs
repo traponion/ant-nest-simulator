@@ -23,6 +23,8 @@ pub struct Ant;
 #[derive(Component)]
 pub struct Queen {
     pub founding_state: FoundingState,
+    pub last_egg_time: f32,
+    pub egg_laying_interval: f32, // Time between egg laying (in seconds)
 }
 
 /// State machine for queen ant founding behavior
@@ -36,3 +38,31 @@ pub enum FoundingState {
 /// MVP: Marker component for soil entities
 #[derive(Component)]
 pub struct Soil;
+
+/// Egg component for ant development cycle
+#[derive(Component)]
+pub struct Egg {
+    pub development_time: f32,
+    pub stage: DevelopmentStage,
+}
+
+/// Larva component for ant development cycle
+#[derive(Component)]
+pub struct Larva {
+    pub development_time: f32,
+    pub fed: bool,
+}
+
+/// Pupa component for ant development cycle
+#[derive(Component)]
+pub struct Pupa {
+    pub development_time: f32,
+}
+
+/// Development stages for ant lifecycle
+#[derive(Clone, PartialEq)]
+pub enum DevelopmentStage {
+    Egg,
+    Larva,
+    Pupa,
+}
