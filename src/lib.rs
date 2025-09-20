@@ -63,10 +63,12 @@ impl Plugin for AntNestPlugin {
                 Startup,
                 (
                     systems::setup_world,
+                    systems::spawn_ground_surface,
                     systems::spawn_soil_grid,
-                    systems::spawn_initial_ants,
+                    systems::spawn_initial_tunnel_system,
+                    systems::spawn_initial_chambers,
+                    systems::spawn_initial_ants, // Now includes queen spawning
                     systems::spawn_food_sources,
-                    systems::spawn_queen_ant,
                     systems::setup_themed_time_control_ui,
                     systems::setup_simulation_time_display,
                     systems::setup_active_disasters_panel,
