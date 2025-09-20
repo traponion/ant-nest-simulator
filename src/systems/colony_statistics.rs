@@ -1,6 +1,6 @@
 use crate::components::{
     Ant, AntBehavior, AntState, ColonyStatistics, DisasterState, Egg, FoodSource, Inventory,
-    Lifecycle, Queen, ReproductionState, SoilCell,
+    Lifecycle, PhaseSpecificBehavior, Queen, ReproductionState, SoilCell,
 };
 use bevy::prelude::*;
 
@@ -9,7 +9,10 @@ pub fn colony_statistics_calculation_system(
     time: Res<Time>,
     mut colony_stats: ResMut<ColonyStatistics>,
     disaster_state: Res<DisasterState>,
-    ant_query: Query<(&AntBehavior, &Lifecycle, &Inventory), (With<Ant>, Without<Queen>)>,
+    ant_query: Query<
+        (&AntBehavior, &Lifecycle, &Inventory, &PhaseSpecificBehavior),
+        (With<Ant>, Without<Queen>),
+    >,
     queen_query: Query<(&Lifecycle, &ReproductionState), (With<Queen>, With<Ant>)>,
     egg_query: Query<&Egg>,
     food_query: Query<&FoodSource>,
@@ -35,6 +38,9 @@ pub fn colony_statistics_calculation_system(
     // Behavioral Insights
     calculate_behavioral_stats(&mut colony_stats, &ant_query);
 
+    // Role Distribution Statistics
+    calculate_role_distribution_stats(&mut colony_stats, &ant_query);
+
     // Queen Reproduction Statistics
     calculate_reproduction_stats(&mut colony_stats, &queen_query);
 }
@@ -42,7 +48,10 @@ pub fn colony_statistics_calculation_system(
 /// Calculate population-related statistics
 fn calculate_population_stats(
     stats: &mut ColonyStatistics,
-    ant_query: &Query<(&AntBehavior, &Lifecycle, &Inventory), (With<Ant>, Without<Queen>)>,
+    ant_query: &Query<
+        (&AntBehavior, &Lifecycle, &Inventory, &PhaseSpecificBehavior),
+        (With<Ant>, Without<Queen>),
+    >,
     queen_query: &Query<(&Lifecycle, &ReproductionState), (With<Queen>, With<Ant>)>,
     egg_query: &Query<&Egg>,
 ) {
@@ -62,7 +71,7 @@ fn calculate_population_stats(
     }
 
     // Age distribution calculation
-    for (_, lifecycle, _) in ant_query.iter() {
+    for (_, lifecycle, _, _) in ant_query.iter() {
         let age_ratio = lifecycle.age / lifecycle.max_age;
 
         if age_ratio < 0.3 {
@@ -83,7 +92,10 @@ fn calculate_population_stats(
 /// Calculate resource management statistics
 fn calculate_resource_stats(
     stats: &mut ColonyStatistics,
-    ant_query: &Query<(&AntBehavior, &Lifecycle, &Inventory), (With<Ant>, Without<Queen>)>,
+    ant_query: &Query<
+        (&AntBehavior, &Lifecycle, &Inventory, &PhaseSpecificBehavior),
+        (With<Ant>, Without<Queen>),
+    >,
     food_query: &Query<&FoodSource>,
 ) {
     // Food source statistics
@@ -101,7 +113,7 @@ fn calculate_resource_stats(
     let mut total_carried_food = 0.0;
     let mut carrying_count = 0;
 
-    for (_, lifecycle, inventory) in ant_query.iter() {
+    for (_, lifecycle, inventory, _) in ant_query.iter() {
         total_energy += lifecycle.energy;
         min_energy = min_energy.min(lifecycle.energy);
         max_energy = max_energy.max(lifecycle.max_energy);
@@ -178,9 +190,12 @@ fn calculate_environmental_stats(
 /// Calculate behavioral insights statistics
 fn calculate_behavioral_stats(
     stats: &mut ColonyStatistics,
-    ant_query: &Query<(&AntBehavior, &Lifecycle, &Inventory), (With<Ant>, Without<Queen>)>,
+    ant_query: &Query<
+        (&AntBehavior, &Lifecycle, &Inventory, &PhaseSpecificBehavior),
+        (With<Ant>, Without<Queen>),
+    >,
 ) {
-    for (behavior, _, _) in ant_query.iter() {
+    for (behavior, _, _, _) in ant_query.iter() {
         match behavior.state {
             AntState::Foraging => stats.ants_foraging += 1,
             AntState::Returning => stats.ants_returning += 1,
@@ -200,5 +215,27 @@ fn calculate_reproduction_stats(
     if let Ok((_, reproduction_state)) = queen_query.get_single() {
         stats.queen_reproduction_capacity = reproduction_state.reproductive_capacity;
         stats.time_since_last_egg = reproduction_state.time_since_last_egg;
+    }
+}
+
+/// Calculate role distribution statistics
+fn calculate_role_distribution_stats(
+    stats: &mut ColonyStatistics,
+    ant_query: &Query<
+        (&AntBehavior, &Lifecycle, &Inventory, &PhaseSpecificBehavior),
+        (With<Ant>, Without<Queen>),
+    >,
+) {
+    use crate::components::SpecializedRole;
+
+    for (_, _, _, phase_behavior) in ant_query.iter() {
+        match phase_behavior.specialized_role {
+            SpecializedRole::GeneralWorker => stats.role_general_workers += 1,
+            SpecializedRole::Forager => stats.role_foragers += 1,
+            SpecializedRole::NestMaintainer => stats.role_nest_maintainers += 1,
+            SpecializedRole::NurseryWorker => stats.role_nursery_workers += 1,
+            SpecializedRole::WasteManager => stats.role_waste_managers += 1,
+            SpecializedRole::StorageWorker => stats.role_storage_workers += 1,
+        }
     }
 }

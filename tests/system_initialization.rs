@@ -119,6 +119,7 @@ fn test_systems_with_entities() {
     app.add_plugins(MinimalPlugins);
 
     // Initialize core resources manually to avoid UI/Window dependencies
+    app.init_resource::<ant_nest_simulator::components::SimulationTime>();
     app.init_resource::<ant_nest_simulator::components::DisasterState>();
     app.insert_resource(ant_nest_simulator::components::SpatialGrid::new(
         16.0,
@@ -178,6 +179,7 @@ fn test_known_problematic_system_combinations() {
     // Initialize input resources and manually add only the systems that have previously caused conflicts
     // This allows us to test specific combinations more precisely
     app.init_resource::<bevy::input::ButtonInput<bevy::input::keyboard::KeyCode>>();
+    app.init_resource::<ant_nest_simulator::components::SimulationTime>();
     app.init_resource::<ant_nest_simulator::components::DisasterState>();
     app.init_resource::<ant_nest_simulator::components::SpatialGrid>();
     app.add_systems(

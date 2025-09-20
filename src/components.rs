@@ -773,6 +773,14 @@ pub struct ColonyStatistics {
     pub ants_digging: usize,
     pub ants_carrying: usize,
 
+    // Role Distribution Statistics
+    pub role_general_workers: usize,
+    pub role_foragers: usize,
+    pub role_nest_maintainers: usize,
+    pub role_nursery_workers: usize,
+    pub role_waste_managers: usize,
+    pub role_storage_workers: usize,
+
     // Queen Reproduction Statistics
     pub queen_reproduction_capacity: f32,
     pub time_since_last_egg: f32,
@@ -847,6 +855,43 @@ impl ColonyStatistics {
             "Foraging: {:.0}%, Returning: {:.0}%, Resting: {:.0}%, Digging: {:.0}%, Carrying: {:.0}%",
             foraging_pct, returning_pct, resting_pct, digging_pct, carrying_pct
         )
+    }
+
+    /// Get formatted role distribution text
+    pub fn role_distribution_text(&self) -> String {
+        if self.total_ant_count == 0 {
+            return "No ants".to_string();
+        }
+
+        let general_pct = (self.role_general_workers as f32 / self.total_ant_count as f32) * 100.0;
+        let forager_pct = (self.role_foragers as f32 / self.total_ant_count as f32) * 100.0;
+        let maintainer_pct =
+            (self.role_nest_maintainers as f32 / self.total_ant_count as f32) * 100.0;
+        let nursery_pct = (self.role_nursery_workers as f32 / self.total_ant_count as f32) * 100.0;
+        let waste_pct = (self.role_waste_managers as f32 / self.total_ant_count as f32) * 100.0;
+        let storage_pct = (self.role_storage_workers as f32 / self.total_ant_count as f32) * 100.0;
+
+        format!(
+            "General: {:.0}%, Foragers: {:.0}%, Nest: {:.0}%, Nursery: {:.0}%, Waste: {:.0}%, Storage: {:.0}%",
+            general_pct, forager_pct, maintainer_pct, nursery_pct, waste_pct, storage_pct
+        )
+    }
+
+    /// Get total specialized workers (excluding general workers)
+    pub fn total_specialized_workers(&self) -> usize {
+        self.role_foragers
+            + self.role_nest_maintainers
+            + self.role_nursery_workers
+            + self.role_waste_managers
+            + self.role_storage_workers
+    }
+
+    /// Get specialization rate as percentage
+    pub fn specialization_rate(&self) -> f32 {
+        if self.total_ant_count == 0 {
+            return 0.0;
+        }
+        (self.total_specialized_workers() as f32 / self.total_ant_count as f32) * 100.0
     }
 }
 

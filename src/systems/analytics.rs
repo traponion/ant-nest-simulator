@@ -1,8 +1,7 @@
 use crate::components::{
     AgeGroup, AnalyticsDashboard, Ant, ColonyAnalytics, Egg, FoodSource, Lifecycle, MetricDisplay,
-    MetricType, Queen, TimeControl,
+    MetricType, Queen, SimulationTime,
 };
-use crate::systems::time_control::effective_delta_time;
 use bevy::prelude::*;
 
 /// Setup analytics dashboard UI in the top-left corner
@@ -184,13 +183,13 @@ pub fn setup_analytics_dashboard(mut commands: Commands) {
 pub fn analytics_data_collection_system(
     mut analytics: ResMut<ColonyAnalytics>,
     time: Res<Time>,
-    time_control: Res<TimeControl>,
+    _simulation_time: Res<SimulationTime>,
     ant_query: Query<&Lifecycle, (With<Ant>, Without<Queen>)>,
     queen_query: Query<&Lifecycle, With<Queen>>,
     egg_query: Query<&Egg>,
     food_query: Query<&FoodSource>,
 ) {
-    let delta_time = effective_delta_time(&time, &time_control);
+    let delta_time = time.delta_seconds();
     analytics.update_timer += delta_time;
 
     // Only update analytics at the specified interval (e.g., once per second)
