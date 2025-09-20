@@ -1,8 +1,8 @@
-use crate::components::{ColonyStatistics, StatisticsPanel, StatisticsToggle};
+use crate::components::{ColonyStatistics, StatisticsPanel, StatisticsToggle, UITheme};
 use bevy::prelude::*;
 
 /// Setup the statistics display panel UI
-pub fn setup_statistics_panel(mut commands: Commands) {
+pub fn setup_statistics_panel(mut commands: Commands, ui_theme: Res<UITheme>) {
     // Main statistics panel container (initially hidden)
     commands
         .spawn(NodeBundle {
@@ -13,13 +13,13 @@ pub fn setup_statistics_panel(mut commands: Commands) {
                 width: Val::Px(350.0), // Wide enough for comprehensive data
                 height: Val::Auto,
                 flex_direction: FlexDirection::Column,
-                padding: UiRect::all(Val::Px(15.0)),
-                row_gap: Val::Px(12.0),
+                padding: UiRect::all(Val::Px(ui_theme.spacing.md)),
+                row_gap: Val::Px(ui_theme.spacing.sm),
                 display: Display::None, // Start hidden
                 ..default()
             },
-            background_color: Color::srgba(0.0, 0.0, 0.0, 0.85).into(), // Semi-transparent dark background
-            border_color: Color::srgb(0.5, 0.5, 0.5).into(),
+            background_color: ui_theme.colors.surface_primary.into(),
+            border_color: ui_theme.colors.border_primary.into(),
             ..default()
         })
         .insert(StatisticsPanel)
@@ -29,54 +29,80 @@ pub fn setup_statistics_panel(mut commands: Commands) {
             parent.spawn(TextBundle::from_section(
                 "Colony Statistics",
                 TextStyle {
-                    font_size: 18.0,
-                    color: Color::srgb(1.0, 1.0, 1.0),
+                    font_size: ui_theme.typography.heading_small,
+                    color: ui_theme.colors.text_primary,
                     ..default()
                 },
             ));
 
             // Population Section
-            create_statistics_section(parent, "Population");
-            parent.spawn(create_stat_text("Total Ants: 0", "population_total"));
-            parent.spawn(create_stat_text("Queen: 0", "population_queen"));
-            parent.spawn(create_stat_text("Eggs: 0", "population_eggs"));
+            create_statistics_section(parent, "Population", &ui_theme);
+            parent.spawn(create_stat_text(
+                "Total Ants: 0",
+                "population_total",
+                &ui_theme,
+            ));
+            parent.spawn(create_stat_text("Queen: 0", "population_queen", &ui_theme));
+            parent.spawn(create_stat_text("Eggs: 0", "population_eggs", &ui_theme));
             parent.spawn(create_stat_text(
                 "Age Distribution: No ants",
                 "population_age",
+                &ui_theme,
             ));
 
             // Resource Section
-            create_statistics_section(parent, "Resources");
-            parent.spawn(create_stat_text("Food Sources: 0", "resource_food"));
-            parent.spawn(create_stat_text("Avg Energy: 0%", "resource_energy"));
+            create_statistics_section(parent, "Resources", &ui_theme);
+            parent.spawn(create_stat_text(
+                "Food Sources: 0",
+                "resource_food",
+                &ui_theme,
+            ));
+            parent.spawn(create_stat_text(
+                "Avg Energy: 0%",
+                "resource_energy",
+                &ui_theme,
+            ));
             parent.spawn(create_stat_text(
                 "Foraging Efficiency: 0%",
                 "resource_efficiency",
+                &ui_theme,
             ));
-            parent.spawn(create_stat_text("Carrying Food: 0", "resource_carrying"));
+            parent.spawn(create_stat_text(
+                "Carrying Food: 0",
+                "resource_carrying",
+                &ui_theme,
+            ));
 
             // Environment Section
-            create_statistics_section(parent, "Environment");
+            create_statistics_section(parent, "Environment", &ui_theme);
             parent.spawn(create_stat_text(
                 "Soil Moisture: 0%",
                 "environment_moisture",
+                &ui_theme,
             ));
             parent.spawn(create_stat_text(
                 "Soil Temperature: 0°C",
                 "environment_temperature",
+                &ui_theme,
             ));
             parent.spawn(create_stat_text(
                 "Soil Nutrition: 0%",
                 "environment_nutrition",
+                &ui_theme,
             ));
             parent.spawn(create_stat_text(
                 "Active Disasters: 0",
                 "environment_disasters",
+                &ui_theme,
             ));
 
             // Behavior Section
-            create_statistics_section(parent, "Behavior");
-            parent.spawn(create_stat_text("Activity: No ants", "behavior_activity"));
+            create_statistics_section(parent, "Behavior", &ui_theme);
+            parent.spawn(create_stat_text(
+                "Activity: No ants",
+                "behavior_activity",
+                &ui_theme,
+            ));
 
             // Role Distribution Section
             create_statistics_section(parent, "Role Distribution");
@@ -107,8 +133,8 @@ pub fn setup_statistics_panel(mut commands: Commands) {
             parent.spawn(TextBundle::from_section(
                 "Press S to toggle",
                 TextStyle {
-                    font_size: 12.0,
-                    color: Color::srgb(0.7, 0.7, 0.7),
+                    font_size: ui_theme.typography.body_small,
+                    color: ui_theme.colors.text_secondary,
                     ..default()
                 },
             ));
@@ -116,25 +142,29 @@ pub fn setup_statistics_panel(mut commands: Commands) {
 }
 
 /// Create a section header for the statistics panel
-fn create_statistics_section(parent: &mut ChildBuilder, title: &str) {
+fn create_statistics_section(parent: &mut ChildBuilder, title: &str, ui_theme: &UITheme) {
     parent.spawn(TextBundle::from_section(
         title,
         TextStyle {
-            font_size: 14.0,
-            color: Color::srgb(0.8, 0.9, 1.0), // Light blue for section headers
+            font_size: ui_theme.typography.body_medium,
+            color: ui_theme.colors.text_secondary,
             ..default()
         },
     ));
 }
 
 /// Create a statistics text element with identifier for updates
-fn create_stat_text(initial_text: &str, identifier: &str) -> (TextBundle, Name) {
+fn create_stat_text(
+    initial_text: &str,
+    identifier: &str,
+    ui_theme: &UITheme,
+) -> (TextBundle, Name) {
     (
         TextBundle::from_section(
             initial_text,
             TextStyle {
-                font_size: 12.0,
-                color: Color::srgb(0.9, 0.9, 0.9),
+                font_size: ui_theme.typography.body_small,
+                color: ui_theme.colors.text_primary,
                 ..default()
             },
         ),

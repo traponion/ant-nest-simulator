@@ -23,19 +23,19 @@ fn test_all_systems_initialization() {
     app.add_plugins(MinimalPlugins);
 
     // Initialize core resources manually to avoid UI/Window dependencies
-    app.init_resource::<ant_nest_simulator::components::SimulationTime>()
-        .init_resource::<ant_nest_simulator::components::DisasterState>()
-        .init_resource::<ant_nest_simulator::components::ColorOverlayConfig>()
-        .init_resource::<ant_nest_simulator::components::VisualEffectsSettings>()
-        .init_resource::<ant_nest_simulator::components::PerformanceMetrics>()
-        .init_resource::<ant_nest_simulator::components::ColonyStatistics>()
-        .init_resource::<ant_nest_simulator::components::UserSettings>()
-        .init_resource::<ant_nest_simulator::components::UITheme>()
-        .insert_resource(ant_nest_simulator::components::SpatialGrid::new(
-            16.0,
-            ant_nest_simulator::components::Position { x: -80.0, y: -60.0 },
-            ant_nest_simulator::components::Position { x: 80.0, y: 60.0 },
-        ));
+    app.init_resource::<ant_nest_simulator::components::SimulationTime>();
+    app.init_resource::<ant_nest_simulator::components::DisasterState>();
+    app.init_resource::<ant_nest_simulator::components::ColorOverlayConfig>();
+    app.init_resource::<ant_nest_simulator::components::VisualEffectsSettings>();
+    app.init_resource::<ant_nest_simulator::components::PerformanceMetrics>();
+    app.init_resource::<ant_nest_simulator::components::ColonyStatistics>();
+    app.init_resource::<ant_nest_simulator::components::UserSettings>();
+    app.init_resource::<ant_nest_simulator::components::UITheme>();
+    app.insert_resource(ant_nest_simulator::components::SpatialGrid::new(
+        16.0,
+        ant_nest_simulator::components::Position { x: -80.0, y: -60.0 },
+        ant_nest_simulator::components::Position { x: 80.0, y: 60.0 },
+    ));
 
     // Add only core simulation systems that don't require UI/Window
     app.add_systems(
@@ -71,14 +71,14 @@ fn test_systems_multi_update_cycle() {
     app.add_plugins(MinimalPlugins);
 
     // Initialize core resources manually to avoid UI/Window dependencies
-    app.init_resource::<ant_nest_simulator::components::SimulationTime>()
-        .init_resource::<ant_nest_simulator::components::DisasterState>()
-        .init_resource::<ant_nest_simulator::components::PerformanceMetrics>()
-        .insert_resource(ant_nest_simulator::components::SpatialGrid::new(
-            16.0,
-            ant_nest_simulator::components::Position { x: -80.0, y: -60.0 },
-            ant_nest_simulator::components::Position { x: 80.0, y: 60.0 },
-        ));
+    app.init_resource::<ant_nest_simulator::components::SimulationTime>();
+    app.init_resource::<ant_nest_simulator::components::DisasterState>();
+    app.init_resource::<ant_nest_simulator::components::PerformanceMetrics>();
+    app.insert_resource(ant_nest_simulator::components::SpatialGrid::new(
+        16.0,
+        ant_nest_simulator::components::Position { x: -80.0, y: -60.0 },
+        ant_nest_simulator::components::Position { x: 80.0, y: 60.0 },
+    ));
 
     // Add core simulation systems for testing
     app.add_systems(
@@ -119,12 +119,13 @@ fn test_systems_with_entities() {
     app.add_plugins(MinimalPlugins);
 
     // Initialize core resources manually to avoid UI/Window dependencies
-    app.init_resource::<ant_nest_simulator::components::DisasterState>()
-        .insert_resource(ant_nest_simulator::components::SpatialGrid::new(
-            16.0,
-            ant_nest_simulator::components::Position { x: -80.0, y: -60.0 },
-            ant_nest_simulator::components::Position { x: 80.0, y: 60.0 },
-        ));
+    app.init_resource::<ant_nest_simulator::components::SimulationTime>();
+    app.init_resource::<ant_nest_simulator::components::DisasterState>();
+    app.insert_resource(ant_nest_simulator::components::SpatialGrid::new(
+        16.0,
+        ant_nest_simulator::components::Position { x: -80.0, y: -60.0 },
+        ant_nest_simulator::components::Position { x: 80.0, y: 60.0 },
+    ));
 
     // Add simple startup systems to spawn entities
     app.add_systems(
@@ -177,18 +178,19 @@ fn test_known_problematic_system_combinations() {
 
     // Initialize input resources and manually add only the systems that have previously caused conflicts
     // This allows us to test specific combinations more precisely
-    app.init_resource::<bevy::input::ButtonInput<bevy::input::keyboard::KeyCode>>()
-        .init_resource::<ant_nest_simulator::components::DisasterState>()
-        .init_resource::<ant_nest_simulator::components::SpatialGrid>()
-        .add_systems(
-            Update,
-            (
-                // These systems have previously caused query conflicts
-                ant_nest_simulator::systems::ant_movement_system,
-                ant_nest_simulator::systems::invasive_species_behavior_system,
-                ant_nest_simulator::systems::ant_defensive_behavior_system,
-            ),
-        );
+    app.init_resource::<bevy::input::ButtonInput<bevy::input::keyboard::KeyCode>>();
+    app.init_resource::<ant_nest_simulator::components::SimulationTime>();
+    app.init_resource::<ant_nest_simulator::components::DisasterState>();
+    app.init_resource::<ant_nest_simulator::components::SpatialGrid>();
+    app.add_systems(
+        Update,
+        (
+            // These systems have previously caused query conflicts
+            ant_nest_simulator::systems::ant_movement_system,
+            ant_nest_simulator::systems::invasive_species_behavior_system,
+            ant_nest_simulator::systems::ant_defensive_behavior_system,
+        ),
+    );
 
     // Run multiple cycles to ensure no conflicts
     for _ in 0..5 {
