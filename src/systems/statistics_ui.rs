@@ -10,7 +10,7 @@ pub fn setup_statistics_panel(mut commands: Commands, theme: Res<UITheme>) {
                 position_type: PositionType::Absolute,
                 left: Val::Px(theme.spacing.lg),
                 bottom: Val::Px(theme.spacing.lg),
-                width: Val::Px(380.0),  // Slightly wider for better content fit
+                width: Val::Px(380.0), // Slightly wider for better content fit
                 height: Val::Auto,
                 flex_direction: FlexDirection::Column,
                 padding: UiRect::all(Val::Px(theme.spacing.lg)),
@@ -39,28 +39,80 @@ pub fn setup_statistics_panel(mut commands: Commands, theme: Res<UITheme>) {
 
             // Population Section with enhanced theming
             create_themed_statistics_section(parent, "Population", &theme);
-            parent.spawn(create_themed_stat_text("Total Ants: 0", "population_total", &theme));
-            parent.spawn(create_themed_stat_text("Queen: 0", "population_queen", &theme));
-            parent.spawn(create_themed_stat_text("Eggs: 0", "population_eggs", &theme));
-            parent.spawn(create_themed_stat_text("Age Distribution: No ants", "population_age", &theme));
+            parent.spawn(create_themed_stat_text(
+                "Total Ants: 0",
+                "population_total",
+                &theme,
+            ));
+            parent.spawn(create_themed_stat_text(
+                "Queen: 0",
+                "population_queen",
+                &theme,
+            ));
+            parent.spawn(create_themed_stat_text(
+                "Eggs: 0",
+                "population_eggs",
+                &theme,
+            ));
+            parent.spawn(create_themed_stat_text(
+                "Age Distribution: No ants",
+                "population_age",
+                &theme,
+            ));
 
             // Resource Section with enhanced theming
             create_themed_statistics_section(parent, "Resources", &theme);
-            parent.spawn(create_themed_stat_text("Food Sources: 0", "resource_food", &theme));
-            parent.spawn(create_themed_stat_text("Avg Energy: 0%", "resource_energy", &theme));
-            parent.spawn(create_themed_stat_text("Foraging Efficiency: 0%", "resource_efficiency", &theme));
-            parent.spawn(create_themed_stat_text("Carrying Food: 0", "resource_carrying", &theme));
+            parent.spawn(create_themed_stat_text(
+                "Food Sources: 0",
+                "resource_food",
+                &theme,
+            ));
+            parent.spawn(create_themed_stat_text(
+                "Avg Energy: 0%",
+                "resource_energy",
+                &theme,
+            ));
+            parent.spawn(create_themed_stat_text(
+                "Foraging Efficiency: 0%",
+                "resource_efficiency",
+                &theme,
+            ));
+            parent.spawn(create_themed_stat_text(
+                "Carrying Food: 0",
+                "resource_carrying",
+                &theme,
+            ));
 
             // Environment Section with enhanced theming
             create_themed_statistics_section(parent, "Environment", &theme);
-            parent.spawn(create_themed_stat_text("Soil Moisture: 0%", "environment_moisture", &theme));
-            parent.spawn(create_themed_stat_text("Soil Temperature: 0°C", "environment_temperature", &theme));
-            parent.spawn(create_themed_stat_text("Soil Nutrition: 0%", "environment_nutrition", &theme));
-            parent.spawn(create_themed_stat_text("Active Disasters: 0", "environment_disasters", &theme));
+            parent.spawn(create_themed_stat_text(
+                "Soil Moisture: 0%",
+                "environment_moisture",
+                &theme,
+            ));
+            parent.spawn(create_themed_stat_text(
+                "Soil Temperature: 0°C",
+                "environment_temperature",
+                &theme,
+            ));
+            parent.spawn(create_themed_stat_text(
+                "Soil Nutrition: 0%",
+                "environment_nutrition",
+                &theme,
+            ));
+            parent.spawn(create_themed_stat_text(
+                "Active Disasters: 0",
+                "environment_disasters",
+                &theme,
+            ));
 
             // Behavior Section with enhanced theming
             create_themed_statistics_section(parent, "Behavior", &theme);
-            parent.spawn(create_themed_stat_text("Activity: No ants", "behavior_activity", &theme));
+            parent.spawn(create_themed_stat_text(
+                "Activity: No ants",
+                "behavior_activity",
+                &theme,
+            ));
 
             // Enhanced controls hint with better styling
             parent
@@ -116,7 +168,11 @@ fn create_themed_statistics_section(parent: &mut ChildBuilder, title: &str, them
 }
 
 /// Create a themed statistics text element with identifier for updates
-fn create_themed_stat_text(initial_text: &str, identifier: &str, theme: &UITheme) -> (TextBundle, Name) {
+fn create_themed_stat_text(
+    initial_text: &str,
+    identifier: &str,
+    theme: &UITheme,
+) -> (TextBundle, Name) {
     (
         TextBundle::from_section(
             initial_text,

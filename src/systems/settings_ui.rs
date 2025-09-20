@@ -1,6 +1,6 @@
 use crate::components::{
     SettingItem, SettingType, SettingsAction, SettingsButton, SettingsCategory,
-    SettingsCategoryType, SettingsPanel, SettingsToggle, UserSettings, UITheme,
+    SettingsCategoryType, SettingsPanel, SettingsToggle, UITheme, UserSettings,
 };
 use bevy::prelude::*;
 
@@ -100,7 +100,11 @@ pub fn setup_settings_panel(mut commands: Commands, theme: Res<UITheme>) {
                 .with_children(|tabs_parent| {
                     let categories = [
                         (SettingsCategoryType::Visual, "🎨 Visual", true),
-                        (SettingsCategoryType::Accessibility, "♿ Accessibility", false),
+                        (
+                            SettingsCategoryType::Accessibility,
+                            "♿ Accessibility",
+                            false,
+                        ),
                         (SettingsCategoryType::Application, "⚙️ Application", false),
                     ];
 
@@ -119,12 +123,19 @@ pub fn setup_settings_panel(mut commands: Commands, theme: Res<UITheme>) {
                                     justify_content: JustifyContent::Center,
                                     align_items: AlignItems::Center,
                                     border: UiRect::all(Val::Px(theme.borders.width_thin)),
-                                    margin: UiRect::all(Val::Px(theme.spacing.xs/2.0)),
+                                    margin: UiRect::all(Val::Px(theme.spacing.xs / 2.0)),
                                     ..default()
                                 },
                                 background_color: bg_color.into(),
-                                border_color: if is_active { theme.colors.border_focus } else { theme.colors.border_primary }.into(),
-                                border_radius: BorderRadius::all(Val::Px(theme.borders.radius_small)),
+                                border_color: if is_active {
+                                    theme.colors.border_focus
+                                } else {
+                                    theme.colors.border_primary
+                                }
+                                .into(),
+                                border_radius: BorderRadius::all(Val::Px(
+                                    theme.borders.radius_small,
+                                )),
                                 ..default()
                             })
                             .with_children(|tab_parent| {
@@ -186,9 +197,21 @@ pub fn setup_settings_panel(mut commands: Commands, theme: Res<UITheme>) {
                 })
                 .with_children(|buttons_parent| {
                     let buttons = [
-                        (SettingsAction::ResetToDefaults, "💫 Reset", theme.colors.action_danger),
-                        (SettingsAction::SaveSettings, "💾 Save", theme.colors.action_success),
-                        (SettingsAction::ApplySettings, "✓ Apply", theme.colors.action_primary),
+                        (
+                            SettingsAction::ResetToDefaults,
+                            "💫 Reset",
+                            theme.colors.action_danger,
+                        ),
+                        (
+                            SettingsAction::SaveSettings,
+                            "💾 Save",
+                            theme.colors.action_success,
+                        ),
+                        (
+                            SettingsAction::ApplySettings,
+                            "✓ Apply",
+                            theme.colors.action_primary,
+                        ),
                     ];
 
                     for (action, label, color) in buttons {
@@ -197,7 +220,9 @@ pub fn setup_settings_panel(mut commands: Commands, theme: Res<UITheme>) {
                                 style: theme.create_button_style(Val::Auto, Val::Px(40.0)),
                                 background_color: color.into(),
                                 border_color: theme.colors.border_primary.into(),
-                                border_radius: BorderRadius::all(Val::Px(theme.borders.radius_small)),
+                                border_radius: BorderRadius::all(Val::Px(
+                                    theme.borders.radius_small,
+                                )),
                                 ..default()
                             })
                             .with_children(|button_parent| {
@@ -322,7 +347,11 @@ fn setup_themed_setting_item(
 }
 
 /// Setup enhanced toggle control for boolean settings with theme styling
-fn setup_themed_toggle_control(parent: &mut ChildBuilder, setting_type: SettingType, theme: &UITheme) {
+fn setup_themed_toggle_control(
+    parent: &mut ChildBuilder,
+    setting_type: SettingType,
+    theme: &UITheme,
+) {
     parent
         .spawn(NodeBundle {
             style: Style {
@@ -377,7 +406,11 @@ fn setup_themed_toggle_control(parent: &mut ChildBuilder, setting_type: SettingT
 }
 
 /// Setup enhanced slider control for numeric settings with theme styling
-fn setup_themed_slider_control(parent: &mut ChildBuilder, setting_type: SettingType, theme: &UITheme) {
+fn setup_themed_slider_control(
+    parent: &mut ChildBuilder,
+    setting_type: SettingType,
+    theme: &UITheme,
+) {
     parent
         .spawn(NodeBundle {
             style: Style {
@@ -425,13 +458,15 @@ fn setup_themed_slider_control(parent: &mut ChildBuilder, setting_type: SettingT
                                     height: Val::Px(20.0),
                                     position_type: PositionType::Absolute,
                                     left: Val::Percent(100.0), // Default to 100% (will be updated based on value)
-                                    top: Val::Px(-6.0), // Center on track
+                                    top: Val::Px(-6.0),        // Center on track
                                     border: UiRect::all(Val::Px(theme.borders.width_medium)),
                                     ..default()
                                 },
                                 background_color: theme.colors.accent_blue.into(),
                                 border_color: theme.colors.text_primary.into(),
-                                border_radius: BorderRadius::all(Val::Px(theme.borders.radius_round)),
+                                border_radius: BorderRadius::all(Val::Px(
+                                    theme.borders.radius_round,
+                                )),
                                 ..default()
                             });
                         });
@@ -467,7 +502,11 @@ fn setup_themed_slider_control(parent: &mut ChildBuilder, setting_type: SettingT
 }
 
 /// Setup enhanced dropdown control for selection settings with theme styling
-fn setup_themed_dropdown_control(parent: &mut ChildBuilder, setting_type: SettingType, theme: &UITheme) {
+fn setup_themed_dropdown_control(
+    parent: &mut ChildBuilder,
+    setting_type: SettingType,
+    theme: &UITheme,
+) {
     parent
         .spawn(ButtonBundle {
             style: Style {
