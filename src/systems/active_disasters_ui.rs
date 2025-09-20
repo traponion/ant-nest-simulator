@@ -13,28 +13,54 @@ pub fn setup_active_disasters_panel(mut commands: Commands) {
                 position_type: PositionType::Absolute,
                 left: Val::Px(10.0),
                 bottom: Val::Px(10.0),
-                width: Val::Px(300.0),
-                max_height: Val::Px(200.0),
+                width: Val::Px(320.0), // Slightly wider for better content fit
+                max_height: Val::Px(250.0), // More height for improved spacing
                 flex_direction: FlexDirection::Column,
-                padding: UiRect::all(Val::Px(15.0)),
-                row_gap: Val::Px(8.0),
+                padding: UiRect::all(Val::Px(16.0)), // More padding
+                row_gap: Val::Px(10.0), // More spacing between items
+                border: UiRect::all(Val::Px(2.0)),
                 ..default()
             },
-            background_color: Color::srgba(0.0, 0.0, 0.0, 0.8).into(),
-            border_radius: BorderRadius::all(Val::Px(8.0)),
+            background_color: Color::srgba(0.05, 0.05, 0.1, 0.92).into(), // Slightly bluer dark background
+            border_color: Color::srgba(0.8, 0.4, 0.2, 0.6).into(), // Warm orange border
+            border_radius: BorderRadius::all(Val::Px(10.0)), // More rounded corners
             visibility: Visibility::Hidden, // Initially hidden, shown when disasters are active
             ..default()
         })
         .with_children(|parent| {
-            // Panel title
-            parent.spawn(TextBundle::from_section(
-                "Active Disasters",
-                TextStyle {
-                    font_size: 18.0,
-                    color: Color::WHITE,
+            // Enhanced panel title with icon
+            parent
+                .spawn(NodeBundle {
+                    style: Style {
+                        flex_direction: FlexDirection::Row,
+                        align_items: AlignItems::Center,
+                        column_gap: Val::Px(8.0),
+                        margin: UiRect::bottom(Val::Px(4.0)),
+                        ..default()
+                    },
                     ..default()
-                },
-            ));
+                })
+                .with_children(|title_parent| {
+                    // Warning icon
+                    title_parent.spawn(TextBundle::from_section(
+                        "⚠️",
+                        TextStyle {
+                            font_size: 20.0,
+                            color: Color::srgb(1.0, 0.8, 0.2),
+                            ..default()
+                        },
+                    ));
+
+                    // Panel title
+                    title_parent.spawn(TextBundle::from_section(
+                        "Active Disasters",
+                        TextStyle {
+                            font_size: 18.0,
+                            color: Color::WHITE,
+                            ..default()
+                        },
+                    ));
+                });
         })
         .insert(ActiveDisastersPanel);
 }
@@ -81,12 +107,14 @@ fn create_disaster_entry(
         .spawn(NodeBundle {
             style: Style {
                 flex_direction: FlexDirection::Column,
-                padding: UiRect::all(Val::Px(8.0)),
-                margin: UiRect::bottom(Val::Px(4.0)),
+                padding: UiRect::all(Val::Px(12.0)), // More padding for better spacing
+                margin: UiRect::bottom(Val::Px(6.0)), // More space between entries
+                border: UiRect::all(Val::Px(1.0)), // Add border for better definition
                 ..default()
             },
-            background_color: Color::srgba(0.2, 0.2, 0.2, 0.7).into(),
-            border_radius: BorderRadius::all(Val::Px(4.0)),
+            background_color: Color::srgba(0.15, 0.15, 0.15, 0.85).into(), // Slightly darker background
+            border_color: disaster_type.get_active_color().with_alpha(0.3).into(), // Colored border
+            border_radius: BorderRadius::all(Val::Px(6.0)), // Slightly more rounded
             ..default()
         })
         .with_children(|disaster_parent| {
@@ -103,52 +131,90 @@ fn create_disaster_entry(
                     ..default()
                 })
                 .with_children(|header_parent| {
-                    // Disaster name with color
-                    header_parent.spawn(TextBundle::from_section(
-                        disaster_type.display_name(),
-                        TextStyle {
-                            font_size: 16.0,
-                            color: disaster_type.get_active_color(),
-                            ..default()
-                        },
-                    ));
-
-                    // Duration text
-                    header_parent.spawn((
-                        TextBundle::from_section(
-                            format!("{:.1}s", remaining_time),
-                            TextStyle {
-                                font_size: 14.0,
-                                color: Color::WHITE,
+                    // Disaster icon and name container
+                    header_parent
+                        .spawn(NodeBundle {
+                            style: Style {
+                                flex_direction: FlexDirection::Row,
+                                align_items: AlignItems::Center,
+                                column_gap: Val::Px(8.0),
                                 ..default()
                             },
-                        ),
-                        DisasterDurationText { disaster_type },
-                    ));
+                            ..default()
+                        })
+                        .with_children(|name_container| {
+                            // Disaster icon
+                            name_container.spawn(TextBundle::from_section(
+                                disaster_type.get_icon(),
+                                TextStyle {
+                                    font_size: 20.0,
+                                    color: Color::WHITE,
+                                    ..default()
+                                },
+                            ));
+
+                            // Disaster name with color
+                            name_container.spawn(TextBundle::from_section(
+                                disaster_type.display_name(),
+                                TextStyle {
+                                    font_size: 16.0,
+                                    color: disaster_type.get_active_color(),
+                                    ..default()
+                                },
+                            ));
+                        });
+
+                    // Enhanced duration text with visual emphasis
+                    header_parent
+                        .spawn(NodeBundle {
+                            style: Style {
+                                padding: UiRect::all(Val::Px(4.0)),
+                                ..default()
+                            },
+                            background_color: Color::srgba(0.0, 0.0, 0.0, 0.4).into(),
+                            border_radius: BorderRadius::all(Val::Px(4.0)),
+                            ..default()
+                        })
+                        .with_children(|duration_parent| {
+                            duration_parent.spawn((
+                                TextBundle::from_section(
+                                    format!("{:.1}s", remaining_time),
+                                    TextStyle {
+                                        font_size: 14.0,
+                                        color: Color::srgb(1.0, 1.0, 0.8), // Slightly warm white
+                                        ..default()
+                                    },
+                                ),
+                                DisasterDurationText { disaster_type },
+                            ));
+                        });
                 });
 
-            // Progress bar background
+            // Enhanced progress bar with better visual design
             disaster_parent
                 .spawn(NodeBundle {
                     style: Style {
                         width: Val::Percent(100.0),
-                        height: Val::Px(8.0),
+                        height: Val::Px(12.0), // Slightly taller for better visibility
+                        border: UiRect::all(Val::Px(1.0)),
                         ..default()
                     },
-                    background_color: Color::srgba(0.3, 0.3, 0.3, 0.8).into(),
-                    border_radius: BorderRadius::all(Val::Px(4.0)),
+                    background_color: Color::srgba(0.1, 0.1, 0.1, 0.9).into(), // Darker background
+                    border_color: Color::srgba(0.4, 0.4, 0.4, 0.6).into(),
+                    border_radius: BorderRadius::all(Val::Px(6.0)),
                     ..default()
                 })
                 .with_children(|progress_parent| {
-                    // Progress bar fill
+                    // Progress bar fill with enhanced styling
                     progress_parent.spawn((
                         NodeBundle {
                             style: Style {
                                 width: Val::Percent(100.0), // Will be updated dynamically
                                 height: Val::Percent(100.0),
+                                margin: UiRect::all(Val::Px(1.0)), // Small margin for border effect
                                 ..default()
                             },
-                            background_color: disaster_type.get_active_color().into(),
+                            background_color: disaster_type.get_active_color().with_alpha(0.8).into(),
                             border_radius: BorderRadius::all(Val::Px(4.0)),
                             ..default()
                         },
