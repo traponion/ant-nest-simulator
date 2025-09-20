@@ -1,4 +1,4 @@
-use crate::components::{Ant, Position, Soil, SoilCell};
+use crate::components::{Ant, FoundingState, Position, Queen, Soil, SoilCell};
 use bevy::prelude::*;
 use rand::prelude::*;
 
@@ -87,4 +87,38 @@ pub fn spawn_initial_ants(mut commands: Commands) {
     }
 
     info!("Spawned {} simple ants for MVP", ant_positions.len());
+}
+
+/// Spawn a single queen ant on the surface for nest founding
+pub fn spawn_queen(mut commands: Commands) {
+    let mut rng = thread_rng();
+
+    // Random surface position for queen spawning
+    let spawn_x = rng.gen_range(-80.0..80.0); // Within the soil grid range
+    let spawn_y = 0.0; // Surface level
+
+    commands.spawn((
+        Position {
+            x: spawn_x,
+            y: spawn_y,
+        },
+        Queen {
+            founding_state: FoundingState::Seeking,
+        },
+        Ant, // Queens are also ants, so they can use existing movement systems
+        SpriteBundle {
+            sprite: Sprite {
+                color: Color::srgb(0.2, 0.1, 0.0), // Dark brown for queen (distinct from black workers)
+                custom_size: Some(Vec2::new(3.0, 3.0)), // 3x3 pixels (larger than 2x2 workers)
+                ..default()
+            },
+            transform: Transform::from_translation(Vec3::new(spawn_x, spawn_y, 10.0)),
+            ..default()
+        },
+    ));
+
+    info!(
+        "Spawned queen ant at position ({}, {}) for nest founding",
+        spawn_x, spawn_y
+    );
 }

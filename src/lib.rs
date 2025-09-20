@@ -52,6 +52,7 @@ impl Plugin for AntNestPlugin {
                     systems::setup_world,
                     systems::spawn_soil_grid,
                     systems::spawn_initial_ants,
+                    systems::spawn_queen,
                 ),
             )
             // MVP: Only core simulation systems
@@ -59,6 +60,7 @@ impl Plugin for AntNestPlugin {
                 Update,
                 (
                     systems::ant_movement_system,
+                    systems::queen_founding_system,
                     systems::environmental_update_system,
                 ),
             );
