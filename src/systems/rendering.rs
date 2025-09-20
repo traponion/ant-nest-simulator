@@ -5,19 +5,19 @@ use crate::components::{
 use bevy::prelude::*;
 use rand::prelude::*;
 
-/// Basic camera setup for 2D pixel art view with expanded view area
+/// Basic camera setup for 2D pixel art view optimized for ant visibility
 pub fn setup_world(mut commands: Commands) {
-    // Spawn 2D camera for side-view ant farm observation with full screen view
+    // Spawn 2D camera for side-view ant farm observation with optimal zoom for ant visibility
     commands.spawn(Camera2dBundle {
-        transform: Transform::from_translation(Vec3::new(0.0, -15.0, 1000.0)), // Slightly higher to see more surface activity
+        transform: Transform::from_translation(Vec3::new(0.0, -20.0, 1000.0)), // Better positioning for colony overview
         projection: OrthographicProjection {
-            scale: 0.4, // Further zoom out for full screen experience (smaller scale = wider view)
+            scale: 0.6, // Adjusted zoom for better ant visibility (Issue #102)
             ..default()
         },
         ..default()
     });
 
-    info!("Ant Nest Simulator initialized with full screen view for pure observation gameplay!");
+    info!("Ant Nest Simulator initialized with optimized view for clear ant visibility!");
 }
 
 /// Create soil grid with depth layers for cross-section view
@@ -63,10 +63,10 @@ pub fn spawn_soil_grid(mut commands: Commands) {
                 SpriteBundle {
                     sprite: Sprite {
                         color: depth_layer.get_soil_color(),    // Color varies by depth
-                        custom_size: Some(Vec2::new(3.0, 3.0)), // Small brown dots
+                        custom_size: Some(Vec2::new(4.0, 4.0)), // Slightly larger soil cells for better background
                         ..default()
                     },
-                    transform: Transform::from_translation(Vec3::new(world_x, world_y, 0.0)),
+                    transform: Transform::from_translation(Vec3::new(world_x, world_y, 0.0)), // Background layer
                     ..default()
                 },
             ));
@@ -124,11 +124,11 @@ pub fn spawn_initial_ants(mut commands: Commands) {
         Ant,
         SpriteBundle {
             sprite: Sprite {
-                color: Color::srgb(0.6, 0.0, 0.6),      // Purple color for queen
-                custom_size: Some(Vec2::new(3.0, 3.0)), // Slightly larger than workers
+                color: Color::srgb(0.8, 0.0, 0.8), // Brighter purple for better visibility
+                custom_size: Some(Vec2::new(10.0, 10.0)), // Much larger queen (Issue #102)
                 ..default()
             },
-            transform: Transform::from_translation(Vec3::new(0.0, -48.0, 3.0)), // High Z to render above chambers
+            transform: Transform::from_translation(Vec3::new(0.0, -48.0, 10.0)), // Highest Z-layer for maximum visibility
             ..default()
         },
     ));
@@ -176,10 +176,10 @@ pub fn spawn_initial_ants(mut commands: Commands) {
             SpriteBundle {
                 sprite: Sprite {
                     color: Color::BLACK,                    // Black color for worker ants
-                    custom_size: Some(Vec2::new(2.0, 2.0)), // 2-pixel black dots
+                    custom_size: Some(Vec2::new(8.0, 8.0)), // Much larger worker ants for visibility (Issue #102)
                     ..default()
                 },
-                transform: Transform::from_translation(Vec3::new(x_offset, y_offset, 3.0)), // Above chambers and tunnels
+                transform: Transform::from_translation(Vec3::new(x_offset, y_offset, 9.0)), // High Z-layer above all other elements
                 ..default()
             },
         ));
@@ -236,11 +236,11 @@ pub fn spawn_food_sources(mut commands: Commands) {
             Food,
             SpriteBundle {
                 sprite: Sprite {
-                    color: Color::srgb(0.2, 0.9, 0.2), // Bright green color for food
-                    custom_size: Some(Vec2::new(2.0, 2.0)), // Slightly larger for visibility
+                    color: Color::srgb(0.0, 1.0, 0.0), // Bright pure green for food visibility (Issue #102)
+                    custom_size: Some(Vec2::new(6.0, 6.0)), // Larger food sources for visibility
                     ..default()
                 },
-                transform: Transform::from_translation(Vec3::new(final_x, final_y, 1.5)), // Above ground surface
+                transform: Transform::from_translation(Vec3::new(final_x, final_y, 8.0)), // High visibility layer
                 ..default()
             },
         ));
@@ -269,11 +269,11 @@ pub fn spawn_ground_surface(mut commands: Commands) {
             GroundSurface,
             SpriteBundle {
                 sprite: Sprite {
-                    color: Color::srgb(0.4, 0.6, 0.2),      // Green grass color
-                    custom_size: Some(Vec2::new(4.0, 2.0)), // Small grass segments
+                    color: Color::srgb(0.2, 0.8, 0.2), // Brighter grass for surface definition
+                    custom_size: Some(Vec2::new(4.0, 3.0)), // Slightly taller grass for visibility
                     ..default()
                 },
-                transform: Transform::from_translation(Vec3::new(x_pos, surface_y, 0.5)),
+                transform: Transform::from_translation(Vec3::new(x_pos, surface_y, 1.0)), // Above soil layer
                 ..default()
             },
         ));
@@ -352,11 +352,11 @@ fn spawn_tunnel_segment(commands: &mut Commands, start: &Position, end: &Positio
             },
             SpriteBundle {
                 sprite: Sprite {
-                    color: Color::srgb(0.3, 0.2, 0.1), // Dark brown tunnel color
+                    color: Color::srgb(0.5, 0.3, 0.1), // Brighter brown tunnel color for visibility
                     custom_size: Some(Vec2::new(width, 4.0)),
                     ..default()
                 },
-                transform: Transform::from_translation(Vec3::new(x, y, 1.0)), // Above soil layer
+                transform: Transform::from_translation(Vec3::new(x, y, 2.0)), // Above soil, below chambers
                 ..default()
             },
         ));
@@ -381,7 +381,7 @@ pub fn spawn_initial_chambers(mut commands: Commands) {
                 custom_size: Some(Vec2::new(40.0, 40.0)), // Large queen chamber
                 ..default()
             },
-            transform: Transform::from_translation(Vec3::new(0.0, -48.0, 2.0)), // Above tunnels
+            transform: Transform::from_translation(Vec3::new(0.0, -48.0, 3.0)), // Above tunnels, below ants
             ..default()
         },
     ));
@@ -402,7 +402,7 @@ pub fn spawn_initial_chambers(mut commands: Commands) {
                 custom_size: Some(Vec2::new(30.0, 30.0)), // Medium nursery chamber
                 ..default()
             },
-            transform: Transform::from_translation(Vec3::new(32.0, -32.0, 2.0)),
+            transform: Transform::from_translation(Vec3::new(32.0, -32.0, 3.0)), // Above tunnels, below ants
             ..default()
         },
     ));
@@ -423,7 +423,7 @@ pub fn spawn_initial_chambers(mut commands: Commands) {
                 custom_size: Some(Vec2::new(24.0, 24.0)), // Medium storage chamber
                 ..default()
             },
-            transform: Transform::from_translation(Vec3::new(-24.0, -16.0, 2.0)),
+            transform: Transform::from_translation(Vec3::new(-24.0, -16.0, 3.0)), // Above tunnels, below ants
             ..default()
         },
     ));
@@ -444,7 +444,7 @@ pub fn spawn_initial_chambers(mut commands: Commands) {
                 custom_size: Some(Vec2::new(16.0, 16.0)), // Small worker chamber
                 ..default()
             },
-            transform: Transform::from_translation(Vec3::new(8.0, -16.0, 2.0)),
+            transform: Transform::from_translation(Vec3::new(8.0, -16.0, 3.0)), // Above tunnels, below ants
             ..default()
         },
     ));
