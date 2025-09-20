@@ -806,6 +806,14 @@ pub struct TimeControlPanel;
 #[derive(Component)]
 pub struct PlayPauseButton;
 
+/// Component for play/pause button icon
+#[derive(Component)]
+pub struct PlayPauseIcon;
+
+/// Component for play/pause button text
+#[derive(Component)]
+pub struct PlayPauseText;
+
 /// Component for speed control buttons
 #[derive(Component)]
 pub struct SpeedButton {
@@ -832,6 +840,10 @@ pub struct SpeedSliderTrack;
 /// Component for the draggable handle of the speed slider
 #[derive(Component)]
 pub struct SpeedSliderHandle;
+
+/// Component for the progress fill of the speed slider
+#[derive(Component)]
+pub struct SpeedSliderProgress;
 
 /// Component for displaying the current slider value
 #[derive(Component)]

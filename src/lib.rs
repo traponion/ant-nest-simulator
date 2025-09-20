@@ -110,6 +110,7 @@ impl Plugin for AntNestPlugin {
                     systems::button_click_system,
                     systems::handle_speed_slider_system,
                     systems::update_slider_handle_position_system,
+                    systems::update_slider_progress_system,
                     systems::handle_speed_preset_buttons_system,
                     systems::visual_effects_toggle_system,
                     systems::settings_ui::settings_toggle_input_system,
