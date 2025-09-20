@@ -116,7 +116,7 @@ pub fn spawn_initial_ants(mut commands: Commands) {
             home_position: Position { x: 0.0, y: -48.0 }, // Queen's chamber
         },
         PhaseSpecificBehavior::default(), // Add phase-specific behavior
-        Queen, // Mark as queen
+        Queen,                            // Mark as queen
         Ant,
         SpriteBundle {
             sprite: Sprite {

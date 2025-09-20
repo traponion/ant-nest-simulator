@@ -1543,28 +1543,28 @@ impl PhaseConditions {
     pub fn for_phase(phase: DevelopmentPhase) -> Self {
         match phase {
             DevelopmentPhase::QueenFounding => Self {
-                min_days_in_phase: 300.0, // Minimum 300 simulation days
-                target_worker_count: 5,    // At least 5 workers to advance
+                min_days_in_phase: 300.0,    // Minimum 300 simulation days
+                target_worker_count: 5,      // At least 5 workers to advance
                 required_nest_complexity: 2, // Basic queen chamber + nursery
-                stability_threshold: 0.8,  // 80% queen survival rate
+                stability_threshold: 0.8,    // 80% queen survival rate
             },
             DevelopmentPhase::FirstWorkers => Self {
-                min_days_in_phase: 200.0, // Minimum 200 simulation days
-                target_worker_count: 25,   // At least 25 workers
+                min_days_in_phase: 200.0,    // Minimum 200 simulation days
+                target_worker_count: 25,     // At least 25 workers
                 required_nest_complexity: 5, // More chambers and tunnels
-                stability_threshold: 0.7,  // 70% worker survival rate
+                stability_threshold: 0.7,    // 70% worker survival rate
             },
             DevelopmentPhase::ColonyExpansion => Self {
-                min_days_in_phase: 365.0, // Minimum 365 simulation days
-                target_worker_count: 100,  // At least 100 workers
+                min_days_in_phase: 365.0,     // Minimum 365 simulation days
+                target_worker_count: 100,     // At least 100 workers
                 required_nest_complexity: 10, // Complex tunnel network
-                stability_threshold: 0.8,  // 80% colony stability
+                stability_threshold: 0.8,     // 80% colony stability
             },
             DevelopmentPhase::MatureColony => Self {
-                min_days_in_phase: f32::INFINITY, // Permanent final phase
-                target_worker_count: usize::MAX,  // No upper limit
+                min_days_in_phase: f32::INFINITY,     // Permanent final phase
+                target_worker_count: usize::MAX,      // No upper limit
                 required_nest_complexity: usize::MAX, // No upper limit
-                stability_threshold: 0.9,         // 90% mature colony stability
+                stability_threshold: 0.9,             // 90% mature colony stability
             },
         }
     }

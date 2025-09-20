@@ -10,8 +10,8 @@
 //! phase-specific behavioral modifications to create a realistic ant colony
 //! simulation with high replayability through randomized colony traits.
 
-use bevy::prelude::*;
 use crate::components::*;
+use bevy::prelude::*;
 
 /// System for managing colony development phase progression
 pub fn colony_development_management_system(
@@ -74,7 +74,10 @@ fn calculate_time_progress(colony_phase: &ColonyDevelopmentPhase) -> f32 {
 }
 
 /// Calculate progress based on worker population
-fn calculate_population_progress(colony_phase: &ColonyDevelopmentPhase, worker_count: usize) -> f32 {
+fn calculate_population_progress(
+    colony_phase: &ColonyDevelopmentPhase,
+    worker_count: usize,
+) -> f32 {
     let target = colony_phase.phase_conditions.target_worker_count;
     if target == usize::MAX {
         return 1.0; // No population requirement
@@ -84,7 +87,10 @@ fn calculate_population_progress(colony_phase: &ColonyDevelopmentPhase, worker_c
 }
 
 /// Calculate progress based on nest architectural complexity
-fn calculate_complexity_progress(colony_phase: &ColonyDevelopmentPhase, nest_complexity: usize) -> f32 {
+fn calculate_complexity_progress(
+    colony_phase: &ColonyDevelopmentPhase,
+    nest_complexity: usize,
+) -> f32 {
     let required = colony_phase.phase_conditions.required_nest_complexity;
     if required == usize::MAX {
         return 1.0; // No complexity requirement
@@ -104,7 +110,11 @@ fn calculate_stability_progress(
     match colony_phase.current_phase {
         DevelopmentPhase::QueenFounding => {
             // During founding phase, stability is based on queen survival
-            if queen_alive { 1.0 } else { 0.0 }
+            if queen_alive {
+                1.0
+            } else {
+                0.0
+            }
         }
         _ => {
             // In later phases, stability is based on worker population maintenance
@@ -117,7 +127,11 @@ fn calculate_stability_progress(
                 0.0
             };
 
-            if stability_score >= threshold { 1.0 } else { stability_score / threshold }
+            if stability_score >= threshold {
+                1.0
+            } else {
+                stability_score / threshold
+            }
         }
     }
 }
@@ -125,8 +139,7 @@ fn calculate_stability_progress(
 /// Check if the colony should transition to the next phase
 fn should_transition_phase(colony_phase: &ColonyDevelopmentPhase) -> bool {
     // All progress criteria must be 100% complete
-    colony_phase.phase_progress >= 1.0 &&
-    colony_phase.current_phase.next_phase().is_some()
+    colony_phase.phase_progress >= 1.0 && colony_phase.current_phase.next_phase().is_some()
 }
 
 /// Transition the colony to a new development phase
@@ -143,22 +156,17 @@ fn apply_phase_behavioral_changes(
     colony_phase: &ColonyDevelopmentPhase,
 ) {
     for mut behavior in ant_behavior_query.iter_mut() {
-        behavior.behavior_modifiers = calculate_phase_modifiers(
-            colony_phase.current_phase,
-            &colony_phase.colony_traits,
-        );
+        behavior.behavior_modifiers =
+            calculate_phase_modifiers(colony_phase.current_phase, &colony_phase.colony_traits);
     }
 }
 
 /// Calculate behavioral modifiers based on colony phase and traits
-fn calculate_phase_modifiers(
-    phase: DevelopmentPhase,
-    traits: &ColonyTraits,
-) -> BehaviorModifiers {
+fn calculate_phase_modifiers(phase: DevelopmentPhase, traits: &ColonyTraits) -> BehaviorModifiers {
     match phase {
         DevelopmentPhase::QueenFounding => BehaviorModifiers {
             speed_modifier: 0.7 * traits.worker_efficiency, // Slower, cautious movement
-            foraging_efficiency: 0.5, // No foraging - queen does everything
+            foraging_efficiency: 0.5,                       // No foraging - queen does everything
             construction_skill: 0.8 * traits.architectural_skill, // Basic nest construction
             energy_efficiency: 1.1 * traits.environmental_adaptation, // Efficient energy use
         },
@@ -191,10 +199,8 @@ fn update_ant_roles_system(
     for mut behavior in ant_behavior_query.iter_mut() {
         // Age groups would be updated by the lifecycle system
         // Here we just assign appropriate roles based on age and phase
-        behavior.specialized_role = assign_specialized_role(
-            behavior.age_group,
-            colony_phase.current_phase,
-        );
+        behavior.specialized_role =
+            assign_specialized_role(behavior.age_group, colony_phase.current_phase);
     }
 }
 
@@ -331,10 +337,7 @@ pub fn colony_development_ui_system(
 pub struct ColonyDevelopmentDisplay;
 
 /// System to spawn colony development UI panel
-pub fn setup_colony_development_ui(
-    mut commands: Commands,
-    ui_theme: Res<UITheme>,
-) {
+pub fn setup_colony_development_ui(mut commands: Commands, ui_theme: Res<UITheme>) {
     commands
         .spawn(NodeBundle {
             style: Style {
