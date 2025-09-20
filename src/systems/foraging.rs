@@ -27,8 +27,8 @@ pub fn food_consumption_system(
             continue;
         }
 
-        // Check for food sources within consumption range (2.0 units) using spatial indexing
-        let consumption_radius = 2.0;
+        // Check for food sources within consumption range (wider range for debugging) using spatial indexing
+        let consumption_radius = 10.0;
         let nearby_food_entities = spatial_grid.get_entities_in_radius(ant_pos, consumption_radius);
 
         for food_entity in nearby_food_entities {
@@ -41,7 +41,7 @@ pub fn food_consumption_system(
                 let dy = food_pos.y - ant_pos.y;
                 let distance = (dx * dx + dy * dy).sqrt();
 
-                // If ant is close enough to consume food
+                // If ant is close enough to consume food (same as detection radius)
                 if distance <= consumption_radius {
                     // Consume the food
                     food_source.is_available = false;

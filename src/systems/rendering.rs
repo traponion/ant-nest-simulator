@@ -5,15 +5,19 @@ use crate::components::{
 use bevy::prelude::*;
 use rand::prelude::*;
 
-/// Basic camera setup for 2D pixel art view
+/// Basic camera setup for 2D pixel art view with expanded view area
 pub fn setup_world(mut commands: Commands) {
-    // Spawn 2D camera for side-view ant farm observation with better positioning
+    // Spawn 2D camera for side-view ant farm observation with full screen view
     commands.spawn(Camera2dBundle {
-        transform: Transform::from_translation(Vec3::new(0.0, 0.0, 1000.0)),
+        transform: Transform::from_translation(Vec3::new(0.0, -15.0, 1000.0)), // Slightly higher to see more surface activity
+        projection: OrthographicProjection {
+            scale: 0.4, // Further zoom out for full screen experience (smaller scale = wider view)
+            ..default()
+        },
         ..default()
     });
 
-    info!("Ant Nest Simulator initialized - ready for development!");
+    info!("Ant Nest Simulator initialized with full screen view for pure observation gameplay!");
 }
 
 /// Create soil grid with depth layers for cross-section view
@@ -80,19 +84,19 @@ pub fn spawn_initial_ants(mut commands: Commands) {
     let mut rng = thread_rng();
 
     // Predefined tunnel and chamber positions for realistic ant placement
+    // Include some surface positions for better food access
     let colony_positions = [
+        // Surface foraging positions (for better food access)
+        Position { x: 0.0, y: 0.0 },
+        Position { x: 8.0, y: 0.0 },
+        Position { x: -8.0, y: 0.0 },
         // Main tunnel positions
         Position { x: 0.0, y: -8.0 },
         Position { x: 0.0, y: -16.0 },
         Position { x: 0.0, y: -32.0 },
-        // Queen chamber area (spawn queen here)
-        Position { x: 0.0, y: -48.0 },
         // Food storage branch
         Position { x: -12.0, y: -16.0 },
         Position { x: -24.0, y: -16.0 },
-        // Nursery branch
-        Position { x: 16.0, y: -32.0 },
-        Position { x: 32.0, y: -32.0 },
         // Worker area
         Position { x: 8.0, y: -16.0 },
     ];

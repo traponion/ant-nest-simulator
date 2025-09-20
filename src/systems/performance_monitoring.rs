@@ -19,6 +19,7 @@ pub fn setup_performance_monitoring_ui(mut commands: Commands) {
             },
             background_color: Color::srgba(0.0, 0.0, 0.0, 0.8).into(),
             border_radius: BorderRadius::all(Val::Px(5.0)),
+            visibility: Visibility::Hidden, // Start hidden for pure observation experience
             ..default()
         })
         .insert(PerformancePanel)

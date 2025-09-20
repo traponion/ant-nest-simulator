@@ -419,6 +419,7 @@ pub fn setup_colony_development_ui(mut commands: Commands, ui_theme: Res<UITheme
             },
             background_color: ui_theme.colors.surface_primary.into(),
             border_color: ui_theme.colors.border_primary.into(),
+            visibility: Visibility::Hidden, // Start hidden for pure observation experience
             ..default()
         })
         .with_children(|parent| {
